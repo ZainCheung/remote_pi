@@ -715,6 +715,17 @@ class _Connection {
           _dbSecrets.delete(p['root'] as String, p['conn'] as String);
           return null;
         }(),
+        // Renome acontece AQUI, e não como delete+set no cliente, porque o
+        // cliente não pode ler o valor para regravá-lo — o segredo nunca sai
+        // do host, nem para dar a volta.
+        'db.secretRename' => () {
+          _dbSecrets.rename(
+            p['root'] as String,
+            p['from'] as String,
+            p['to'] as String,
+          );
+          return null;
+        }(),
         _ => throw _RpcUnknown(req.method),
       };
       _send(RpcResponse(rid: req.rid, ok: true, data: await _awaited(data)));

@@ -400,8 +400,11 @@ class DatabaseViewModel extends ChangeNotifier {
   }) async {
     final legacyKey = DbQueryService.secretKey(root, previousName ?? conn.name);
 
+    // Renome: MOVE a chave no host em vez de apagar e torcer. Apagar antes de
+    // saber se dá para regravar perdia a senha sempre que o usuário só mudava
+    // o nome — e, sem leitura de volta, não havia como reconstruí-la daqui.
     if (previousName != null && previousName != conn.name) {
-      await remote.deleteSecret(root, previousName);
+      await remote.renameSecret(root, previousName, conn.name);
     }
     if (!conn.savePassword) {
       await remote.deleteSecret(root, conn.name);
@@ -413,10 +416,9 @@ class DatabaseViewModel extends ChangeNotifier {
       await _secrets.delete(legacyKey);
       return;
     }
-    // Sem senha digitada: se o rename precisa mover a senha do host, o único
-    // jeito seria relê-la — e ler não existe (write-only, decisão B). A senha
-    // legada do cofre local cobre o caso e ainda migra; sem ela, o rename
-    // exige redigitar, e o `password_required` diz isso.
+    // Sem senha digitada: o renome acima já moveu o que havia no host, então
+    // aqui só resta a MIGRAÇÃO de quem ainda tinha a senha no cofre desta
+    // máquina (cadastro anterior ao cofre único).
     final legacy = await _secrets.read(legacyKey);
     if (legacy != null && legacy.isNotEmpty) {
       await remote.setSecret(root, conn.name, legacy);

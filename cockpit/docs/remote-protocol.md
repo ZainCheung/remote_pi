@@ -113,6 +113,11 @@ conexão)` — e o cliente o alimenta por dois métodos **write-only**:
 |---|---|---|
 | `db.secretSet` | `root`, `conn`, `value` | grava/substitui a senha da conexão |
 | `db.secretDelete` | `root`, `conn` | apaga a senha da conexão |
+| `db.secretRename` | `root`, `from`, `to` | move a senha para o nome novo |
+
+`db.secretRename` existe porque o cliente não pode ler o segredo para regravá-lo
+sob outro nome: sem ele, renomear uma conexão apagava a senha e o usuário só
+descobria na query seguinte.
 
 O conteúdo é cifrado com AES-GCM e chave fixa do produto (modelo do DBeaver).
 É **ofuscação deliberada**: tira o segredo do texto claro em disco, cobrindo

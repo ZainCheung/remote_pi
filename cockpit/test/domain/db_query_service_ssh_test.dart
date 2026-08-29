@@ -230,7 +230,7 @@ void main() {
       final f = build(
         [pg(tunnel: ssh.copyWith(savePassphrase: true))],
         encryptedKey: true,
-        vault: {DbQueryService.sshSecretKey('w1', 'prod'): 'hunter2'},
+        vault: {DbQueryService.sshSecretKey('/ws', 'prod'): 'hunter2'},
       );
       await f.service.query(
         workspaceRoot: '/ws',
@@ -304,7 +304,7 @@ void main() {
       final f = build(
         const [],
         encryptedKey: true,
-        vault: {DbQueryService.sshSecretKey('w1', 'prod'): 'velha'},
+        vault: {DbQueryService.sshSecretKey('/ws', 'prod'): 'velha'},
       );
       // Sem prompt setado: se o override não valesse, cairia no cofre — e o
       // usuário nunca conseguiria testar uma passphrase nova.

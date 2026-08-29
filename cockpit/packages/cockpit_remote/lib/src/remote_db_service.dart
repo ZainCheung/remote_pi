@@ -92,6 +92,26 @@ class RemoteDbService implements DbService {
     }
   }
 
+  /// Move a senha de [fromConn] para [toConn] **dentro do host**.
+  ///
+  /// É um método próprio (e não delete+set) porque o cliente não pode ler o
+  /// segredo para regravá-lo sob o nome novo: renomear sem isto perdia a senha.
+  Future<void> renameSecret({
+    required String workspaceRoot,
+    required String fromConn,
+    required String toConn,
+  }) async {
+    try {
+      await _connection.call('db.secretRename', {
+        'root': workspaceRoot,
+        'from': fromConn,
+        'to': toConn,
+      });
+    } on RemoteRpcException catch (e) {
+      throw _mapError(e);
+    }
+  }
+
   /// Apaga a senha da conexão no cofre do host (conexão removida, renomeada,
   /// ou `savePassword` desligado).
   Future<void> deleteSecret({

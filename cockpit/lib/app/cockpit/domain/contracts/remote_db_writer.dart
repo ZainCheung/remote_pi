@@ -24,7 +24,15 @@ abstract interface class RemoteDbWriter {
     String value,
   );
 
-  /// Apaga a senha de [connName] no cofre do host (conexão removida, renomeada
-  /// ou com `savePassword` desligado).
+  /// Apaga a senha de [connName] no cofre do host (conexão removida ou com
+  /// `savePassword` desligado).
   Future<void> deleteSecret(String workspaceRoot, String connName);
+
+  /// Move a senha de [fromConn] para [toConn] no cofre do host, sem que o valor
+  /// passe por aqui — o cliente não pode lê-lo (write-only).
+  Future<void> renameSecret(
+    String workspaceRoot,
+    String fromConn,
+    String toConn,
+  );
 }

@@ -48,6 +48,20 @@ class RemoteDbWriterImpl implements RemoteDbWriter {
   }
 
   @override
+  Future<void> renameSecret(
+    String workspaceRoot,
+    String fromConn,
+    String toConn,
+  ) async {
+    final db = await _dbServiceProvider();
+    await db.renameSecret(
+      workspaceRoot: workspaceRoot,
+      fromConn: fromConn,
+      toConn: toConn,
+    );
+  }
+
+  @override
   Future<void> deleteSecret(String workspaceRoot, String connName) async {
     final db = await _dbServiceProvider();
     await db.deleteSecret(workspaceRoot: workspaceRoot, connName: connName);

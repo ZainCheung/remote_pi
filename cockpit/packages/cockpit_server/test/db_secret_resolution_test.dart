@@ -115,6 +115,21 @@ void main() {
     expect(secrets.read('/srv/proj', 'dev-local'), isNull);
   });
 
+  test('db.secretRename move a senha dentro do host', () async {
+    secrets.write('/srv/proj', 'antiga', 's3cr3t');
+    final client = await boot();
+
+    final reply = await _call(client, 'db.secretRename', {
+      'root': '/srv/proj',
+      'from': 'antiga',
+      'to': 'nova',
+    });
+
+    expect(reply.ok, isTrue);
+    expect(secrets.read('/srv/proj', 'antiga'), isNull);
+    expect(secrets.read('/srv/proj', 'nova'), 's3cr3t');
+  });
+
   test('não existe db.secretGet — o segredo não volta pelo protocolo', () async {
     secrets.write('/srv/proj', 'dev-local', 's3cr3t');
     final client = await boot();
