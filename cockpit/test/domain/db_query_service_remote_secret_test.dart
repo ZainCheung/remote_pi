@@ -12,7 +12,7 @@ import 'fakes/ssh_fakes.dart';
 /// Plano 62: num workspace REMOTO o segredo mora no cofre do host, e o cliente
 /// deixa de mandá-lo pelo fio.
 ///
-/// O bug que isto trava: a chave do cofre local é
+/// O bug que isto trava: a chave do cofre local era
 /// `cockpit.db.<workspaceId>.<conn>`, e o `workspaceId` é derivado por
 /// máquina. A senha cadastrada num cliente nunca era achada por outro — a
 /// conexão só funcionava no computador que a criou.
@@ -49,7 +49,7 @@ void main() {
     // — quem resolve agora é o host.
     final f = build(
       [pg()],
-      vault: {DbQueryService.secretKey('w1', 'prod'): 'senha-legada'},
+      vault: {DbQueryService.legacySecretKey('w1', 'prod'): 'senha-legada'},
     );
 
     await f.service.query(
@@ -98,7 +98,7 @@ void main() {
   test('schema e runStatements seguem a mesma regra', () async {
     final f = build(
       [pg()],
-      vault: {DbQueryService.secretKey('w1', 'prod'): 'senha-legada'},
+      vault: {DbQueryService.legacySecretKey('w1', 'prod'): 'senha-legada'},
     );
 
     await f.service.schema(
@@ -152,7 +152,7 @@ class _MapSecrets implements DbSecrets {
   @override
   Future<void> write(String key, String value) async => values[key] = value;
   @override
-  Future<String?> read(String key) async => values[key];
+  Future<String?> read(String key, {String? legacyKey}) async => values[key];
   @override
   Future<void> delete(String key) async => values.remove(key);
 }

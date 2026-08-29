@@ -298,8 +298,8 @@ class DatabaseViewModel extends ChangeNotifier {
         previousName: previousName,
         wsId: wsId,
       );
-      service.forgetPassword(wsId, previousName ?? conn.name);
-      service.forgetPassword(wsId, conn.name);
+      service.forgetPassword(root, previousName ?? conn.name);
+      service.forgetPassword(root, conn.name);
       // Sem `_syncSshPassphrase` aqui: o túnel SSH da conexão não funciona a
       // partir de um cliente remoto (o descritor não carrega o bloco `ssh`, e
       // quem abriria o bastion é o host — plano 62, onda 2). Guardar a
@@ -311,8 +311,8 @@ class DatabaseViewModel extends ChangeNotifier {
 
     await _store.save(root, [...registered, conn]);
 
-    final oldKey = DbQueryService.secretKey(wsId, previousName ?? conn.name);
-    final newKey = DbQueryService.secretKey(wsId, conn.name);
+    final oldKey = DbQueryService.secretKey(root, previousName ?? conn.name);
+    final newKey = DbQueryService.secretKey(root, conn.name);
     if (previousName != null && previousName != conn.name) {
       // Rename: migra a senha guardada pra chave nova antes de apagar a velha
       // — editar sem redigitar a senha NUNCA a perde.
@@ -332,10 +332,11 @@ class DatabaseViewModel extends ChangeNotifier {
     }
     // A senha mudou/migrou de chave: invalida o cache de sessão pra próxima
     // query reler o valor atual (evita usar a senha antiga após uma edição).
-    if (previousName != null) service.forgetPassword(wsId, previousName);
-    service.forgetPassword(wsId, conn.name);
+    if (previousName != null) service.forgetPassword(root, previousName);
+    service.forgetPassword(root, conn.name);
     await _syncSshPassphrase(
       conn,
+      root,
       wsId,
       sshPassphrase,
       previousName: previousName,
@@ -359,18 +360,18 @@ class DatabaseViewModel extends ChangeNotifier {
       // O cofre LOCAL pode ainda ter a senha legada desta conexão (cadastrada
       // antes do plano 62): apagar aqui evita deixar segredo órfão de uma
       // conexão que não existe mais.
-      await _secrets.delete(DbQueryService.secretKey(wsId, conn.name));
-      await _secrets.delete(DbQueryService.sshSecretKey(wsId, conn.name));
-      service.forgetPassword(wsId, conn.name);
-      service.forgetSshPassphrase(wsId, conn.name);
+      await _secrets.delete(DbQueryService.secretKey(root, conn.name));
+      await _secrets.delete(DbQueryService.sshSecretKey(root, conn.name));
+      service.forgetPassword(root, conn.name);
+      service.forgetSshPassphrase(root, conn.name);
       await reload();
       return;
     }
     await _store.save(root, registered);
-    await _secrets.delete(DbQueryService.secretKey(wsId, conn.name));
-    await _secrets.delete(DbQueryService.sshSecretKey(wsId, conn.name));
-    service.forgetSshPassphrase(wsId, conn.name);
-    service.forgetPassword(wsId, conn.name);
+    await _secrets.delete(DbQueryService.secretKey(root, conn.name));
+    await _secrets.delete(DbQueryService.sshSecretKey(root, conn.name));
+    service.forgetSshPassphrase(root, conn.name);
+    service.forgetPassword(root, conn.name);
     // A host key confiada some junto: manter o fingerprint de um bastion que
     // ninguém mais usa só acumula lixo com aparência de decisão de segurança.
     final endpoint = conn.ssh?.endpoint;
@@ -397,7 +398,7 @@ class DatabaseViewModel extends ChangeNotifier {
     required String wsId,
     String? previousName,
   }) async {
-    final legacyKey = DbQueryService.secretKey(wsId, previousName ?? conn.name);
+    final legacyKey = DbQueryService.secretKey(root, previousName ?? conn.name);
 
     if (previousName != null && previousName != conn.name) {
       await remote.deleteSecret(root, previousName);
@@ -427,22 +428,26 @@ class DatabaseViewModel extends ChangeNotifier {
   /// migra o segredo, desligar o switch apaga, e campo vazio mantém o atual.
   Future<void> _syncSshPassphrase(
     DbConnection conn,
+    String root,
     String wsId,
     String? passphrase, {
     String? previousName,
   }) async {
-    final oldKey = DbQueryService.sshSecretKey(wsId, previousName ?? conn.name);
-    final newKey = DbQueryService.sshSecretKey(wsId, conn.name);
+    final oldKey = DbQueryService.sshSecretKey(root, previousName ?? conn.name);
+    final newKey = DbQueryService.sshSecretKey(root, conn.name);
     final save = conn.ssh?.savePassphrase ?? false;
     if (previousName != null && previousName != conn.name) {
-      final existing = await _secrets.read(oldKey);
+      final existing = await _secrets.read(
+        oldKey,
+        legacyKey: DbQueryService.legacySshSecretKey(wsId, previousName),
+      );
       if (save &&
           existing != null &&
           (passphrase == null || passphrase.isEmpty)) {
         await _secrets.write(newKey, existing);
       }
       await _secrets.delete(oldKey);
-      service.forgetSshPassphrase(wsId, previousName);
+      service.forgetSshPassphrase(root, previousName);
     }
     if (!save) {
       await _secrets.delete(newKey);
@@ -451,7 +456,7 @@ class DatabaseViewModel extends ChangeNotifier {
     }
     // Config mudou (chave nova, host novo): a passphrase de sessão pode não
     // valer mais.
-    service.forgetSshPassphrase(wsId, conn.name);
+    service.forgetSshPassphrase(root, conn.name);
   }
 
   /// Repassa a classificação de chave pro dialog — a UI não fala com `data/`.
@@ -581,17 +586,18 @@ class DatabaseViewModel extends ChangeNotifier {
     String? storedPasswordName,
   }) async {
     final wsId = _workspaceId;
-    if (wsId == null) return 'No workspace is open.';
+    final root = _workspaceRoot;
+    if (wsId == null || root == null) return 'No workspace is open.';
     var effective = (password == null || password.isEmpty) ? null : password;
     if (effective == null && storedPasswordName != null) {
       effective = await _secrets.read(
-        DbQueryService.secretKey(wsId, storedPasswordName),
+        DbQueryService.secretKey(root, storedPasswordName),
+        legacyKey: DbQueryService.legacySecretKey(wsId, storedPasswordName),
       );
     }
     effective ??= conn.urlPassword;
     var target = conn;
-    final root = _workspaceRoot;
-    if (conn.engine == DbEngine.sqlite && root != null) {
+    if (conn.engine == DbEngine.sqlite) {
       final p = conn.sqlitePath;
       final absolute =
           p.startsWith('/') || RegExp(r'^[A-Za-z]:[\\/]').hasMatch(p);
@@ -604,6 +610,7 @@ class DatabaseViewModel extends ChangeNotifier {
       await service.ping(
         target,
         workspaceId: wsId,
+        workspaceRoot: root,
         password: effective,
         sshPassphrase: sshPassphrase,
       );

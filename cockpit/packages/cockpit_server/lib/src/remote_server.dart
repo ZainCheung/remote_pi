@@ -7,7 +7,6 @@ import 'package:meta/meta.dart';
 import 'package:cockpit_core/cockpit_core.dart';
 import 'package:cockpit_protocol/cockpit_protocol.dart';
 
-import 'db_secret_store.dart';
 
 class _RpcUnknown implements Exception {
   const _RpcUnknown(this.method);

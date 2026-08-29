@@ -68,7 +68,7 @@ class _NoSecrets implements DbSecrets {
   @override
   Future<void> write(String key, String value) async {}
   @override
-  Future<String?> read(String key) async => null;
+  Future<String?> read(String key, {String? legacyKey}) async => null;
   @override
   Future<void> delete(String key) async {}
 }

@@ -122,6 +122,14 @@ poderia ser diferente num servidor que sobe por SSH sem humano presente. Cofre
 em claro (formato anterior) continua sendo lido; a escrita seguinte o regrava
 cifrado, então não há passo de migração.
 
+**Um cofre por máquina.** O mesmo arquivo é usado pelo app quando o workspace é
+LOCAL: a chave é derivada da raiz do workspace (nunca do `workspaceId`, que é
+gerado por máquina), então digitar a senha sentado no host ou a partir de um
+cliente remoto grava na MESMA entrada. Era o contrário antes, e a senha
+digitada no host não valia para cliente nenhum — o `cockpit-server` é headless
+e nunca teve como ler o cofre do SO. O que ficou lá migra sozinho na primeira
+leitura.
+
 
 **Não existe `db.secretGet`, e isso é contrato, não omissão**: o cliente grava
 e apaga, nunca relê. Quem lê é o servidor, ao montar a conexão.

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:cockpit_server/cockpit_server.dart';
+import 'package:cockpit_core/cockpit_core.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -104,6 +104,27 @@ void main() {
     File(path).writeAsStringSync(jsonEncode(env));
 
     expect(DbSecretStore(path: path).read('/srv/proj', 'dev'), isNull);
+  });
+
+  test('outra instância enxerga escrita de fora (dois escritores)', () {
+    // O app (workspace local) e o sidecar (cliente remoto) escrevem o MESMO
+    // arquivo. Sem revalidar por mtime, um serviria eternamente o valor que o
+    // outro acabou de substituir.
+    final leitor = DbSecretStore(path: path);
+    final escritor = DbSecretStore(path: path);
+
+    escritor.write('/srv/proj', 'dev', 'primeira');
+    expect(leitor.read('/srv/proj', 'dev'), 'primeira');
+
+    escritor.write('/srv/proj', 'dev', 'segunda');
+    expect(
+      leitor.read('/srv/proj', 'dev'),
+      'segunda',
+      reason: 'o leitor precisa revalidar o cache',
+    );
+
+    escritor.delete('/srv/proj', 'dev');
+    expect(leitor.read('/srv/proj', 'dev'), isNull);
   });
 
   test('o arquivo nasce 0600', () {
