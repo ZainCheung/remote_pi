@@ -24,6 +24,42 @@ As versões seguem o `version:` do `pubspec.yaml` (SSOT). O campo `notes` do
     linhas não-vazias — o começo da seção deve fazer sentido sozinho.
 -->
 
+## [1.28.20] - 2026-08-29
+
+**Still a beta for the upcoming 2.0.0.** One password store per machine, and
+the background server now shuts down with the app.
+
+### Fixed
+
+- **A database password typed on the host now works from remote clients.**
+  There were two separate stores on the same machine: opening a workspace
+  locally saved the password to the OS keychain, while a remote client saved it
+  to the host's file. The background server has no way to read the OS keychain -
+  it starts over SSH, with no desktop session - so a password you typed while
+  sitting at the host was never found from anywhere else. You saved it
+  successfully and the remote kept reporting it as missing. There is now one
+  store per machine, and passwords already in the OS keychain move into it the
+  first time they are used - nothing to retype.
+
+  The key is now derived from the workspace folder rather than an id generated
+  per machine, which is what made the same connection look different from every
+  client.
+
+- **The background server no longer outlives the app.** Closing Cockpit left
+  `cockpit-server` running. Because an update replaces its file on disk while
+  the old process keeps running the old code, a machine used as a host could
+  serve a stale version indefinitely - silently, since nothing errors. It now
+  exits with the app, including when the app is force quit or crashes.
+
+### Note on where passwords live
+
+Local workspaces moved off the OS keychain to the same encrypted file the host
+uses. The keychain is stronger in principle - it prompts when an unauthorized
+program reads an item - and the file does not. That trade buys one place
+instead of two, which is what makes "configure it once, use it from anywhere"
+true. Passwords for connections you would rather not store at all are still
+better left unsaved.
+
 ## [1.28.19] - 2026-08-29
 
 **Still a beta for the upcoming 2.0.0.** The database passwords stored on a
