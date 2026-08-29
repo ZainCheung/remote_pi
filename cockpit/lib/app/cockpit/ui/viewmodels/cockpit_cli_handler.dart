@@ -397,7 +397,7 @@ class CockpitCliHandler {
       // `<kind>: <message>` (a CLI reconstrói o JSON `{"error":{…}}`).
       case 'db-list':
         return _dbCommand(c, (project, root) async {
-          final conns = await _db.connections(root);
+          final conns = await _db.connections(root, workspaceId: project.id);
           return CockpitCommandResult.ok([
             // `agents: false` = invisível pros agentes (a GUI segue vendo).
             for (final conn in conns)
@@ -788,7 +788,10 @@ class CockpitCliHandler {
   ) async {
     if (connName.isEmpty) return (null, 'missing --db <name>');
     final conns = [
-      for (final c in await _db.connections(project.effectiveRoot))
+      for (final c in await _db.connections(
+        project.effectiveRoot,
+        workspaceId: project.id,
+      ))
         if (c.agents) c,
     ];
     for (final conn in conns) {

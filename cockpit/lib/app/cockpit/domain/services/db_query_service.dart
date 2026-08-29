@@ -149,8 +149,21 @@ class DbQueryService {
   /// conexão em vez de manter uma global.
   final Map<DbEngine, Future<void>> _queues = {};
 
-  Future<List<DbConnection>> connections(String workspaceRoot) =>
-      _store.load(workspaceRoot);
+  /// Conexões registradas do workspace.
+  ///
+  /// [workspaceId] é obrigatório porque é ele que diz se o workspace é remoto —
+  /// e aí as conexões vêm do `.cockpit/databases.json` do HOST, não do disco
+  /// daqui. Sem esse parâmetro a função lia sempre o store local: num workspace
+  /// remoto o caminho não existe no cliente, e `cockpit db list` respondia uma
+  /// lista vazia num workspace com dez conexões.
+  Future<List<DbConnection>> connections(
+    String workspaceRoot, {
+    required String workspaceId,
+  }) async {
+    final remote = remoteConnectionsFor?.call(workspaceId, workspaceRoot);
+    if (remote != null) return remote;
+    return _store.load(workspaceRoot);
+  }
 
   /// Executa [sql] contra a conexão [connName] do workspace. [workspaceId]
   /// entra na chave do cofre (`cockpit.db.<workspaceId>.<nome>`).
