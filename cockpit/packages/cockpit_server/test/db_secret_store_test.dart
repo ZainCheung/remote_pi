@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:cockpit_server/cockpit_server.dart';
@@ -58,6 +59,51 @@ void main() {
     expect(store.read('/srv/proj', 'dev'), isNull);
     store.write('/srv/proj', 'dev', 'nova');
     expect(DbSecretStore(path: path).read('/srv/proj', 'dev'), 'nova');
+  });
+
+  test('o segredo NÃO fica em texto claro no disco', () {
+    DbSecretStore(path: path).write('/srv/proj', 'dev', 's3cr3t-em-claro');
+    final raw = File(path).readAsStringSync();
+    // O motivo da cifragem: vazamento acidental (backup, grep, print de tela).
+    expect(raw, isNot(contains('s3cr3t-em-claro')));
+    expect(raw, isNot(contains('/srv/proj')));
+    expect(raw, isNot(contains('dev')));
+    // E continua sendo um JSON legível como envelope.
+    final env = jsonDecode(raw) as Map<String, Object?>;
+    expect(env['v'], 1);
+    expect(env['n'], isA<String>());
+    expect(env['d'], isA<String>());
+  });
+
+  test('cofre legado em CLARO ainda é lido (sem passo de migração)', () {
+    // Formato anterior à cifragem: mapa direto, chave separada por NUL.
+    File(path)
+      ..createSync(recursive: true)
+      ..writeAsStringSync(
+        jsonEncode({'/srv/proj\u0000dev': 'senha-antiga'}),
+      );
+
+    final store = DbSecretStore(path: path);
+    expect(store.read('/srv/proj', 'dev'), 'senha-antiga');
+
+    // A próxima escrita regrava cifrado, sem ninguém pedir migração.
+    store.write('/srv/proj', 'outra', 'nova');
+    expect(File(path).readAsStringSync(), isNot(contains('senha-antiga')));
+    final reaberto = DbSecretStore(path: path);
+    expect(reaberto.read('/srv/proj', 'dev'), 'senha-antiga');
+    expect(reaberto.read('/srv/proj', 'outra'), 'nova');
+  });
+
+  test('envelope adulterado não derruba o servidor: cofre vazio', () {
+    DbSecretStore(path: path).write('/srv/proj', 'dev', 's3cr3t');
+    final env = jsonDecode(File(path).readAsStringSync()) as Map<String, Object?>;
+    // Vira um byte do ciphertext: o GCM é autenticado, então tem que recusar.
+    final d = base64.decode(env['d']! as String);
+    d[0] = d[0] ^ 0xff;
+    env['d'] = base64.encode(d);
+    File(path).writeAsStringSync(jsonEncode(env));
+
+    expect(DbSecretStore(path: path).read('/srv/proj', 'dev'), isNull);
   });
 
   test('o arquivo nasce 0600', () {

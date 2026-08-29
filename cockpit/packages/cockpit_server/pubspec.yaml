@@ -25,6 +25,10 @@ dependencies:
   anaki_redis: ^0.1.4
   anaki_mongodb: ^0.1.7
   meta: ^1.19.0
+  # Cofre de senhas cifrado (AES-GCM). Dart puro, sem native assets — já vinha
+  # como transitiva do workspace; declarada aqui porque o servidor a usa direto.
+  crypto: ^3.0.7
+  pointycastle: ^4.0.0
 
 dev_dependencies:
   test: ^1.25.0

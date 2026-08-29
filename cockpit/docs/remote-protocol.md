@@ -114,6 +114,15 @@ conexão)` — e o cliente o alimenta por dois métodos **write-only**:
 | `db.secretSet` | `root`, `conn`, `value` | grava/substitui a senha da conexão |
 | `db.secretDelete` | `root`, `conn` | apaga a senha da conexão |
 
+O conteúdo é cifrado com AES-GCM e chave fixa do produto (modelo do DBeaver).
+É **ofuscação deliberada**: tira o segredo do texto claro em disco, cobrindo
+vazamento acidental (backup, pasta sincronizada, `grep`, print de tela). Não
+defende de quem executa como o dono da conta — a chave está no binário, e não
+poderia ser diferente num servidor que sobe por SSH sem humano presente. Cofre
+em claro (formato anterior) continua sendo lido; a escrita seguinte o regrava
+cifrado, então não há passo de migração.
+
+
 **Não existe `db.secretGet`, e isso é contrato, não omissão**: o cliente grava
 e apaga, nunca relê. Quem lê é o servidor, ao montar a conexão.
 
