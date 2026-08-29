@@ -415,6 +415,7 @@ class _SpyRunner implements NoSqlRunner {
     DbConnection conn,
     List<String> parts, {
     String? password,
+  String workspaceRoot = '',
   }) async {
     seen.add(conn);
     return null;
@@ -425,6 +426,7 @@ class _SpyRunner implements NoSqlRunner {
     DbConnection conn,
     List<List<String>> commands, {
     String? password,
+  String workspaceRoot = '',
   }) async {
     seen.add(conn);
     return const [];
@@ -436,6 +438,7 @@ class _SpyRunner implements NoSqlRunner {
     Map<String, dynamic> command, {
     String? password,
     String? database,
+  String workspaceRoot = '',
   }) async {
     seen.add(conn);
     return null;

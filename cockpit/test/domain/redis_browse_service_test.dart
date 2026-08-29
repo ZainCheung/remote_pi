@@ -31,6 +31,7 @@ class _FakeRunner implements NoSqlRunner {
     DbConnection conn,
     List<List<String>> commands, {
     String? password,
+  String workspaceRoot = '',
   }) async {
     batches.add(commands);
     return [for (final c in commands) _replyFor(c)];
@@ -41,6 +42,7 @@ class _FakeRunner implements NoSqlRunner {
     DbConnection conn,
     List<String> parts, {
     String? password,
+  String workspaceRoot = '',
   }) async => _replyFor(parts);
 
   @override
@@ -49,6 +51,7 @@ class _FakeRunner implements NoSqlRunner {
     Map<String, dynamic> command, {
     String? password,
     String? database,
+  String workspaceRoot = '',
   }) async => null;
 }
 
