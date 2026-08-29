@@ -2,12 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:cockpit/app/cockpit/data/db/local_socks_server.dart';
-import 'package:cockpit/app/cockpit/data/db/ssh_key_pem.dart';
-import 'package:cockpit/app/cockpit/domain/contracts/ssh_tunnel.dart';
-import 'package:cockpit/app/cockpit/domain/entities/ssh_tunnel_config.dart';
+import 'ssh_log.dart';
+
+import 'local_socks_server.dart';
+import 'ssh_key_pem.dart';
+import 'ssh_tunnel.dart';
+import 'ssh_tunnel_config.dart';
 import 'package:dartssh2/dartssh2.dart';
-import 'package:flutter/foundation.dart';
 
 /// Túnel SSH em Dart puro (`dartssh2`) com port-forward local.
 ///
@@ -354,7 +355,7 @@ class _ActiveTunnel {
     } on Object catch (e) {
       // Porta fechada do outro lado do bastion: derruba só esta conexão — o
       // driver reporta como falha de conexão, que é o que de fato houve.
-      debugPrint('SSH forward to $targetHost:$targetPort failed: $e');
+      sshLog('SSH forward to $targetHost:$targetPort failed: $e');
       await local.close();
       return;
     }

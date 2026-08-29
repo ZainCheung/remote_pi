@@ -10,11 +10,13 @@ import 'package:cockpit/app/cockpit/data/remote/host_shell/posix_host_shell.dart
 import 'package:cockpit/app/cockpit/data/remote/host_shell/windows_host_shell.dart';
 import 'package:cockpit/app/cockpit/data/remote/ssh_known_hosts.dart';
 import 'package:cockpit/app/cockpit/data/remote/ssh_tunnel.dart';
-import 'package:cockpit/app/cockpit/domain/contracts/ssh_tunnel.dart'
-    show HostKeyPrompt, HostKeyVerdict;
 import 'package:cockpit/app/cockpit/domain/entities/remote_host.dart';
 import 'package:cockpit/app/core/utils/platform_kind.dart';
-import 'package:cockpit_core/cockpit_core.dart';
+// O motor de túnel de BANCO também exporta `SshTunnel`/`SshTunnelException`,
+// e este arquivo tem os seus próprios (o túnel do HOST remoto, outra coisa).
+// Esconde os do banco: aqui só interessam os tipos de host key.
+import 'package:cockpit_core/cockpit_core.dart'
+    hide SshTunnel, SshTunnelImpl, SshTunnelException;
 import 'package:cockpit_remote/cockpit_remote.dart';
 
 /// Estado observável da conexão com um host (badge/telas da UI, plano 58).

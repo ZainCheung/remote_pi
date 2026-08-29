@@ -1,3 +1,4 @@
+import 'package:cockpit_core/cockpit_core.dart';
 import 'dart:async' show StreamSubscription, unawaited;
 import 'dart:io';
 
@@ -45,7 +46,6 @@ import 'package:cockpit/app/core/ui/widgets/app_tooltip.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:cockpit/app/core/domain/result.dart';
-import 'package:cockpit/app/cockpit/domain/contracts/ssh_tunnel.dart';
 import 'package:cockpit/app/cockpit/domain/services/db_query_service.dart';
 import 'package:cockpit/app/cockpit/ui/viewmodels/database_viewmodel.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/ssh_prompts.dart';

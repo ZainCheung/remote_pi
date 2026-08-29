@@ -1,4 +1,4 @@
-import '../entities/ssh_tunnel_config.dart';
+import 'ssh_tunnel_config.dart';
 
 /// Ponta local de um túnel ativo: onde o driver de banco deve conectar.
 /// Sempre em `127.0.0.1` — o listener é do nosso processo e nunca é exposto na

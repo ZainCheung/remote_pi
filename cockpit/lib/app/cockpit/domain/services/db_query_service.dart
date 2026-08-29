@@ -6,11 +6,9 @@ import 'package:cockpit/app/cockpit/domain/contracts/db_connection_store.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/db_driver.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/mongo_database_store.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/nosql_runner.dart';
-import 'package:cockpit/app/cockpit/domain/contracts/ssh_tunnel.dart';
 import 'package:cockpit/app/cockpit/domain/db_schema_sql.dart';
 import 'package:cockpit/app/cockpit/domain/entities/db_connection.dart';
 import 'package:cockpit/app/cockpit/domain/entities/db_result.dart';
-import 'package:cockpit/app/cockpit/domain/entities/ssh_tunnel_config.dart';
 
 /// Executa uma query SQL num host remoto (plano 58, Wave 4). Implementado
 /// pelo app (fala com o `cockpit-server` via `RemoteDbService`); o

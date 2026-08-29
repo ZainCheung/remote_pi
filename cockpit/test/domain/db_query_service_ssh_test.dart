@@ -1,10 +1,9 @@
+import 'package:cockpit_core/cockpit_core.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/db_connection_store.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/db_driver.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/nosql_runner.dart';
-import 'package:cockpit/app/cockpit/domain/contracts/ssh_tunnel.dart';
 import 'package:cockpit/app/cockpit/domain/entities/db_connection.dart';
 import 'package:cockpit/app/cockpit/domain/entities/db_result.dart';
-import 'package:cockpit/app/cockpit/domain/entities/ssh_tunnel_config.dart';
 import 'package:cockpit/app/cockpit/domain/services/db_query_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
