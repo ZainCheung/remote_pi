@@ -24,6 +24,28 @@ As versões seguem o `version:` do `pubspec.yaml` (SSOT). O campo `notes` do
     linhas não-vazias — o começo da seção deve fazer sentido sozinho.
 -->
 
+## [1.28.19] - 2026-08-29
+
+**Still a beta for the upcoming 2.0.0.** The database passwords stored on a
+remote host are no longer kept as plain text on disk.
+
+### Changed
+
+- **The host's database password store is now encrypted.** Passwords that a
+  client saves on a remote host used to sit in a plain-text file. They are now
+  encrypted (AES-GCM) in the same file, with a product key built into the app -
+  the same approach DBeaver takes for its saved credentials. Nothing to do on
+  your side: an existing store keeps working and is rewritten encrypted the
+  next time you save a password.
+
+  Worth knowing what this does and does not cover. It takes the secret out of
+  plain text on disk, which is what protects you from the realistic accident -
+  a backup, a synced folder, a search across files, a screenshot. It is not a
+  defense against someone already running programs under your account on the
+  host: the key ships with the app, and it has to, because the server starts
+  over SSH with nobody there to type anything. Anyone with that level of access
+  to the host can reach the databases through it regardless.
+
 ## [1.28.18] - 2026-08-29
 
 **Still a beta for the upcoming 2.0.0.** Remote hosts get two fixes that made
