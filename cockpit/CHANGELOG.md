@@ -24,6 +24,44 @@ As versões seguem o `version:` do `pubspec.yaml` (SSOT). O campo `notes` do
     linhas não-vazias — o começo da seção deve fazer sentido sozinho.
 -->
 
+## [1.28.18] - 2026-08-29
+
+**Still a beta for the upcoming 2.0.0.** Remote hosts get two fixes that made
+them unusable in common setups - password login and remote databases - plus a
+way to close tabs from the internal CLI.
+
+### Fixed
+
+- **Remote hosts registered with a password now actually use it.** The password
+  was saved correctly but never offered: SSH tried key authentication first and
+  the stored password was never reached, so the connection failed with
+  "Permission denied (publickey)" or "Too many authentication failures". Exactly
+  the case of someone who chooses password *because* their key does not work.
+- **Databases of a remote workspace now work from any client.** The connection
+  was defined on the host and the query ran on the host, but the password was
+  looked up on the client under a key derived per machine - so a connection set
+  up on one computer was never found from another, and it silently connected
+  without a password. The password now lives on the host, next to the database
+  it opens, and never travels over the wire. Saving or editing a connection of a
+  remote workspace also works now; before, it failed before writing anything.
+  A connection you already had keeps working: open it once and the old password
+  is moved to the host for you.
+- **Adding a workspace no longer repeats itself.** The "+" menu said "New local
+  workspace" / "New remote workspace" on both entries; it now reads **Local** and
+  **Remote**.
+
+### Added
+
+- **`cockpit close-tab`** in the internal CLI - the counterpart of `new-tab`,
+  which could open tabs but never close them. Takes a tab id or a stable tab
+  label; with no target it closes the tab you are in.
+
+### Known limitation
+
+- A database connection that goes through an **SSH tunnel** (bastion) still does
+  not work from a remote workspace: the tunnel is described on the host but
+  nothing opens it there yet. Connections without a tunnel are unaffected.
+
 ## [1.28.17] - 2026-08-27
 
 **Still a beta for the upcoming 2.0.0.** Three Windows fixes, all reproduced and
