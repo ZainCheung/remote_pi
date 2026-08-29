@@ -14,3 +14,4 @@ export 'src/ssh/ssh_tunnel.dart';
 export 'src/ssh/ssh_tunnel_impl.dart';
 export 'src/ssh/ssh_key_pem.dart';
 export 'src/ssh/local_socks_server.dart';
+export 'src/ssh/file_ssh_host_key_store.dart';

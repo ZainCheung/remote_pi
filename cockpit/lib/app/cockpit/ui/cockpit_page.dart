@@ -256,7 +256,16 @@ class _CockpitPageState extends State<CockpitPage> {
       }
       // As conexões de um workspace remoto vivem no host
       // (.cockpit/databases.json) — resolução da query E leitura do painel.
-      ..remoteConnectionsFor = _remoteConnectionsFor;
+      ..remoteConnectionsFor = _remoteConnectionsFor
+      // Túnel SSH da conexão roda no HOST (onda 2), e o servidor não pergunta
+      // nada: ele falha com o fingerprint. O diálogo é aqui, e o "confio" vai
+      // pro store do host — decisão no humano, estado onde o túnel abre.
+      ..remoteHostKeyTrustFor = (wsId, endpoint, fingerprint) async {
+        final host = _vm.remoteHostForWorkspace(wsId);
+        if (host == null) return;
+        final db = await _vm.remoteHosts.dbServiceFor(host);
+        await db.trustHostKey(endpoint: endpoint, fingerprint: fingerprint);
+      };
     context.read<DatabaseViewModel>()
       ..remoteConnectionsFor = _remoteConnectionsFor
       // Escrita da config de banco de um workspace remoto: definição por

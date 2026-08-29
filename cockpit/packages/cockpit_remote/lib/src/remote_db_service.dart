@@ -2,6 +2,17 @@ import 'package:cockpit_core/cockpit_core.dart';
 
 import 'remote_connection.dart';
 
+/// Qual segredo da conexão o comando endereça: a senha do banco ou a
+/// passphrase da chave SSH do túnel. São distintos, e a conexão pode ter um
+/// sem o outro.
+enum DbSecretKind {
+  password('password'),
+  sshPassphrase('sshPassphrase');
+
+  const DbSecretKind(this.wire);
+  final String wire;
+}
+
 /// [DbService] via protocolo (plano 58, Wave 4): manda o descritor de conexão
 /// + SQL ao servidor, que executa no host e devolve o resultado já-JSON.
 class RemoteDbService implements DbService {
@@ -80,12 +91,14 @@ class RemoteDbService implements DbService {
     required String workspaceRoot,
     required String connName,
     required String value,
+    DbSecretKind kind = DbSecretKind.password,
   }) async {
     try {
       await _connection.call('db.secretSet', {
         'root': workspaceRoot,
         'conn': connName,
         'value': value,
+        'kind': kind.wire,
       });
     } on RemoteRpcException catch (e) {
       throw _mapError(e);
@@ -117,11 +130,31 @@ class RemoteDbService implements DbService {
   Future<void> deleteSecret({
     required String workspaceRoot,
     required String connName,
+    DbSecretKind kind = DbSecretKind.password,
   }) async {
     try {
       await _connection.call('db.secretDelete', {
         'root': workspaceRoot,
         'conn': connName,
+        'kind': kind.wire,
+      });
+    } on RemoteRpcException catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  /// Confia numa host key de bastion **no host**.
+  ///
+  /// Write-only, como o cofre: a decisão é do humano aqui (é o cliente que tem
+  /// o diálogo com o fingerprint), o estado fica lá — é lá que o túnel abre.
+  Future<void> trustHostKey({
+    required String endpoint,
+    required String fingerprint,
+  }) async {
+    try {
+      await _connection.call('db.hostKeyTrust', {
+        'endpoint': endpoint,
+        'fingerprint': fingerprint,
       });
     } on RemoteRpcException catch (e) {
       throw _mapError(e);

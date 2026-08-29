@@ -300,11 +300,16 @@ class DatabaseViewModel extends ChangeNotifier {
       );
       service.forgetPassword(root, previousName ?? conn.name);
       service.forgetPassword(root, conn.name);
-      // Sem `_syncSshPassphrase` aqui: o túnel SSH da conexão não funciona a
-      // partir de um cliente remoto (o descritor não carrega o bloco `ssh`, e
-      // quem abriria o bastion é o host — plano 62, onda 2). Guardar a
-      // passphrase no cofre DESTA máquina seria repetir exatamente o erro que
-      // este plano veio corrigir para a senha.
+      // Passphrase da chave SSH também vai pro cofre do HOST (onda 2): quem
+      // abre o bastion é ele, com a chave privada de lá.
+      await _syncRemoteSshPassphrase(
+        remote,
+        root,
+        conn,
+        sshPassphrase,
+        wsId: wsId,
+        previousName: previousName,
+      );
       await reload();
       return;
     }
@@ -423,6 +428,38 @@ class DatabaseViewModel extends ChangeNotifier {
     if (legacy != null && legacy.isNotEmpty) {
       await remote.setSecret(root, conn.name, legacy);
       await _secrets.delete(legacyKey);
+    }
+  }
+
+  /// Passphrase da chave SSH de uma conexão REMOTA: mesma regra da senha —
+  /// desligar o switch apaga, campo vazio mantém, e o que ficou no cofre desta
+  /// máquina migra.
+  Future<void> _syncRemoteSshPassphrase(
+    RemoteDbWriter remote,
+    String root,
+    DbConnection conn,
+    String? passphrase, {
+    required String wsId,
+    String? previousName,
+  }) async {
+    final save = conn.ssh?.savePassphrase ?? false;
+    if (!save) {
+      await remote.setSshPassphrase(root, conn.name, null);
+      return;
+    }
+    if (passphrase != null && passphrase.isNotEmpty) {
+      await remote.setSshPassphrase(root, conn.name, passphrase);
+      await _secrets.delete(
+        DbQueryService.sshSecretKey(root, previousName ?? conn.name),
+      );
+      return;
+    }
+    final legacy = await _secrets.read(
+      DbQueryService.sshSecretKey(root, previousName ?? conn.name),
+      legacyKey: DbQueryService.legacySshSecretKey(wsId, previousName ?? conn.name),
+    );
+    if (legacy != null && legacy.isNotEmpty) {
+      await remote.setSshPassphrase(root, conn.name, legacy);
     }
   }
 

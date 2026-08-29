@@ -224,6 +224,8 @@ class SshTunnelImpl implements SshTunnel {
     // pra virar mensagem honesta depois (dentro do handler não dá pra lançar
     // sem o dartssh2 traduzir tudo pra um erro de handshake genérico).
     String? rejection;
+    String? rejectedEndpoint;
+    String? rejectedFingerprint;
 
     final SSHClient client;
     try {
@@ -243,6 +245,10 @@ class SshTunnelImpl implements SshTunnel {
         authTimeout: _handshakeTimeout,
         onVerifyHostKey: (type, fingerprint) async {
           final printed = utf8.decode(fingerprint);
+          // Guardados para a exceção: são o que permite oferecer "confiar"
+          // num cliente do outro lado do protocolo (plano 62, onda 2).
+          rejectedEndpoint = config.endpoint;
+          rejectedFingerprint = printed;
           final known = _hostKeys.trusted(config.endpoint);
           if (known == printed) return true;
           if (known != null) {
@@ -284,6 +290,8 @@ class SshTunnelImpl implements SshTunnel {
         throw SshTunnelException(
           reason.substring(0, split),
           reason.substring(split + 1),
+          endpoint: rejectedEndpoint,
+          fingerprint: rejectedFingerprint,
         );
       }
       if (e is SSHAuthFailError || e is SSHAuthAbortError) {
