@@ -52,13 +52,6 @@ const STEPS: Step[] = [
 const EXTRAS: Step[] = [
   {
     star: true,
-    tag: "integration",
-    title: "Mini Router with Pi and Cockpit",
-    href: "/tutorials/mini-router",
-    desc: "Use Mini Router as Pi's OpenAI-compatible provider, then operate the agent through Remote Pi and Cockpit.",
-  },
-  {
-    star: true,
     tag: "extra",
     title: "Layouts and tasks in Cockpit",
     href: "/tutorials/cockpit-layouts",
