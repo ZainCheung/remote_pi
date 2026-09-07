@@ -58,8 +58,9 @@ independente do nome.
   divisor. **Salva sozinho** (~1,5 s depois de parar de digitar, e ao trocar de
   nota ou fechar a aba); `⌘S` força na hora. Não há modo de leitura separado.
 - **Imagens**: colar (`⌘V`) ou arrastar no editor grava em `_assets/` dentro do
-  caderno e insere `![](_assets/nome.png)`. O preview resolve o caminho
-  relativo à pasta. Apagar nota não apaga assets.
+  caderno e insere `![](_assets/nome.png)`. A imagem é desenhada **inline no
+  editor** (altura limitada) em toda linha fora do cursor; na linha do cursor
+  volta a ser a sintaxe, pra editar ou apagar. Apagar nota não apaga assets.
 - Botão direito numa nota → **Apagar** (vai pra lixeira).
 - A pasta é observada (local): nota escrita por fora aparece sozinha. No
   workspace remoto use o botão de recarregar.

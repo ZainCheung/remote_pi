@@ -58,7 +58,9 @@ class _NotebookViewState extends State<NotebookView> {
 
   bool _dirty = false;
   bool _saving = false;
-  final MarkdownEditingController _editor = MarkdownEditingController();
+  late final MarkdownEditingController _editor = MarkdownEditingController(
+    imageBaseDir: widget.session.path,
+  );
   final FocusNode _editorFocus = FocusNode(debugLabel: 'notebookEditor');
   final TextEditingController _search = TextEditingController();
   int _seenReload = 0;

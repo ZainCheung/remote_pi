@@ -145,4 +145,32 @@ void main() {
     );
     expect(n.text, '- ab');
   });
+
+  testWidgets('image off the cursor line becomes an inline widget', (
+    tester,
+  ) async {
+    final c = MarkdownEditingController(
+      text: 'x\n![](_assets/nope.png)',
+      imageBaseDir: '/tmp/none.notebook',
+    );
+    late TextSpan span;
+    await tester.pumpWidget(
+      ShadcnApp(
+        theme: buildTheme(brightness: Brightness.dark),
+        home: Builder(
+          builder: (context) {
+            span = c.buildTextSpan(context: context, withComposing: false);
+            return const SizedBox();
+          },
+        ),
+      ),
+    );
+    var widgets = 0;
+    span.visitChildren((s) {
+      if (s is WidgetSpan) widgets++;
+      return true;
+    });
+    expect(widgets, 1);
+    expect(span.toPlainText().length, c.text.length);
+  });
 }

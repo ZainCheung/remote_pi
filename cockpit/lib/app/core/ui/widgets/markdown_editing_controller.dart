@@ -1,4 +1,6 @@
 import 'package:cockpit/app/core/ui/themes/themes.dart';
+import 'dart:io' show File;
+
 import 'package:flutter/material.dart' show Icons;
 import 'package:flutter/widgets.dart';
 
@@ -16,9 +18,13 @@ import 'package:flutter/widgets.dart';
 /// parser é por linha (blocos) + regex inline, tolerante — nunca lança e nunca
 /// muda o texto.
 class MarkdownEditingController extends TextEditingController {
-  MarkdownEditingController({super.text}) {
+  MarkdownEditingController({super.text, this.imageBaseDir}) {
     selection = const TextSelection.collapsed(offset: 0);
   }
+
+  /// Pasta base para `![](caminho relativo)`. `null` = imagens só como texto.
+  /// Mutável: a mesma controller serve várias notas do mesmo caderno.
+  String? imageBaseDir;
 
   static final _heading = RegExp(r'^(#{1,6})( )(.*)$');
   static final _task = RegExp(r'^(\s*)([-*+] \[[ xX]\] )(.*)$');
@@ -296,7 +302,7 @@ class MarkdownEditingController extends TextEditingController {
     );
   }
 
-  static List<InlineSpan> _inlineSpans(
+  List<InlineSpan> _inlineSpans(
     String s,
     TextStyle base,
     AppColors colors,
@@ -351,14 +357,28 @@ class MarkdownEditingController extends TextEditingController {
           ),
         );
       } else if (m.group(6) != null) {
-        // ![alt](src) — imagem: sempre esmaecida (nunca escondida, senão a
-        // linha sumiria; a figura em si aparece na leitura).
-        out.add(
-          TextSpan(
-            text: tok,
-            style: base.copyWith(color: colors.text3),
-          ),
-        );
+        // ![alt](src) — na linha do cursor mostra a sintaxe (esmaecida) pra
+        // editar; fora dela esconde o texto e desenha a imagem num WidgetSpan
+        // sobre o primeiro caractere (mesma técnica da caixa do checklist).
+        final hiddenLine = marker.fontSize == 0.1;
+        final src = _imageSrc(tok);
+        final path = _resolveImage(src);
+        if (!hiddenLine || path == null) {
+          out.add(
+            TextSpan(
+              text: tok,
+              style: base.copyWith(color: colors.text3),
+            ),
+          );
+        } else {
+          out.add(
+            WidgetSpan(
+              alignment: PlaceholderAlignment.bottom,
+              child: _InlineImage(path: path, alt: src),
+            ),
+          );
+          out.add(TextSpan(text: tok.substring(1), style: marker));
+        }
       } else {
         // [texto](url) — texto como link, url esmaecida.
         final close = tok.indexOf('](');
@@ -382,6 +402,25 @@ class MarkdownEditingController extends TextEditingController {
     return out;
   }
 
+  static String _imageSrc(String tok) {
+    final open = tok.indexOf('](');
+    return tok.substring(open + 2, tok.length - 1).trim();
+  }
+
+  /// Caminho absoluto da imagem local, ou `null` pra http(s)/sem base.
+  String? _resolveImage(String src) {
+    if (src.isEmpty ||
+        src.startsWith('http://') ||
+        src.startsWith('https://')) {
+      return null;
+    }
+    final decoded = Uri.decodeFull(src);
+    if (decoded.startsWith('/')) return decoded;
+    final base = imageBaseDir;
+    if (base == null || base.isEmpty) return null;
+    return '$base${base.endsWith('/') ? '' : '/'}$decoded';
+  }
+
   static void _wrapped(
     List<InlineSpan> out,
     String tok,
@@ -392,5 +431,40 @@ class MarkdownEditingController extends TextEditingController {
     out.add(TextSpan(text: tok.substring(0, n), style: marker));
     out.add(TextSpan(text: tok.substring(n, tok.length - n), style: inner));
     out.add(TextSpan(text: tok.substring(tok.length - n), style: marker));
+  }
+}
+
+/// Imagem inline do editor. `FileImage` é chaveado por caminho no ImageCache
+/// do Flutter, então reconstruir a cada tecla não decodifica de novo. Altura
+/// limitada pra não engolir a tela; erro de leitura mostra o caminho.
+class _InlineImage extends StatelessWidget {
+  const _InlineImage({required this.path, required this.alt});
+  final String path;
+  final String alt;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 260, maxWidth: 560),
+          child: Image(
+            image: FileImage(File(path)),
+            fit: BoxFit.contain,
+            alignment: Alignment.centerLeft,
+            errorBuilder: (_, _, _) => Text(
+              alt,
+              style: context.typo.mono.copyWith(
+                fontSize: 11,
+                color: colors.text3,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
