@@ -6,14 +6,13 @@ import 'package:cockpit/app/cockpit/domain/entities/notebook_document.dart';
 import 'package:cockpit/app/cockpit/ui/session/notebook_session.dart';
 import 'package:cockpit/app/cockpit/ui/viewmodels/cockpit_viewmodel.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/agent_markdown.dart';
-import 'package:cockpit/app/cockpit/ui/widgets/code_editor.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/confirm_dialog.dart';
 import 'package:cockpit/app/core/domain/result.dart';
 import 'package:cockpit/app/core/ui/file_operation_error_message.dart';
 import 'package:cockpit/app/core/ui/themes/themes.dart';
 import 'package:cockpit/app/core/ui/widgets/app_menu.dart';
 import 'package:cockpit/app/core/ui/widgets/app_tooltip.dart';
-import 'package:cockpit/app/core/ui/widgets/code_editing_controller.dart';
+import 'package:cockpit/app/core/ui/widgets/markdown_editing_controller.dart';
 import 'package:cockpit/app/core/ui/widgets/hover_tap.dart';
 import 'package:cockpit/app/core/utils/path_utils.dart';
 import 'package:cockpit/i18n/strings.g.dart';
@@ -57,13 +56,13 @@ class _NotebookViewState extends State<NotebookView> {
   final TextEditingController _titleCtrl = TextEditingController();
   final FocusNode _titleFocus = FocusNode(debugLabel: 'notebookTitle');
   String _query = '';
-  bool _editing = false;
+
+  /// `true` (padrão) = editor markdown ao vivo; `false` = leitura renderizada
+  /// (imagens visíveis). Um só modo de escrita — não há "entrar em edição".
+  bool _editing = true;
   bool _dirty = false;
   bool _saving = false;
-  late final CodeEditingController _editor = CodeEditingController(
-    text: '',
-    language: 'markdown',
-  );
+  final MarkdownEditingController _editor = MarkdownEditingController();
   final FocusNode _editorFocus = FocusNode(debugLabel: 'notebookEditor');
   final TextEditingController _search = TextEditingController();
   int _seenReload = 0;
@@ -175,7 +174,6 @@ class _NotebookViewState extends State<NotebookView> {
     }
     setState(() {
       _selectedPath = n.path;
-      _editing = false;
       _syncEditor();
     });
   }
@@ -269,10 +267,7 @@ class _NotebookViewState extends State<NotebookView> {
       );
       return;
     }
-    if (_selectedPath == n.path) {
-      _selectedPath = null;
-      _editing = false;
-    }
+    if (_selectedPath == n.path) _selectedPath = null;
     await _load();
   }
 
@@ -348,7 +343,6 @@ class _NotebookViewState extends State<NotebookView> {
       );
       return;
     }
-    setState(() => _editing = false);
     await _load();
   }
 
@@ -1026,7 +1020,7 @@ class _NoteColumn extends StatelessWidget {
   final bool editing;
   final bool dirty;
   final bool saving;
-  final CodeEditingController editor;
+  final MarkdownEditingController editor;
   final FocusNode editorFocus;
   final TextEditingController tagInput;
   final TextEditingController titleCtrl;
@@ -1150,11 +1144,27 @@ class _NoteColumn extends StatelessWidget {
                         control: true,
                       ): onPaste,
                     },
+                    // Material sem decoração (mesma razão do título). O
+                    // controller pinta o markdown ao vivo.
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
-                      child: CodeEditor(
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                      child: material.TextField(
                         controller: editor,
                         focusNode: editorFocus,
+                        maxLines: null,
+                        expands: true,
+                        textAlignVertical: TextAlignVertical.top,
+                        keyboardType: TextInputType.multiline,
+                        cursorColor: colors.text,
+                        style: context.typo.body.copyWith(
+                          color: colors.text,
+                          height: 1.55,
+                        ),
+                        decoration: const material.InputDecoration(
+                          isCollapsed: true,
+                          border: material.InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
+                        ),
                       ),
                     ),
                   )
