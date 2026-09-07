@@ -1,8 +1,8 @@
 # 62 — Cockpit: aba Gallery (documentos especiais)
 
 > **Status**: PARCIAL. Passos 1 e 2 implementados (2026-09-07). Mermaid
-> cortado. Caderno (passo 4) com **design aprovado**; 4a e CLI feitos, faltam 4b
-> (imagens), 4c (edição rica) e 4d (links).
+> cortado. Caderno (passo 4) com **design aprovado**; 4a, 4b, CLI e a barra de
+> formatação feitos; faltam WYSIWYG (4c) e links (4d).
 
 ## Contexto
 
