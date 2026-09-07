@@ -20,7 +20,8 @@ import 'package:pasteboard/pasteboard.dart';
 import 'package:flutter/material.dart'
     as material
     show TextField, InputDecoration, InputBorder;
-import 'package:flutter/services.dart' show LogicalKeyboardKey;
+import 'package:flutter/services.dart'
+    show FilteringTextInputFormatter, LogicalKeyboardKey;
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
@@ -67,6 +68,7 @@ class _NotebookViewState extends State<NotebookView> {
 
   /// Autosave: reinicia a cada tecla; grava quando o usuário para de digitar.
   Timer? _autosave;
+  Timer? _titleAutosave;
   static const _autosaveDelay = Duration(milliseconds: 1500);
 
   CockpitViewModel get _vm => context.read<CockpitViewModel>();
@@ -77,6 +79,7 @@ class _NotebookViewState extends State<NotebookView> {
     _seenReload = widget.session.reloadTick;
     widget.session.addListener(_onSession);
     _editor.addListener(_onEdited);
+    _titleCtrl.addListener(_onTitleEdited);
     _load();
     // Nota escrita pelo agente (ou pelo Obsidian) aparece sozinha.
     _watch = _vm.watchFolder(widget.session.path).listen((_) {
@@ -97,7 +100,10 @@ class _NotebookViewState extends State<NotebookView> {
     _editorFocus.dispose();
     _search.dispose();
     _tagInput.dispose();
-    _titleCtrl.dispose();
+    _titleAutosave?.cancel();
+    _titleCtrl
+      ..removeListener(_onTitleEdited)
+      ..dispose();
     _titleFocus.dispose();
     super.dispose();
   }
@@ -117,10 +123,24 @@ class _NotebookViewState extends State<NotebookView> {
     if (dirty) _autosave = Timer(_autosaveDelay, _save);
   }
 
+  /// Título: mesmo debounce do corpo; grava quando parar de digitar.
+  void _onTitleEdited() {
+    final sel = _selected;
+    if (sel == null || !_titleFocus.hasFocus) return;
+    _titleAutosave?.cancel();
+    if (_titleCtrl.text.trim() != sel.title) {
+      _titleAutosave = Timer(_autosaveDelay, _commitTitle);
+    }
+  }
+
   /// Grava agora o que estiver pendente (troca de nota, fechar a aba).
   void _flush() {
     _autosave?.cancel();
+    _titleAutosave?.cancel();
     if (_dirty && !_saving) _save();
+    if (_selected != null && _titleCtrl.text.trim() != _selected!.title) {
+      _commitTitle();
+    }
   }
 
   NotebookNote? get _selected {
@@ -175,6 +195,10 @@ class _NotebookViewState extends State<NotebookView> {
     if (_dirty) {
       _autosave?.cancel();
       await _save();
+      if (!mounted) return;
+    }
+    if (_selected != null && _titleCtrl.text.trim() != _selected!.title) {
+      await _commitTitle();
       if (!mounted) return;
     }
     setState(() {
@@ -287,15 +311,19 @@ class _NotebookViewState extends State<NotebookView> {
     _titleFocus.requestFocus();
   }
 
-  /// Enter ou perder o foco grava o título (uma linha; Enter não quebra).
+  /// Grava o título (autosave, perder o foco ou troca de nota). Quebra de
+  /// linha nunca entra (formatter), mas o campo **quebra visualmente** quando
+  /// o título é longo.
   Future<void> _commitTitle() async {
+    _titleAutosave?.cancel();
     final sel = _selected;
     final title = _titleCtrl.text.trim();
     if (sel == null || _saving) return;
-    if (title.isEmpty || title == sel.title) {
-      _titleCtrl.text = sel.title;
+    if (title.isEmpty) {
+      if (!_titleFocus.hasFocus) _titleCtrl.text = sel.title;
       return;
     }
+    if (title == sel.title) return;
     final base = NotebookNote.replaceBody(sel.raw, _editor.text);
     setState(() => _saving = true);
     final content = NotebookNote.touchUpdated(
@@ -1055,12 +1083,17 @@ class _NoteColumn extends StatelessWidget {
                       },
                       // Sempre um campo (sem alternar texto ↔ campo). Material
                       // sem decoração: o TextField do shadcn sempre desenha
-                      // anel de foco + fundo. Uma linha: Enter grava, não
-                      // quebra; título longo rola horizontalmente.
+                      // anel de foco + fundo. Título longo quebra em várias
+                      // linhas visuais; Enter não insere quebra (o título é um
+                      // valor de uma linha no frontmatter).
                       child: material.TextField(
                         controller: titleCtrl,
                         focusNode: titleFocus,
-                        maxLines: 1,
+                        maxLines: null,
+                        keyboardType: TextInputType.text,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.deny('\n'),
+                        ],
                         cursorColor: colors.text,
                         style: context.typo.label.copyWith(
                           fontSize: 18,
