@@ -18,8 +18,6 @@ const Map<String, String> _extensionOverrides = {
   'kanban': 'todo',
   'http': 'http',
   'rest': 'http',
-  // Pasta `.notebook` aparece como item único na árvore (caderno).
-  'notebook': 'folder-docs',
 };
 
 String fileIconName(String fileName) {
@@ -90,11 +88,12 @@ class FileTypeIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // `.ckp` (layout de orquestração) e a pasta `.cockpit/` (config do app)
+    // `.ckp` (layout), `.notebook` (caderno) e a pasta `.cockpit/` (config)
     // usam o logo do próprio Cockpit — não são tipos que o material-icon-theme
     // conheça.
     final lower = name.toLowerCase();
-    if ((!_isFolder && lower.endsWith('.ckp')) ||
+    if (lower.endsWith('.ckp') ||
+        lower.endsWith('.notebook') ||
         (_isFolder && lower == '.cockpit')) {
       return Image.asset(
         'assets/branding/cockpit_logo.png',
