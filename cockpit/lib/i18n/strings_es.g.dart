@@ -1238,7 +1238,6 @@ class _Translations$cockpit$notebook$es extends Translations$cockpit$notebook$en
 	@override String get selectNote => 'Selecciona una nota';
 	@override String get reload => 'Recargar del disco';
 	@override String get untagged => 'sin tag';
-	@override String noteCount({required Object count}) => '${count} notas';
 	@override String get saveFailed => 'No se pudo guardar la nota';
 	@override String get createFailed => 'No se pudo crear la nota';
 	@override String get addTag => 'añadir tag';
@@ -2645,7 +2644,6 @@ extension on TranslationsEs {
 			'cockpit.notebook.selectNote' => 'Selecciona una nota',
 			'cockpit.notebook.reload' => 'Recargar del disco',
 			'cockpit.notebook.untagged' => 'sin tag',
-			'cockpit.notebook.noteCount' => ({required Object count}) => '${count} notas',
 			'cockpit.notebook.saveFailed' => 'No se pudo guardar la nota',
 			'cockpit.notebook.createFailed' => 'No se pudo crear la nota',
 			'cockpit.notebook.addTag' => 'añadir tag',
@@ -3002,9 +3000,9 @@ extension on TranslationsEs {
 			'automation.error.noFileChanges' => 'No hay cambios que describir en este archivo.',
 			'automation.error.noStagedChanges' => 'No hay cambios en stage que describir.',
 			'automation.error.multipleRepositories' => 'Los cambios en stage pertenecen a varios repositorios. Genéralos por separado.',
+			'automation.error.diffUnavailable' => 'No se pudo leer el diff.',
 			_ => null,
 		} ?? switch (path) {
-			'automation.error.diffUnavailable' => 'No se pudo leer el diff.',
 			'automation.error.notConfigured' => 'Configura un harness de mensajes de commit en Configuración.',
 			'fileOperation.error.alreadyExists' => ({required Object name}) => 'Ya existe: “${name}”.',
 			'fileOperation.error.notFound' => ({required Object name}) => 'No se encontró: “${name}”.',

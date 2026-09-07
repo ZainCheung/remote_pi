@@ -2519,9 +2519,6 @@ class Translations$cockpit$notebook$en {
 	/// en: 'untagged'
 	String get untagged => 'untagged';
 
-	/// en: '${count} notes'
-	String noteCount({required Object count}) => '${count} notes';
-
 	/// en: 'Could not save the note'
 	String get saveFailed => 'Could not save the note';
 
@@ -4757,7 +4754,6 @@ extension on Translations {
 			'cockpit.notebook.selectNote' => 'Select a note',
 			'cockpit.notebook.reload' => 'Reload from disk',
 			'cockpit.notebook.untagged' => 'untagged',
-			'cockpit.notebook.noteCount' => ({required Object count}) => '${count} notes',
 			'cockpit.notebook.saveFailed' => 'Could not save the note',
 			'cockpit.notebook.createFailed' => 'Could not create the note',
 			'cockpit.notebook.addTag' => 'add tag',
@@ -5114,9 +5110,9 @@ extension on Translations {
 			'automation.error.noFileChanges' => 'There are no changes to describe for this file.',
 			'automation.error.noStagedChanges' => 'There are no staged changes to describe.',
 			'automation.error.multipleRepositories' => 'Staged changes belong to multiple repositories. Generate them separately.',
+			'automation.error.diffUnavailable' => 'Could not read the diff.',
 			_ => null,
 		} ?? switch (path) {
-			'automation.error.diffUnavailable' => 'Could not read the diff.',
 			'automation.error.notConfigured' => 'Configure a commit message harness in Settings.',
 			'fileOperation.error.alreadyExists' => ({required Object name}) => 'Already exists: “${name}”.',
 			'fileOperation.error.notFound' => ({required Object name}) => 'Not found: “${name}”.',

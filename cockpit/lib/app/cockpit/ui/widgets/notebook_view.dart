@@ -6,6 +6,8 @@ import 'package:cockpit/app/cockpit/domain/entities/notebook_document.dart';
 import 'package:cockpit/app/cockpit/ui/session/notebook_session.dart';
 import 'package:cockpit/app/cockpit/ui/viewmodels/cockpit_viewmodel.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/confirm_dialog.dart';
+import 'package:cockpit/app/cockpit/ui/widgets/kanban_board_view.dart'
+    show kanbanDisplayPath;
 import 'package:cockpit/app/core/domain/result.dart';
 import 'package:cockpit/app/core/ui/file_operation_error_message.dart';
 import 'package:cockpit/app/core/ui/themes/themes.dart';
@@ -37,9 +39,14 @@ class NotebookView extends StatefulWidget {
     required this.session,
     required this.active,
     required this.focused,
+    required this.workspaceRoot,
   });
 
   final NotebookSession session;
+
+  /// Raiz do workspace — o cabeçalho mostra o caminho do caderno relativo a
+  /// ela (mesma regra do `.kanban`).
+  final String workspaceRoot;
   final bool active;
   final bool focused;
 
@@ -877,8 +884,10 @@ class _NotebookViewState extends State<NotebookView> {
         child: Column(
           children: [
             _Header(
-              title: widget.session.title,
-              count: _notes.length,
+              path: kanbanDisplayPath(
+                widget.session.path,
+                widget.workspaceRoot,
+              ),
               search: _search,
               onQuery: (q) => setState(() => _query = q),
               onNew: _newNote,
@@ -949,16 +958,15 @@ class _NotebookViewState extends State<NotebookView> {
 
 class _Header extends StatelessWidget {
   const _Header({
-    required this.title,
-    required this.count,
+    required this.path,
     required this.search,
     required this.onQuery,
     required this.onNew,
     required this.onReload,
   });
 
-  final String title;
-  final int count;
+  /// Caminho do caderno relativo ao workspace (ou `~/…`, ou absoluto).
+  final String path;
   final TextEditingController search;
   final ValueChanged<String> onQuery;
   final VoidCallback onNew;
@@ -976,22 +984,19 @@ class _Header extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.menu_book_outlined, size: 16, color: colors.text2),
-          const SizedBox(width: 8),
-          Text(
-            title,
-            style: context.typo.label.copyWith(
-              color: colors.text,
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
+          // Caminho relativo ao workspace, como a barra do `.kanban`. Expanded
+          // (não Spacer) pra absorver a sobra e empurrar busca/botões à borda.
+          Expanded(
+            child: Text(
+              path,
+              overflow: TextOverflow.ellipsis,
+              style: context.typo.mono.copyWith(
+                fontSize: 10.5,
+                color: colors.text3,
+              ),
             ),
           ),
-          const SizedBox(width: 8),
-          Text(
-            tr.noteCount(count: count),
-            style: context.typo.label.copyWith(color: colors.text3),
-          ),
-          const Spacer(),
+          const SizedBox(width: 12),
           SizedBox(
             width: 220,
             height: 28,

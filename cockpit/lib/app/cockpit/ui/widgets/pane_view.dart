@@ -1539,10 +1539,12 @@ class _PaneBodyState extends State<_PaneBody> {
 
     // Caderno `.notebook` (plano 62, passo 4): lista de notas | nota | tags.
     if (item is NotebookSession) {
+      final vm = context.read<CockpitViewModel>();
       return NotebookView(
         session: item,
         active: widget.active,
         focused: widget.focused,
+        workspaceRoot: vm.projectRootOf(item.projectId) ?? '',
       );
     }
 

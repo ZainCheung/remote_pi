@@ -802,7 +802,6 @@
       "selectNote": "Selecione uma nota",
       "reload": "Recarregar do disco",
       "untagged": "sem tag",
-      "noteCount": "${count} notas",
       "saveFailed": "Não foi possível salvar a nota",
       "createFailed": "Não foi possível criar a nota",
       "addTag": "adicionar tag",

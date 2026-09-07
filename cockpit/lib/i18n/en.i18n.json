@@ -802,7 +802,6 @@
       "selectNote": "Select a note",
       "reload": "Reload from disk",
       "untagged": "untagged",
-      "noteCount": "${count} notes",
       "saveFailed": "Could not save the note",
       "createFailed": "Could not create the note",
       "addTag": "add tag",
