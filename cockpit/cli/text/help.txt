@@ -31,6 +31,8 @@ USAGE:
                                                <url> (system browser on Linux)
   cockpit orchestrate <file.ckp> [--json]      apply a .ckp pane layout (open
                                                terminals/splits + run commands)
+  cockpit note <add|list> <dir.notebook> ...   write/list notes in a notebook
+                                               folder (see `cockpit note --help`)
   cockpit install-skill   [--force]            install the Claude Code skill
   cockpit --help | --version
 
@@ -64,6 +66,13 @@ HTTP (http):
     cockpit http list api/users.http
     cockpit http run  api/users.http --request "Create user"
   Full reference: `cockpit http --help`.
+
+NOTEBOOKS (note):
+  A folder named *.notebook is a notebook: one .md per note, frontmatter with
+  title/tags. The app shows it as a single item and renders it as a notes tab.
+    cockpit note add notes.notebook --title "Túnel SSH" --tag relay --body -
+    cockpit note list notes.notebook
+  Full reference: `cockpit note --help`.
 
 IDS:
   Workspace ids are opaque UUIDs — use `workspacePath` (list-tabs) / `path`

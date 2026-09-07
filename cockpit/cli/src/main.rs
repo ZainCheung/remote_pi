@@ -68,6 +68,7 @@ fn main() {
         "close-tab" => commands::close_tab(args),
         "browse" => commands::browse_url(args),
         "orchestrate" => commands::orchestrate(args),
+        "note" => commands::note(args),
         "install-skill" => commands::install_skill(args),
         // Atalho: `cockpit <arquivo>` (sem verbo) abre o arquivo — o token
         // desconhecido é tratado como caminho. `cockpit open <arquivo>` é a

@@ -277,7 +277,10 @@ pub fn browse_url(args: &[String]) -> ! {
     }
 
     let Some(url) = url.filter(|u| !u.is_empty()) else {
-        die(&format!("cockpit browse: missing <url>\n\n{BROWSE_HELP}"), 2)
+        die(
+            &format!("cockpit browse: missing <url>\n\n{BROWSE_HELP}"),
+            2,
+        )
     };
 
     let mut cmd_args = Map::new();
@@ -1164,5 +1167,151 @@ mod tests {
             take(&args, &mut i, &["--db", "--limit"]),
             Some(("--limit", Some("10".into())))
         );
+    }
+}
+
+// ---- note ---------------------------------------------------------------------
+
+const NOTE_HELP: &str = "cockpit note <add|list> <folder.notebook> [flags]
+  add   --title <text> [--tag <name>]... [--body <text> | --body -]
+        create a note in the notebook (prints its path). `--body -` reads
+        the body from stdin. The `agent` tag is always added — it marks
+        notes written by an agent.
+  list  [--json]   list the notebook's notes (title + tags)
+  A notebook is a folder whose name ends in .notebook; one .md per note.
+  The folder is created if missing.";
+
+pub fn note(args: &[String]) -> ! {
+    if args.is_empty() || args[0] == "--help" || args[0] == "-h" {
+        if args.is_empty() {
+            eprintln!("{NOTE_HELP}");
+            std::process::exit(2);
+        }
+        println!("{NOTE_HELP}");
+        std::process::exit(0);
+    }
+    let sub = args[0].clone();
+    let rest = &args[1..];
+
+    let mut title: Option<String> = None;
+    let mut body: Option<String> = None;
+    let mut tags: Vec<String> = Vec::new();
+    let mut tab_id: Option<String> = None;
+    let mut as_json = false;
+    let mut positionals: Vec<String> = Vec::new();
+
+    let mut i = 0usize;
+    while i < rest.len() {
+        let a = rest[i].as_str();
+        match a {
+            "--help" | "-h" => {
+                println!("{NOTE_HELP}");
+                std::process::exit(0);
+            }
+            "--json" => as_json = true,
+            "--title" | "--tag" | "--body" | "--tab-id" => {
+                if i + 1 >= rest.len() {
+                    die(&format!("cockpit note: {a} requires a value"), 2);
+                }
+                i += 1;
+                let v = rest[i].clone();
+                match a {
+                    "--title" => title = Some(v),
+                    "--tag" => tags.push(v),
+                    "--body" => body = Some(v),
+                    _ => tab_id = Some(v),
+                }
+            }
+            _ => {
+                if let Some(v) = a.strip_prefix("--title=") {
+                    title = Some(v.to_string());
+                } else if let Some(v) = a.strip_prefix("--tag=") {
+                    tags.push(v.to_string());
+                } else if let Some(v) = a.strip_prefix("--body=") {
+                    body = Some(v.to_string());
+                } else if let Some(v) = a.strip_prefix("--tab-id=") {
+                    tab_id = Some(v.to_string());
+                } else if a.starts_with("--") {
+                    die(&format!("cockpit note: unknown flag {a}"), 2);
+                } else {
+                    positionals.push(a.to_string());
+                }
+            }
+        }
+        i += 1;
+    }
+    if positionals.is_empty() {
+        die("cockpit note: missing <folder.notebook>", 2);
+    }
+    let notebook = resolve_path(&positionals[0]);
+    if !notebook.to_lowercase().ends_with(".notebook") {
+        die("cockpit note: the folder name must end in .notebook", 2);
+    }
+    let tab_id = tab_id.or_else(|| std::env::var("COCKPIT_TAB_ID").ok());
+
+    match sub.as_str() {
+        "add" => {
+            let title = match title {
+                Some(t) if !t.trim().is_empty() => t,
+                _ => die("cockpit note add: --title is required", 2),
+            };
+            let body = match body {
+                Some(b) if b == "-" => {
+                    let mut buf = String::new();
+                    if std::io::Read::read_to_string(&mut std::io::stdin(), &mut buf).is_err() {
+                        die("cockpit note add: could not read stdin", 2);
+                    }
+                    buf
+                }
+                Some(b) => b,
+                None => String::new(),
+            };
+            let mut req = json!({
+                "cmd": "note-add",
+                "args": {"notebook": notebook, "title": title, "tags": tags, "body": body},
+            });
+            with_tab_id(&mut req, tab_id);
+            let resp = transport::request(req, DEFAULT_TIMEOUT);
+            if !is_ok(&resp) {
+                fail_with(&resp);
+            }
+            let path = resp["data"]["path"].as_str().unwrap_or("");
+            if as_json {
+                println!("{}", json!({"path": path}));
+            } else {
+                println!("{path}");
+            }
+            std::process::exit(0)
+        }
+        "list" => {
+            let mut req = json!({"cmd": "note-list", "args": {"notebook": notebook}});
+            with_tab_id(&mut req, tab_id);
+            let resp = transport::request(req, DEFAULT_TIMEOUT);
+            if !is_ok(&resp) {
+                fail_with(&resp);
+            }
+            let items = resp["data"].as_array().cloned().unwrap_or_default();
+            if as_json {
+                println!("{}", Value::Array(items));
+            } else if items.is_empty() {
+                println!("(no notes)");
+            } else {
+                for it in items {
+                    let title = it["title"].as_str().unwrap_or("");
+                    let tags: Vec<String> = it["tags"]
+                        .as_array()
+                        .map(|a| {
+                            a.iter()
+                                .filter_map(|t| t.as_str().map(String::from))
+                                .collect()
+                        })
+                        .unwrap_or_default();
+                    let path = it["path"].as_str().unwrap_or("");
+                    println!("{title}  [{}]  {path}", tags.join(", "));
+                }
+            }
+            std::process::exit(0)
+        }
+        _ => die(&format!("cockpit note: unknown subcommand \"{sub}\""), 2),
     }
 }

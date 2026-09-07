@@ -809,7 +809,12 @@
       "saveFailed": "Could not save the note",
       "createFailed": "Could not create the note",
       "addTag": "add tag",
-      "untitled": "Untitled"
+      "untitled": "Untitled",
+      "deleteNote": "Delete note",
+      "deleteConfirm": "Move “${name}” to the trash?",
+      "unsavedTitle": "Unsaved changes",
+      "unsavedMessage": "“${name}” has unsaved changes. Discard them?",
+      "discard": "Discard"
     }
   },
   "settings": {

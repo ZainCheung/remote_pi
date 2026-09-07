@@ -1,10 +1,15 @@
+import 'dart:async';
+
 import 'package:cockpit/app/cockpit/domain/entities/notebook_document.dart';
 import 'package:cockpit/app/cockpit/ui/session/notebook_session.dart';
 import 'package:cockpit/app/cockpit/ui/viewmodels/cockpit_viewmodel.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/agent_markdown.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/code_editor.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/confirm_dialog.dart';
+import 'package:cockpit/app/core/domain/result.dart';
+import 'package:cockpit/app/core/ui/file_operation_error_message.dart';
 import 'package:cockpit/app/core/ui/themes/themes.dart';
+import 'package:cockpit/app/core/ui/widgets/app_menu.dart';
 import 'package:cockpit/app/core/ui/widgets/app_tooltip.dart';
 import 'package:cockpit/app/core/ui/widgets/code_editing_controller.dart';
 import 'package:cockpit/app/core/ui/widgets/hover_tap.dart';
@@ -13,6 +18,7 @@ import 'package:cockpit/i18n/strings.g.dart';
 import 'package:flutter/material.dart'
     as material
     show TextField, InputDecoration, InputBorder;
+import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
@@ -58,6 +64,8 @@ class _NotebookViewState extends State<NotebookView> {
   final FocusNode _editorFocus = FocusNode(debugLabel: 'notebookEditor');
   final TextEditingController _search = TextEditingController();
   int _seenReload = 0;
+  StreamSubscription<void>? _watch;
+  Timer? _watchDebounce;
 
   CockpitViewModel get _vm => context.read<CockpitViewModel>();
 
@@ -68,10 +76,17 @@ class _NotebookViewState extends State<NotebookView> {
     widget.session.addListener(_onSession);
     _editor.addListener(_onEdited);
     _load();
+    // Nota escrita pelo agente (ou pelo Obsidian) aparece sozinha.
+    _watch = _vm.watchFolder(widget.session.path).listen((_) {
+      _watchDebounce?.cancel();
+      _watchDebounce = Timer(const Duration(milliseconds: 200), _load);
+    });
   }
 
   @override
   void dispose() {
+    _watchDebounce?.cancel();
+    _watch?.cancel();
     widget.session.removeListener(_onSession);
     _editor
       ..removeListener(_onEdited)
@@ -128,7 +143,8 @@ class _NotebookViewState extends State<NotebookView> {
       if (_selected == null && notes.isNotEmpty) {
         _selectedPath = notes.first.path;
       }
-      _syncEditor();
+      // Edição em curso não é sobrescrita por um reload do disco.
+      if (!(_editing && _dirty)) _syncEditor();
     });
   }
 
@@ -138,8 +154,19 @@ class _NotebookViewState extends State<NotebookView> {
     _dirty = false;
   }
 
-  void _select(NotebookNote n) {
+  Future<void> _select(NotebookNote n) async {
     if (n.path == _selectedPath) return;
+    if (_editing && _dirty) {
+      final tr = context.t.cockpit.notebook;
+      final discard = await showConfirmDialog(
+        context,
+        title: tr.unsavedTitle,
+        message: tr.unsavedMessage(name: _selected?.title ?? ''),
+        confirmLabel: tr.discard,
+        danger: true,
+      );
+      if (!discard || !mounted) return;
+    }
     setState(() {
       _selectedPath = n.path;
       _editing = false;
@@ -197,6 +224,47 @@ class _NotebookViewState extends State<NotebookView> {
         confirmLabel: context.t.common.ok,
       );
       return;
+    }
+    await _load();
+  }
+
+  Future<void> _noteMenu(NotebookNote n, Offset position) async {
+    final tr = context.t.cockpit.notebook;
+    final choice = await showAppMenu<String>(
+      context,
+      globalPosition: position,
+      items: [
+        AppMenuItem(
+          value: 'delete',
+          label: tr.deleteNote,
+          icon: Icons.delete_outline,
+          danger: true,
+        ),
+      ],
+    );
+    if (!mounted || choice != 'delete') return;
+    final ok = await showConfirmDialog(
+      context,
+      title: tr.deleteNote,
+      message: tr.deleteConfirm(name: n.title),
+      confirmLabel: context.t.common.delete,
+      danger: true,
+    );
+    if (!ok || !mounted) return;
+    final r = await _vm.deletePath(n.path);
+    if (!mounted) return;
+    if (r case Failure(:final error)) {
+      await showConfirmDialog(
+        context,
+        title: tr.deleteNote,
+        message: fileOperationErrorMessage(context, error),
+        confirmLabel: context.t.common.ok,
+      );
+      return;
+    }
+    if (_selectedPath == n.path) {
+      _selectedPath = null;
+      _editing = false;
     }
     await _load();
   }
@@ -309,64 +377,71 @@ class _NotebookViewState extends State<NotebookView> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    return Container(
-      color: colors.bg,
-      child: Column(
-        children: [
-          _Header(
-            title: widget.session.title,
-            count: _notes.length,
-            search: _search,
-            onQuery: (q) => setState(() => _query = q),
-            onNew: _newNote,
-            onReload: _load,
-          ),
-          Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                SizedBox(
-                  width: 210,
-                  child: _NotesColumn(
-                    groups: _groups,
-                    loading: _loading,
-                    hasAny: _notes.isNotEmpty,
-                    selectedPath: _selectedPath,
-                    collapsed: _collapsed,
-                    onToggleGroup: (t) => setState(() {
-                      if (!_collapsed.remove(t)) _collapsed.add(t);
-                    }),
-                    onSelect: _select,
-                  ),
-                ),
-                VerticalDivider(width: 1, color: colors.border),
-                Expanded(
-                  child: _NoteColumn(
-                    note: _selected,
-                    editing: _editing,
-                    dirty: _dirty,
-                    saving: _saving,
-                    editor: _editor,
-                    editorFocus: _editorFocus,
-                    tagInput: _tagInput,
-                    titleCtrl: _titleCtrl,
-                    titleFocus: _titleFocus,
-                    editingTitle: _editingTitle,
-                    onStartTitleEdit: _startTitleEdit,
-                    onCommitTitle: _commitTitle,
-                    onToggleEdit: () => setState(() {
-                      _editing = !_editing;
-                      if (_editing) _editorFocus.requestFocus();
-                    }),
-                    onSave: _save,
-                    onAddTag: _addTag,
-                    onRemoveTag: _removeTag,
-                  ),
-                ),
-              ],
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.keyS, meta: true): _save,
+        const SingleActivator(LogicalKeyboardKey.keyS, control: true): _save,
+      },
+      child: Container(
+        color: colors.bg,
+        child: Column(
+          children: [
+            _Header(
+              title: widget.session.title,
+              count: _notes.length,
+              search: _search,
+              onQuery: (q) => setState(() => _query = q),
+              onNew: _newNote,
+              onReload: _load,
             ),
-          ),
-        ],
+            Expanded(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SizedBox(
+                    width: 210,
+                    child: _NotesColumn(
+                      groups: _groups,
+                      loading: _loading,
+                      hasAny: _notes.isNotEmpty,
+                      selectedPath: _selectedPath,
+                      collapsed: _collapsed,
+                      onToggleGroup: (t) => setState(() {
+                        if (!_collapsed.remove(t)) _collapsed.add(t);
+                      }),
+                      onSelect: _select,
+                      onMenu: _noteMenu,
+                    ),
+                  ),
+                  VerticalDivider(width: 1, color: colors.border),
+                  Expanded(
+                    child: _NoteColumn(
+                      note: _selected,
+                      editing: _editing,
+                      dirty: _dirty,
+                      saving: _saving,
+                      editor: _editor,
+                      editorFocus: _editorFocus,
+                      tagInput: _tagInput,
+                      titleCtrl: _titleCtrl,
+                      titleFocus: _titleFocus,
+                      editingTitle: _editingTitle,
+                      onStartTitleEdit: _startTitleEdit,
+                      onCommitTitle: _commitTitle,
+                      onToggleEdit: () => setState(() {
+                        _editing = !_editing;
+                        if (_editing) _editorFocus.requestFocus();
+                      }),
+                      onSave: _save,
+                      onAddTag: _addTag,
+                      onRemoveTag: _removeTag,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -508,6 +583,7 @@ class _NotesColumn extends StatelessWidget {
     required this.collapsed,
     required this.onToggleGroup,
     required this.onSelect,
+    required this.onMenu,
   });
 
   final List<(String, List<NotebookNote>)> groups;
@@ -517,6 +593,7 @@ class _NotesColumn extends StatelessWidget {
   final Set<String> collapsed;
   final ValueChanged<String> onToggleGroup;
   final ValueChanged<NotebookNote> onSelect;
+  final void Function(NotebookNote, Offset) onMenu;
 
   @override
   Widget build(BuildContext context) {
@@ -590,6 +667,7 @@ class _NotesColumn extends StatelessWidget {
                 note: n,
                 selected: n.path == selectedPath,
                 onTap: () => onSelect(n),
+                onMenu: (pos) => onMenu(n, pos),
               ),
         ],
       ],
@@ -603,68 +681,73 @@ class _NoteRow extends StatelessWidget {
     required this.note,
     required this.selected,
     required this.onTap,
+    required this.onMenu,
   });
   final NotebookNote note;
   final bool selected;
   final VoidCallback onTap;
+  final ValueChanged<Offset> onMenu;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final n = note;
-    return HoverTap(
-      color: selected ? colors.panel2 : Colors.transparent,
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(22, 5, 10, 5),
-        decoration: BoxDecoration(
-          border: Border(
-            left: BorderSide(
-              width: 2,
-              color: selected ? colors.accent : Colors.transparent,
+    return GestureDetector(
+      onSecondaryTapUp: (d) => onMenu(d.globalPosition),
+      child: HoverTap(
+        color: selected ? colors.panel2 : Colors.transparent,
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(22, 5, 10, 5),
+          decoration: BoxDecoration(
+            border: Border(
+              left: BorderSide(
+                width: 2,
+                color: selected ? colors.accent : Colors.transparent,
+              ),
             ),
           ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                if (n.fromAgent) ...[
-                  Icon(Icons.auto_awesome, size: 10, color: colors.accent),
-                  const SizedBox(width: 4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  if (n.fromAgent) ...[
+                    Icon(Icons.auto_awesome, size: 10, color: colors.accent),
+                    const SizedBox(width: 4),
+                  ],
+                  Expanded(
+                    child: Text(
+                      n.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.typo.label.copyWith(
+                        fontSize: 12,
+                        color: colors.text,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
                 ],
-                Expanded(
-                  child: Text(
-                    n.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: context.typo.label.copyWith(
-                      fontSize: 12,
-                      color: colors.text,
-                      fontWeight: FontWeight.w600,
+              ),
+              const SizedBox(height: 1),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _excerpt(n.body),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.typo.label.copyWith(
+                        fontSize: 10.5,
+                        color: colors.text3,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 1),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    _excerpt(n.body),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: context.typo.label.copyWith(
-                      fontSize: 10.5,
-                      color: colors.text3,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

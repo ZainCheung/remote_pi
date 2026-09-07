@@ -1,6 +1,6 @@
 ---
 name: cockpit-cli
-description: Drive Cockpit's multiplexed terminals from inside a tab. Use when you (an agent running in a Cockpit terminal) need to open a new terminal tab or split pane, type text or press keys into your own or another tab, read another tab's or a task's output, list the open tabs/workspaces/tasks, or query the workspace's databases (SQL over registered connections / .dbq files). Triggers on tmux-like control needs — split-window/new-window, send-keys, run a command in another tab, read a tab's scrollback, inspect a task run's output, discover tab or task ids — and on database needs: run a SQL query, inspect a schema, list connections, execute a .dbq file. Also covers pane-layout orchestration: applying a `.ckp` layout file (open several terminals/splits and run their commands) via `cockpit orchestrate`. Also covers `.kanban` board files: the markdown format the app renders as a kanban board (columns, cards, labels, notes, comments) — read it when asked to create, read or update a board, a task list or a roadmap the human can open in Cockpit.
+description: Drive Cockpit's multiplexed terminals from inside a tab. Use when you (an agent running in a Cockpit terminal) need to open a new terminal tab or split pane, type text or press keys into your own or another tab, read another tab's or a task's output, list the open tabs/workspaces/tasks, or query the workspace's databases (SQL over registered connections / .dbq files). Triggers on tmux-like control needs — split-window/new-window, send-keys, run a command in another tab, read a tab's scrollback, inspect a task run's output, discover tab or task ids — and on database needs: run a SQL query, inspect a schema, list connections, execute a .dbq file. Also covers pane-layout orchestration: applying a `.ckp` layout file (open several terminals/splits and run their commands) via `cockpit orchestrate`. Also covers `.kanban` board files: the markdown format the app renders as a kanban board (columns, cards, labels, notes, comments) — read it when asked to create, read or update a board, a task list or a roadmap the human can open in Cockpit. Also covers `.notebook` folders (a notebook of tagged markdown notes the human reads in the app) and the `cockpit note` verb that writes into one.
 ---
 
 # cockpit — Cockpit's internal CLI
@@ -316,6 +316,53 @@ Two things to prefer:
   able to follow it later: the board is a file they can open, drag and commit.
 - Editing the file beats driving the UI. Keep the diff small (the app does the
   same — a card move is a three-line diff), and never reformat the whole file.
+
+## Notebooks (`*.notebook`)
+
+A folder whose name ends in `.notebook` is a **notebook**: one markdown file
+per note, each with a small YAML frontmatter. The app shows the folder as a
+single item in the file tree and opens it as a notes tab — notes grouped by
+tag on the left, the note on the right. Obsidian opens the same folder as-is.
+
+Write notes here while you work when the human should be able to read them
+later: findings, decisions, open questions, a summary of what you changed.
+Prefer **many short notes with tags** over one long file.
+
+```markdown
+---
+title: Túnel SSH no host
+tags: [relay, agent]
+created: 2026-09-07T10:12
+updated: 2026-09-07T11:40
+---
+
+Body in plain markdown.
+```
+
+The easy way is the verb — it writes the frontmatter for you, picks a unique
+file name (`2026-09-07-tunel-ssh-no-host.md`) and refreshes the open tab:
+
+```sh
+cockpit note add notes.notebook --title "Túnel SSH no host" --tag relay \
+  --body "Porta 2222 fechada no firewall; abri via ufw."
+cockpit note add notes.notebook --title "Resumo da sessão" --body - <<'NOTE'
+- Corrigi o parser do .kanban
+- Falta: testes do watcher
+NOTE
+cockpit note list notes.notebook          # title  [tags]  path
+```
+
+Rules that matter:
+- `--tag` may repeat. The **`agent` tag is always added** by the verb — it is
+  how the human tells your notes from theirs. Keep it if you edit a note by
+  hand.
+- A note without frontmatter still works (title = file name, no tag), so
+  editing an existing `.md` with your normal file tools is fine. The tab
+  reloads by itself.
+- The **file name never changes** when the title changes; the title is
+  metadata. Don't rename files to "fix" titles.
+- Keep the frontmatter keys as they are (`title`, `tags`, `created`,
+  `updated`); the app rewrites only those lines and leaves the body untouched.
 
 ## Target (--tab-id)
 

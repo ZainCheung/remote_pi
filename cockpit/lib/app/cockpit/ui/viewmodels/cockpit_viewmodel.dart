@@ -1544,6 +1544,27 @@ class CockpitViewModel extends ChangeNotifier {
     };
   }
 
+  /// Eventos de mudança numa pasta (caderno). Local = `Directory.watch`;
+  /// remoto = vazio (o painel tem "recarregar"; plano 58 não tem fs.watch).
+  Stream<void> watchFolder(String path) {
+    if (_activeRemoteHost() != null || path.isEmpty) {
+      return const Stream<void>.empty();
+    }
+    try {
+      return Directory(path).watch().map((_) {});
+    } catch (_) {
+      return const Stream<void>.empty();
+    }
+  }
+
+  /// Sessão de caderno aberta para [folderPath], se houver.
+  NotebookSession? notebookSessionFor(String folderPath) {
+    for (final s in _sessions.values) {
+      if (s is NotebookSession && s.path == folderPath) return s;
+    }
+    return null;
+  }
+
   /// Grava [content] em [path] (local ou host remoto) e bumpa a árvore.
   /// Contraparte de [readTextAt] pra abas que não são `FileViewerSession`.
   Future<bool> writeTextAt(String path, String content) async {

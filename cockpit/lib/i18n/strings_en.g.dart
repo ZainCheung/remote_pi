@@ -2542,6 +2542,21 @@ class Translations$cockpit$notebook$en {
 
 	/// en: 'Untitled'
 	String get untitled => 'Untitled';
+
+	/// en: 'Delete note'
+	String get deleteNote => 'Delete note';
+
+	/// en: 'Move “${name}” to the trash?'
+	String deleteConfirm({required Object name}) => 'Move “${name}” to the trash?';
+
+	/// en: 'Unsaved changes'
+	String get unsavedTitle => 'Unsaved changes';
+
+	/// en: '“${name}” has unsaved changes. Discard them?'
+	String unsavedMessage({required Object name}) => '“${name}” has unsaved changes. Discard them?';
+
+	/// en: 'Discard'
+	String get discard => 'Discard';
 }
 
 // Path: settings.language
@@ -4691,6 +4706,11 @@ extension on Translations {
 			'cockpit.notebook.createFailed' => 'Could not create the note',
 			'cockpit.notebook.addTag' => 'add tag',
 			'cockpit.notebook.untitled' => 'Untitled',
+			'cockpit.notebook.deleteNote' => 'Delete note',
+			'cockpit.notebook.deleteConfirm' => ({required Object name}) => 'Move “${name}” to the trash?',
+			'cockpit.notebook.unsavedTitle' => 'Unsaved changes',
+			'cockpit.notebook.unsavedMessage' => ({required Object name}) => '“${name}” has unsaved changes. Discard them?',
+			'cockpit.notebook.discard' => 'Discard',
 			'settings.language.title' => 'Language',
 			'settings.language.system' => 'System',
 			'settings.language.english' => 'English',
@@ -5035,13 +5055,13 @@ extension on Translations {
 			'fileOperation.error.formatterTimeout' => 'Formatter timed out.',
 			'fileOperation.error.formatterExitCode' => ({required Object code}) => 'Formatter exited with ${code}.',
 			'fileOperation.error.formatterFailed' => 'The formatter could not run.',
+			_ => null,
+		} ?? switch (path) {
 			'fileOperation.error.osFailure' => ({required Object detail}) => '${detail}',
 			'fileOperation.error.nameHasSlash' => 'Name cannot contain “/”.',
 			'fileOperation.error.invalidName' => 'Invalid name.',
 			'theme.error.io' => 'Could not read or write the theme file.',
 			'theme.error.ioDetail' => ({required Object detail}) => 'Could not read or write the theme file: ${detail}',
-			_ => null,
-		} ?? switch (path) {
 			'theme.error.malformedJson' => ({required Object detail}) => 'This file is not valid JSON: ${detail}',
 			'theme.error.invalidTheme' => 'This file is not a valid theme.',
 			'theme.error.reservedId' => 'This theme uses the id of a built-in theme. Change "id" in the file and import again.',

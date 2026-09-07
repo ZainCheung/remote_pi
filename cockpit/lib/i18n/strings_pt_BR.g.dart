@@ -1246,6 +1246,11 @@ class _Translations$cockpit$notebook$pt_BR extends Translations$cockpit$notebook
 	@override String get createFailed => 'Não foi possível criar a nota';
 	@override String get addTag => 'adicionar tag';
 	@override String get untitled => 'Sem título';
+	@override String get deleteNote => 'Apagar nota';
+	@override String deleteConfirm({required Object name}) => 'Mover “${name}” pra lixeira?';
+	@override String get unsavedTitle => 'Alterações não salvas';
+	@override String unsavedMessage({required Object name}) => '“${name}” tem alterações não salvas. Descartar?';
+	@override String get discard => 'Descartar';
 }
 
 // Path: settings.language
@@ -2622,6 +2627,11 @@ extension on TranslationsPtBr {
 			'cockpit.notebook.createFailed' => 'Não foi possível criar a nota',
 			'cockpit.notebook.addTag' => 'adicionar tag',
 			'cockpit.notebook.untitled' => 'Sem título',
+			'cockpit.notebook.deleteNote' => 'Apagar nota',
+			'cockpit.notebook.deleteConfirm' => ({required Object name}) => 'Mover “${name}” pra lixeira?',
+			'cockpit.notebook.unsavedTitle' => 'Alterações não salvas',
+			'cockpit.notebook.unsavedMessage' => ({required Object name}) => '“${name}” tem alterações não salvas. Descartar?',
+			'cockpit.notebook.discard' => 'Descartar',
 			'settings.language.title' => 'Idioma',
 			'settings.language.system' => 'Sistema',
 			'settings.language.english' => 'Inglês',
@@ -2966,13 +2976,13 @@ extension on TranslationsPtBr {
 			'fileOperation.error.formatterTimeout' => 'O formatador excedeu o tempo limite.',
 			'fileOperation.error.formatterExitCode' => ({required Object code}) => 'O formatador saiu com código ${code}.',
 			'fileOperation.error.formatterFailed' => 'Não foi possível executar o formatador.',
+			_ => null,
+		} ?? switch (path) {
 			'fileOperation.error.osFailure' => ({required Object detail}) => '${detail}',
 			'fileOperation.error.nameHasSlash' => 'O nome não pode conter “/”.',
 			'fileOperation.error.invalidName' => 'Nome inválido.',
 			'theme.error.io' => 'Não foi possível ler ou gravar o arquivo do tema.',
 			'theme.error.ioDetail' => ({required Object detail}) => 'Não foi possível ler ou gravar o arquivo do tema: ${detail}',
-			_ => null,
-		} ?? switch (path) {
 			'theme.error.malformedJson' => ({required Object detail}) => 'Este arquivo não é um JSON válido: ${detail}',
 			'theme.error.invalidTheme' => 'Este arquivo não é um tema válido.',
 			'theme.error.reservedId' => 'Este tema usa o id de um tema nativo. Mude o "id" no arquivo e importe de novo.',

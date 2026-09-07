@@ -809,7 +809,12 @@
       "saveFailed": "Não foi possível salvar a nota",
       "createFailed": "Não foi possível criar a nota",
       "addTag": "adicionar tag",
-      "untitled": "Sem título"
+      "untitled": "Sem título",
+      "deleteNote": "Apagar nota",
+      "deleteConfirm": "Mover “${name}” pra lixeira?",
+      "unsavedTitle": "Alterações não salvas",
+      "unsavedMessage": "“${name}” tem alterações não salvas. Descartar?",
+      "discard": "Descartar"
     }
   },
   "settings": {

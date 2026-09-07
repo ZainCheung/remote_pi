@@ -9,6 +9,7 @@ import 'package:cockpit/app/cockpit/domain/entities/db_connection.dart';
 import 'package:cockpit/app/cockpit/domain/entities/db_result.dart';
 import 'package:cockpit/app/cockpit/domain/entities/dbq_document.dart';
 import 'package:cockpit/app/cockpit/domain/entities/http_document.dart';
+import 'package:cockpit/app/cockpit/domain/entities/notebook_document.dart';
 import 'package:cockpit/app/cockpit/domain/exceptions/http_request_error.dart';
 import 'package:cockpit/app/cockpit/domain/entities/project.dart';
 import 'package:cockpit/app/cockpit/domain/entities/sql_statements.dart';
@@ -19,6 +20,7 @@ import 'package:cockpit/app/cockpit/domain/entities/browser_capability.dart';
 import 'package:cockpit/app/core/domain/result.dart';
 import 'package:cockpit/app/cockpit/ui/session/agent_session.dart';
 import 'package:cockpit/app/cockpit/ui/session/browser_session.dart';
+import 'package:cockpit/app/cockpit/ui/session/notebook_session.dart';
 import 'package:cockpit/app/cockpit/ui/session/file_viewer_session.dart';
 import 'package:cockpit/app/cockpit/ui/session/mongo_browser_session.dart';
 import 'package:cockpit/app/cockpit/ui/session/pane_item.dart';
@@ -138,7 +140,10 @@ class CockpitCliHandler {
         // Aba remota: o path é do HOST. Checar no disco do cliente daria
         // "file not found" (ou, pior, abriria um homônimo local) — quem valida
         // é o `fs.read` do outro lado, dentro de `openFile`.
-        if (!_isRemoteTab(c.tabId) && !await File(path).exists()) {
+        // `.notebook` é pasta e abre como caderno; o resto tem que ser arquivo.
+        if (!_isRemoteTab(c.tabId) &&
+            !await File(path).exists() &&
+            !(isNotebookFolder(path) && await Directory(path).exists())) {
           return CockpitCommandResult.fail('file not found: "$path"');
         }
         final from = c.tabId;
@@ -265,6 +270,83 @@ class CockpitCliHandler {
       // `cockpit orchestrate <file.ckp>` — aplica um layout de panes no
       // workspace ativo. A CLI já resolveu o path pro absoluto. Merge
       // idempotente (tab de mesmo nome = pulada); devolve {created, skipped}.
+      // `cockpit note add <dir.notebook> --title T [--tag a]... [--body ...]`
+      // Cria a nota com frontmatter certo (tag `agent` sempre entra — é a
+      // marca de nota escrita por agente) e recarrega a aba do caderno se
+      // estiver aberta. Devolve `{path}`. A pasta é criada se faltar.
+      case 'note-add':
+        {
+          final dir = (c.args['notebook'] ?? '').toString();
+          if (dir.isEmpty || !isNotebookFolder(dir)) {
+            return const CockpitCommandResult.fail(
+              'notebook must be a folder ending in .notebook',
+            );
+          }
+          final title = (c.args['title'] ?? '').toString().trim();
+          if (title.isEmpty) {
+            return const CockpitCommandResult.fail('missing --title');
+          }
+          final rawTags = c.args['tags'];
+          final tags = <String>{
+            if (rawTags is List) ...rawTags.map((e) => e.toString()),
+            kAgentTag,
+          }.toList();
+          final body = (c.args['body'] ?? '').toString();
+          if (!_isRemoteTab(c.tabId)) {
+            try {
+              await Directory(dir).create(recursive: true);
+            } on FileSystemException catch (e) {
+              return CockpitCommandResult.fail(
+                'cannot create "$dir": ${e.message}',
+              );
+            }
+          }
+          final now = DateTime.now();
+          var name = NotebookNote.fileNameFor(title, now);
+          final taken = (await _vm.listChildren(
+            dir,
+          )).map((e) => e.name).toSet();
+          var i = 2;
+          while (taken.contains(name)) {
+            name = NotebookNote.fileNameFor('$title $i', now);
+            i++;
+          }
+          final path = '$dir/$name';
+          final ok = await _vm.writeTextAt(
+            path,
+            NotebookNote.template(
+              title: title,
+              tags: tags,
+              now: now,
+              body: body,
+            ),
+          );
+          if (!ok) return CockpitCommandResult.fail('could not write "$path"');
+          _vm.notebookSessionFor(dir)?.requestReload();
+          return CockpitCommandResult.ok({'path': path});
+        }
+
+      // `cockpit note list <dir.notebook>` — notas com título e tags.
+      case 'note-list':
+        {
+          final dir = (c.args['notebook'] ?? '').toString();
+          if (dir.isEmpty || !isNotebookFolder(dir)) {
+            return const CockpitCommandResult.fail(
+              'notebook must be a folder ending in .notebook',
+            );
+          }
+          final out = <Map<String, dynamic>>[];
+          for (final e in await _vm.listChildren(dir)) {
+            if (e.isDirectory || !e.name.toLowerCase().endsWith('.md'))
+              continue;
+            final raw = await _vm.readTextAt(e.path);
+            if (raw == null) continue;
+            final n = NotebookNote.parse(e.path, raw);
+            out.add({'path': n.path, 'title': n.title, 'tags': n.tags});
+          }
+          return CockpitCommandResult.ok(out);
+        }
+
       case 'orchestrate':
         final path = (c.args['path'] ?? '').toString();
         if (path.isEmpty) {
@@ -353,9 +435,7 @@ class CockpitCliHandler {
             ? _vm.projectById(sender.projectId)
             : _vm.selectedProject;
         final tasksRoot = project?.effectiveRoot ?? '';
-        if (project == null ||
-            project.isSystemTerminal ||
-            tasksRoot.isEmpty) {
+        if (project == null || project.isSystemTerminal || tasksRoot.isEmpty) {
           return const CockpitCommandResult.fail(
             'no workspace to list tasks for',
           );
@@ -984,6 +1064,7 @@ class CockpitCliHandler {
     if (s is TaskOutputSession) return 'task';
     if (s is RedisBrowserSession) return 'redis';
     if (s is MongoBrowserSession) return 'mongo';
+    if (s is NotebookSession) return 'notebook';
     return 'other';
   }
 

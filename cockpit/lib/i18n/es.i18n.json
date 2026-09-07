@@ -809,7 +809,12 @@
       "saveFailed": "No se pudo guardar la nota",
       "createFailed": "No se pudo crear la nota",
       "addTag": "añadir tag",
-      "untitled": "Sin título"
+      "untitled": "Sin título",
+      "deleteNote": "Eliminar nota",
+      "deleteConfirm": "¿Mover “${name}” a la papelera?",
+      "unsavedTitle": "Cambios sin guardar",
+      "unsavedMessage": "“${name}” tiene cambios sin guardar. ¿Descartarlos?",
+      "discard": "Descartar"
     }
   },
   "settings": {

@@ -1246,6 +1246,11 @@ class _Translations$cockpit$notebook$es extends Translations$cockpit$notebook$en
 	@override String get createFailed => 'No se pudo crear la nota';
 	@override String get addTag => 'añadir tag';
 	@override String get untitled => 'Sin título';
+	@override String get deleteNote => 'Eliminar nota';
+	@override String deleteConfirm({required Object name}) => '¿Mover “${name}” a la papelera?';
+	@override String get unsavedTitle => 'Cambios sin guardar';
+	@override String unsavedMessage({required Object name}) => '“${name}” tiene cambios sin guardar. ¿Descartarlos?';
+	@override String get discard => 'Descartar';
 }
 
 // Path: settings.language
@@ -2622,6 +2627,11 @@ extension on TranslationsEs {
 			'cockpit.notebook.createFailed' => 'No se pudo crear la nota',
 			'cockpit.notebook.addTag' => 'añadir tag',
 			'cockpit.notebook.untitled' => 'Sin título',
+			'cockpit.notebook.deleteNote' => 'Eliminar nota',
+			'cockpit.notebook.deleteConfirm' => ({required Object name}) => '¿Mover “${name}” a la papelera?',
+			'cockpit.notebook.unsavedTitle' => 'Cambios sin guardar',
+			'cockpit.notebook.unsavedMessage' => ({required Object name}) => '“${name}” tiene cambios sin guardar. ¿Descartarlos?',
+			'cockpit.notebook.discard' => 'Descartar',
 			'settings.language.title' => 'Idioma',
 			'settings.language.system' => 'Sistema',
 			'settings.language.english' => 'Inglés',
@@ -2966,13 +2976,13 @@ extension on TranslationsEs {
 			'fileOperation.error.formatterTimeout' => 'El formateador agotó el tiempo de espera.',
 			'fileOperation.error.formatterExitCode' => ({required Object code}) => 'El formateador terminó con el código ${code}.',
 			'fileOperation.error.formatterFailed' => 'No se pudo ejecutar el formateador.',
+			_ => null,
+		} ?? switch (path) {
 			'fileOperation.error.osFailure' => ({required Object detail}) => '${detail}',
 			'fileOperation.error.nameHasSlash' => 'El nombre no puede contener “/”.',
 			'fileOperation.error.invalidName' => 'Nombre inválido.',
 			'theme.error.io' => 'No se pudo leer o escribir el archivo del tema.',
 			'theme.error.ioDetail' => ({required Object detail}) => 'No se pudo leer o escribir el archivo del tema: ${detail}',
-			_ => null,
-		} ?? switch (path) {
 			'theme.error.malformedJson' => ({required Object detail}) => 'Este archivo no es JSON válido: ${detail}',
 			'theme.error.invalidTheme' => 'Este archivo no es un tema válido.',
 			'theme.error.reservedId' => 'Este tema usa el id de un tema nativo. Cambia el "id" en el archivo e impórtalo de nuevo.',
