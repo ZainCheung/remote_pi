@@ -1,3 +1,5 @@
+import 'dart:io' show File;
+
 import 'dart:async';
 
 import 'package:cockpit/app/core/ui/themes/themes.dart';
@@ -18,9 +20,13 @@ import 'package:shadcn_flutter/shadcn_flutter.dart';
 /// Renderiza o Markdown (GFM + code) da resposta do agente, com a identidade
 /// visual do Cockpit. Tolerante a markdown parcial (serve pro streaming).
 class AgentMarkdown extends StatelessWidget {
-  const AgentMarkdown(this.data, {super.key});
+  const AgentMarkdown(this.data, {super.key, this.imageBaseDir});
 
   final String data;
+
+  /// Pasta base para `![](caminho relativo)` — imagens locais do documento
+  /// (caderno: `_assets/x.png`). `null` = só URLs http(s) funcionam.
+  final String? imageBaseDir;
 
   @override
   Widget build(BuildContext context) {
@@ -100,6 +106,10 @@ class AgentMarkdown extends StatelessWidget {
               // Blocos ``` — card escuro com header (linguagem + copiar).
               codeBuilder: (context, name, code, closed) =>
                   _CodeBlock(language: name, code: code),
+              imageBuilder: imageBaseDir == null
+                  ? null
+                  : (context, url, width, height) =>
+                        _LocalImage(url: url, baseDir: imageBaseDir!),
             ),
           ],
         ),
@@ -226,6 +236,38 @@ class _CopyButtonState extends State<_CopyButton> {
           _copied ? Icons.check : Icons.copy,
           size: 14,
           color: _copied ? colors.ok : colors.text3,
+        ),
+      ),
+    );
+  }
+}
+
+/// Imagem de um documento local: caminho relativo resolve contra [baseDir];
+/// http(s) segue pela rede. Falha de leitura vira o caminho em texto (não
+/// derruba o preview).
+class _LocalImage extends StatelessWidget {
+  const _LocalImage({required this.url, required this.baseDir});
+  final String url;
+  final String baseDir;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return m.Image.network(url, fit: m.BoxFit.contain);
+    }
+    final decoded = Uri.decodeFull(url);
+    final path = decoded.startsWith('/')
+        ? decoded
+        : '$baseDir${baseDir.endsWith('/') ? '' : '/'}$decoded';
+    return m.ConstrainedBox(
+      constraints: const m.BoxConstraints(maxHeight: 480),
+      child: m.Image.file(
+        File(path),
+        fit: m.BoxFit.contain,
+        errorBuilder: (_, _, _) => m.Text(
+          url,
+          style: context.typo.mono.copyWith(fontSize: 11, color: colors.text3),
         ),
       ),
     );

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data' show Uint8List;
 import 'dart:io'
     show Directory, File, FileSystemEntity, FileSystemException, Platform;
 import 'dart:math' show max;
@@ -1563,6 +1564,30 @@ class CockpitViewModel extends ChangeNotifier {
       if (s is NotebookSession && s.path == folderPath) return s;
     }
     return null;
+  }
+
+  /// Grava bytes em [path] (local ou host remoto), criando a pasta-pai local
+  /// se faltar. Usado pelo caderno para `_assets/` (imagem colada/arrastada).
+  Future<bool> writeBytesAt(String path, Uint8List bytes) async {
+    final host = _activeRemoteHost();
+    if (host != null) {
+      try {
+        final service = await _remoteHosts.fileServiceFor(host);
+        await service.write(path, bytes);
+      } catch (_) {
+        return false;
+      }
+    } else {
+      try {
+        final f = File(path);
+        await f.parent.create(recursive: true);
+        await f.writeAsBytes(bytes, flush: true);
+      } catch (_) {
+        return false;
+      }
+    }
+    _bumpFileTree();
+    return true;
   }
 
   /// Grava [content] em [path] (local ou host remoto) e bumpa a árvore.

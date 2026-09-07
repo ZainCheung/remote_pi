@@ -65,4 +65,13 @@ Corpo.
     expect(n.tags, ['a']);
     expect(n.body, 'b');
   });
+
+  test('replaceBody keeps the frontmatter and swaps the body', () {
+    const raw = '---\ntitle: x\n---\n\nold\n';
+    final out = NotebookNote.replaceBody(raw, 'new **bold**\n');
+    final n = NotebookNote.parse('/n.md', out);
+    expect(n.title, 'x');
+    expect(n.body, 'new **bold**\n');
+    expect(NotebookNote.replaceBody('plain', 'x'), 'x');
+  });
 }

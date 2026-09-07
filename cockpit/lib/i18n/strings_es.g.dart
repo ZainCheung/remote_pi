@@ -1251,6 +1251,8 @@ class _Translations$cockpit$notebook$es extends Translations$cockpit$notebook$en
 	@override String get unsavedTitle => 'Cambios sin guardar';
 	@override String unsavedMessage({required Object name}) => '“${name}” tiene cambios sin guardar. ¿Descartarlos?';
 	@override String get discard => 'Descartar';
+	@override String get imageFailed => 'No se pudo guardar la imagen';
+	@override late final _Translations$cockpit$notebook$format$es format = _Translations$cockpit$notebook$format$es._(_root);
 }
 
 // Path: settings.language
@@ -1536,6 +1538,30 @@ class _Translations$cockpit$gallery$notebook$es extends Translations$cockpit$gal
 	// Translations
 	@override String get title => 'Cuaderno';
 	@override String get description => 'Una carpeta de notas cortas con tags. El agente escribe, tú lees y editas. También abre en Obsidian.';
+}
+
+// Path: cockpit.notebook.format
+class _Translations$cockpit$notebook$format$es extends Translations$cockpit$notebook$format$en {
+	_Translations$cockpit$notebook$format$es._(TranslationsEs root) : this._root = root, super.internal(root);
+
+	final TranslationsEs _root; // ignore: unused_field
+
+	// Translations
+	@override String get bold => 'Negrita (⌘B)';
+	@override String get italic => 'Cursiva (⌘I)';
+	@override String get strike => 'Tachado';
+	@override String get heading1 => 'Título 1';
+	@override String get heading2 => 'Título 2';
+	@override String get heading3 => 'Título 3';
+	@override String get bullets => 'Lista';
+	@override String get numbered => 'Lista numerada';
+	@override String get checklist => 'Checklist';
+	@override String get quote => 'Cita';
+	@override String get code => 'Código inline (⌘E)';
+	@override String get codeBlock => 'Bloque de código';
+	@override String get link => 'Enlace (⌘K)';
+	@override String get rule => 'Divisor';
+	@override String get imageHint => 'Pega o arrastra una imagen → _assets/';
 }
 
 // Path: settings.page.header
@@ -2632,6 +2658,22 @@ extension on TranslationsEs {
 			'cockpit.notebook.unsavedTitle' => 'Cambios sin guardar',
 			'cockpit.notebook.unsavedMessage' => ({required Object name}) => '“${name}” tiene cambios sin guardar. ¿Descartarlos?',
 			'cockpit.notebook.discard' => 'Descartar',
+			'cockpit.notebook.imageFailed' => 'No se pudo guardar la imagen',
+			'cockpit.notebook.format.bold' => 'Negrita (⌘B)',
+			'cockpit.notebook.format.italic' => 'Cursiva (⌘I)',
+			'cockpit.notebook.format.strike' => 'Tachado',
+			'cockpit.notebook.format.heading1' => 'Título 1',
+			'cockpit.notebook.format.heading2' => 'Título 2',
+			'cockpit.notebook.format.heading3' => 'Título 3',
+			'cockpit.notebook.format.bullets' => 'Lista',
+			'cockpit.notebook.format.numbered' => 'Lista numerada',
+			'cockpit.notebook.format.checklist' => 'Checklist',
+			'cockpit.notebook.format.quote' => 'Cita',
+			'cockpit.notebook.format.code' => 'Código inline (⌘E)',
+			'cockpit.notebook.format.codeBlock' => 'Bloque de código',
+			'cockpit.notebook.format.link' => 'Enlace (⌘K)',
+			'cockpit.notebook.format.rule' => 'Divisor',
+			'cockpit.notebook.format.imageHint' => 'Pega o arrastra una imagen → _assets/',
 			'settings.language.title' => 'Idioma',
 			'settings.language.system' => 'Sistema',
 			'settings.language.english' => 'Inglés',
@@ -2960,6 +3002,8 @@ extension on TranslationsEs {
 			'automation.error.noFileChanges' => 'No hay cambios que describir en este archivo.',
 			'automation.error.noStagedChanges' => 'No hay cambios en stage que describir.',
 			'automation.error.multipleRepositories' => 'Los cambios en stage pertenecen a varios repositorios. Genéralos por separado.',
+			_ => null,
+		} ?? switch (path) {
 			'automation.error.diffUnavailable' => 'No se pudo leer el diff.',
 			'automation.error.notConfigured' => 'Configura un harness de mensajes de commit en Configuración.',
 			'fileOperation.error.alreadyExists' => ({required Object name}) => 'Ya existe: “${name}”.',
@@ -2976,8 +3020,6 @@ extension on TranslationsEs {
 			'fileOperation.error.formatterTimeout' => 'El formateador agotó el tiempo de espera.',
 			'fileOperation.error.formatterExitCode' => ({required Object code}) => 'El formateador terminó con el código ${code}.',
 			'fileOperation.error.formatterFailed' => 'No se pudo ejecutar el formateador.',
-			_ => null,
-		} ?? switch (path) {
 			'fileOperation.error.osFailure' => ({required Object detail}) => '${detail}',
 			'fileOperation.error.nameHasSlash' => 'El nombre no puede contener “/”.',
 			'fileOperation.error.invalidName' => 'Nombre inválido.',

@@ -2557,6 +2557,11 @@ class Translations$cockpit$notebook$en {
 
 	/// en: 'Discard'
 	String get discard => 'Discard';
+
+	/// en: 'Could not save the image'
+	String get imageFailed => 'Could not save the image';
+
+	late final Translations$cockpit$notebook$format$en format = Translations$cockpit$notebook$format$en.internal(_root);
 }
 
 // Path: settings.language
@@ -3078,6 +3083,60 @@ class Translations$cockpit$gallery$notebook$en {
 
 	/// en: 'A folder of short notes with tags. Agents write, you read and edit. Opens in Obsidian too.'
 	String get description => 'A folder of short notes with tags. Agents write, you read and edit. Opens in Obsidian too.';
+}
+
+// Path: cockpit.notebook.format
+class Translations$cockpit$notebook$format$en {
+	Translations$cockpit$notebook$format$en.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Bold (⌘B)'
+	String get bold => 'Bold (⌘B)';
+
+	/// en: 'Italic (⌘I)'
+	String get italic => 'Italic (⌘I)';
+
+	/// en: 'Strikethrough'
+	String get strike => 'Strikethrough';
+
+	/// en: 'Heading 1'
+	String get heading1 => 'Heading 1';
+
+	/// en: 'Heading 2'
+	String get heading2 => 'Heading 2';
+
+	/// en: 'Heading 3'
+	String get heading3 => 'Heading 3';
+
+	/// en: 'Bullet list'
+	String get bullets => 'Bullet list';
+
+	/// en: 'Numbered list'
+	String get numbered => 'Numbered list';
+
+	/// en: 'Checklist'
+	String get checklist => 'Checklist';
+
+	/// en: 'Quote'
+	String get quote => 'Quote';
+
+	/// en: 'Inline code (⌘E)'
+	String get code => 'Inline code (⌘E)';
+
+	/// en: 'Code block'
+	String get codeBlock => 'Code block';
+
+	/// en: 'Link (⌘K)'
+	String get link => 'Link (⌘K)';
+
+	/// en: 'Divider'
+	String get rule => 'Divider';
+
+	/// en: 'Paste or drop an image → _assets/'
+	String get imageHint => 'Paste or drop an image → _assets/';
 }
 
 // Path: settings.page.header
@@ -4711,6 +4770,22 @@ extension on Translations {
 			'cockpit.notebook.unsavedTitle' => 'Unsaved changes',
 			'cockpit.notebook.unsavedMessage' => ({required Object name}) => '“${name}” has unsaved changes. Discard them?',
 			'cockpit.notebook.discard' => 'Discard',
+			'cockpit.notebook.imageFailed' => 'Could not save the image',
+			'cockpit.notebook.format.bold' => 'Bold (⌘B)',
+			'cockpit.notebook.format.italic' => 'Italic (⌘I)',
+			'cockpit.notebook.format.strike' => 'Strikethrough',
+			'cockpit.notebook.format.heading1' => 'Heading 1',
+			'cockpit.notebook.format.heading2' => 'Heading 2',
+			'cockpit.notebook.format.heading3' => 'Heading 3',
+			'cockpit.notebook.format.bullets' => 'Bullet list',
+			'cockpit.notebook.format.numbered' => 'Numbered list',
+			'cockpit.notebook.format.checklist' => 'Checklist',
+			'cockpit.notebook.format.quote' => 'Quote',
+			'cockpit.notebook.format.code' => 'Inline code (⌘E)',
+			'cockpit.notebook.format.codeBlock' => 'Code block',
+			'cockpit.notebook.format.link' => 'Link (⌘K)',
+			'cockpit.notebook.format.rule' => 'Divider',
+			'cockpit.notebook.format.imageHint' => 'Paste or drop an image → _assets/',
 			'settings.language.title' => 'Language',
 			'settings.language.system' => 'System',
 			'settings.language.english' => 'English',
@@ -5039,6 +5114,8 @@ extension on Translations {
 			'automation.error.noFileChanges' => 'There are no changes to describe for this file.',
 			'automation.error.noStagedChanges' => 'There are no staged changes to describe.',
 			'automation.error.multipleRepositories' => 'Staged changes belong to multiple repositories. Generate them separately.',
+			_ => null,
+		} ?? switch (path) {
 			'automation.error.diffUnavailable' => 'Could not read the diff.',
 			'automation.error.notConfigured' => 'Configure a commit message harness in Settings.',
 			'fileOperation.error.alreadyExists' => ({required Object name}) => 'Already exists: “${name}”.',
@@ -5055,8 +5132,6 @@ extension on Translations {
 			'fileOperation.error.formatterTimeout' => 'Formatter timed out.',
 			'fileOperation.error.formatterExitCode' => ({required Object code}) => 'Formatter exited with ${code}.',
 			'fileOperation.error.formatterFailed' => 'The formatter could not run.',
-			_ => null,
-		} ?? switch (path) {
 			'fileOperation.error.osFailure' => ({required Object detail}) => '${detail}',
 			'fileOperation.error.nameHasSlash' => 'Name cannot contain “/”.',
 			'fileOperation.error.invalidName' => 'Invalid name.',

@@ -173,6 +173,20 @@ class NotebookNote {
     return '---\n$line\n---\n\n$raw';
   }
 
+  /// Troca o corpo de [raw] por [body], preservando o frontmatter byte a byte.
+  /// Sem frontmatter, [body] vira o arquivo inteiro.
+  static String replaceBody(String raw, String body) {
+    final lines = raw.split('\n');
+    if (lines.isEmpty || !_fence.hasMatch(lines.first)) return body;
+    for (var i = 1; i < lines.length; i++) {
+      if (_fence.hasMatch(lines[i])) {
+        final head = lines.sublist(0, i + 1).join('\n');
+        return '$head\n\n$body';
+      }
+    }
+    return body;
+  }
+
   /// Substitui (ou insere) `updated:` no frontmatter de [raw].
   static String touchUpdated(String raw, DateTime now) {
     final lines = raw.split('\n');

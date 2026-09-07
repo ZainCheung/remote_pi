@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:io' show File, Platform;
+import 'dart:typed_data';
 
 import 'package:cockpit/app/cockpit/domain/entities/notebook_document.dart';
 import 'package:cockpit/app/cockpit/ui/session/notebook_session.dart';
@@ -15,6 +17,8 @@ import 'package:cockpit/app/core/ui/widgets/code_editing_controller.dart';
 import 'package:cockpit/app/core/ui/widgets/hover_tap.dart';
 import 'package:cockpit/app/core/utils/path_utils.dart';
 import 'package:cockpit/i18n/strings.g.dart';
+import 'package:desktop_drop/desktop_drop.dart';
+import 'package:pasteboard/pasteboard.dart';
 import 'package:flutter/material.dart'
     as material
     show TextField, InputDecoration, InputBorder;
@@ -107,7 +111,7 @@ class _NotebookViewState extends State<NotebookView> {
 
   void _onEdited() {
     final sel = _selected;
-    final dirty = sel != null && _editor.text != sel.raw;
+    final dirty = sel != null && _editor.text != sel.body;
     if (dirty != _dirty) setState(() => _dirty = dirty);
   }
 
@@ -149,7 +153,7 @@ class _NotebookViewState extends State<NotebookView> {
 
   void _syncEditor() {
     final sel = _selected;
-    _editor.text = sel?.raw ?? '';
+    _editor.text = sel?.body ?? '';
     _dirty = false;
     // O título é sempre um campo; só realinha com o disco quando o usuário
     // não está digitando nele.
@@ -208,7 +212,9 @@ class _NotebookViewState extends State<NotebookView> {
   Future<void> _setTags(List<String> tags) async {
     final sel = _selected;
     if (sel == null || _saving) return;
-    final base = _editing ? _editor.text : sel.raw;
+    final base = _editing
+        ? NotebookNote.replaceBody(sel.raw, _editor.text)
+        : sel.raw;
     setState(() => _saving = true);
     final content = NotebookNote.touchUpdated(
       NotebookNote.setTags(base, tags),
@@ -292,7 +298,9 @@ class _NotebookViewState extends State<NotebookView> {
       _titleCtrl.text = sel.title;
       return;
     }
-    final base = _editing ? _editor.text : sel.raw;
+    final base = _editing
+        ? NotebookNote.replaceBody(sel.raw, _editor.text)
+        : sel.raw;
     setState(() => _saving = true);
     final content = NotebookNote.touchUpdated(
       NotebookNote.setTitle(base, title),
@@ -324,7 +332,10 @@ class _NotebookViewState extends State<NotebookView> {
     final sel = _selected;
     if (sel == null || _saving) return;
     setState(() => _saving = true);
-    final content = NotebookNote.touchUpdated(_editor.text, DateTime.now());
+    final content = NotebookNote.touchUpdated(
+      NotebookNote.replaceBody(sel.raw, _editor.text),
+      DateTime.now(),
+    );
     final ok = await _vm.writeTextAt(sel.path, content);
     if (!mounted) return;
     setState(() => _saving = false);
@@ -374,9 +385,204 @@ class _NotebookViewState extends State<NotebookView> {
       return;
     }
     _selectedPath = path;
-    _editing = false;
+    _editing = true;
     await _load();
     if (mounted) _focusTitle();
+  }
+
+  // ---- formatação markdown no editor -------------------------------------
+
+  /// Envolve a seleção com [left]/[right] (ou insere o par e deixa o cursor
+  /// no meio). Já envolvida → remove (toggle).
+  void _wrap(String left, [String? right]) {
+    right ??= left;
+    if (!_editing) setState(() => _editing = true);
+    final t = _editor.text;
+    var sel = _editor.selection;
+    if (!sel.isValid) sel = TextSelection.collapsed(offset: t.length);
+    final a = sel.start, b = sel.end;
+    final inner = t.substring(a, b);
+    final before = t.substring(0, a), after = t.substring(b);
+    if (before.endsWith(left) && after.startsWith(right)) {
+      _editor.value = TextEditingValue(
+        text:
+            before.substring(0, before.length - left.length) +
+            inner +
+            after.substring(right.length),
+        selection: TextSelection(
+          baseOffset: a - left.length,
+          extentOffset: b - left.length,
+        ),
+      );
+    } else if (inner.startsWith(left) &&
+        inner.endsWith(right) &&
+        inner.length >= left.length + right.length) {
+      final stripped = inner.substring(
+        left.length,
+        inner.length - right.length,
+      );
+      _editor.value = TextEditingValue(
+        text: before + stripped + after,
+        selection: TextSelection(
+          baseOffset: a,
+          extentOffset: a + stripped.length,
+        ),
+      );
+    } else {
+      _editor.value = TextEditingValue(
+        text: '$before$left$inner$right$after',
+        selection: TextSelection(
+          baseOffset: a + left.length,
+          extentOffset: b + left.length,
+        ),
+      );
+    }
+    _editorFocus.requestFocus();
+  }
+
+  /// Prefixa cada linha da seleção com [prefix] (títulos, listas, citação).
+  /// Linhas já prefixadas perdem o prefixo (toggle). [numbered] gera `1. 2.`.
+  void _prefixLines(String prefix, {bool numbered = false}) {
+    if (!_editing) setState(() => _editing = true);
+    final t = _editor.text;
+    var sel = _editor.selection;
+    if (!sel.isValid) sel = TextSelection.collapsed(offset: t.length);
+    final start =
+        t.lastIndexOf('\n', sel.start - 1 < 0 ? 0 : sel.start - 1) + 1;
+    var end = t.indexOf('\n', sel.end);
+    if (end < 0) end = t.length;
+    final block = t.substring(start, end);
+    final lines = block.split('\n');
+    final allPrefixed = lines.every(
+      (l) => numbered ? RegExp(r'^\d+\. ').hasMatch(l) : l.startsWith(prefix),
+    );
+    final out = <String>[];
+    for (var i = 0; i < lines.length; i++) {
+      final l = lines[i];
+      if (allPrefixed) {
+        out.add(
+          numbered
+              ? l.replaceFirst(RegExp(r'^\d+\. '), '')
+              : l.substring(prefix.length),
+        );
+      } else {
+        final clean = l.replaceFirst(
+          RegExp(r'^(#{1,6} |[-*] \[[ x]\] |[-*] |\d+\. |> )'),
+          '',
+        );
+        out.add(numbered ? '${i + 1}. $clean' : '$prefix$clean');
+      }
+    }
+    final replaced = out.join('\n');
+    _editor.value = TextEditingValue(
+      text: t.substring(0, start) + replaced + t.substring(end),
+      selection: TextSelection(
+        baseOffset: start,
+        extentOffset: start + replaced.length,
+      ),
+    );
+    _editorFocus.requestFocus();
+  }
+
+  void _insertAtCursor(String snippet) {
+    if (!_editing) setState(() => _editing = true);
+    final t = _editor.text;
+    var sel = _editor.selection;
+    if (!sel.isValid) sel = TextSelection.collapsed(offset: t.length);
+    final before = t.substring(0, sel.start);
+    final needsNl = before.isNotEmpty && !before.endsWith('\n');
+    final ins = '${needsNl ? '\n' : ''}$snippet';
+    _editor.value = TextEditingValue(
+      text: before + ins + t.substring(sel.end),
+      selection: TextSelection.collapsed(offset: sel.start + ins.length),
+    );
+    _editorFocus.requestFocus();
+  }
+
+  void _link() => _wrap('[', '](url)');
+
+  // ---- imagens: colar / arrastar → _assets/ ------------------------------
+
+  static const _imageExts = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp'};
+
+  String get _assetsDir => joinPath(widget.session.path, '_assets');
+
+  /// Cola: imagem do clipboard vira arquivo em `_assets/` + `![]()`; texto
+  /// cola normal no cursor.
+  Future<void> _pasteIntoEditor() async {
+    final image = await Pasteboard.image;
+    if (image != null && image.isNotEmpty) {
+      await _addImageBytes(image, 'pasted-${_stampNow()}.png');
+      return;
+    }
+    final files = await Pasteboard.files();
+    if (files.isNotEmpty) {
+      for (final f in files) {
+        await _addImageFile(f);
+      }
+      return;
+    }
+    final text = await Pasteboard.text;
+    if (text == null || text.isEmpty) return;
+    final t = _editor.text;
+    var sel = _editor.selection;
+    if (!sel.isValid) sel = TextSelection.collapsed(offset: t.length);
+    _editor.value = TextEditingValue(
+      text: t.substring(0, sel.start) + text + t.substring(sel.end),
+      selection: TextSelection.collapsed(offset: sel.start + text.length),
+    );
+  }
+
+  Future<void> _onDropFiles(List<DropItem> items) async {
+    for (final it in items) {
+      await _addImageFile(it.path);
+    }
+  }
+
+  Future<void> _addImageFile(String srcPath) async {
+    final name = srcPath.split(Platform.pathSeparator).last;
+    final ext = name.contains('.') ? name.split('.').last.toLowerCase() : '';
+    if (!_imageExts.contains(ext)) return;
+    Uint8List bytes;
+    try {
+      bytes = await File(srcPath).readAsBytes();
+    } catch (_) {
+      return;
+    }
+    await _addImageBytes(bytes, name);
+  }
+
+  Future<void> _addImageBytes(Uint8List bytes, String preferredName) async {
+    if (_selected == null) return;
+    var name = preferredName.replaceAll(RegExp(r'[^\w.\-]+'), '-');
+    var path = joinPath(_assetsDir, name);
+    var i = 2;
+    while (await File(path).exists()) {
+      final dot = name.lastIndexOf('.');
+      final stem = dot > 0 ? name.substring(0, dot) : name;
+      final ext = dot > 0 ? name.substring(dot) : '';
+      path = joinPath(_assetsDir, '$stem-$i$ext');
+      i++;
+    }
+    final ok = await _vm.writeBytesAt(path, bytes);
+    if (!mounted) return;
+    if (!ok) {
+      await showConfirmDialog(
+        context,
+        title: context.t.cockpit.notebook.imageFailed,
+        message: path,
+        confirmLabel: context.t.common.ok,
+      );
+      return;
+    }
+    final rel = '_assets/${path.split('/').last}';
+    _insertAtCursor('![]($rel)\n');
+  }
+
+  static String _stampNow() {
+    final d = DateTime.now();
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${d.year}${two(d.month)}${two(d.day)}-${two(d.hour)}${two(d.minute)}${two(d.second)}';
   }
 
   @override
@@ -386,6 +592,20 @@ class _NotebookViewState extends State<NotebookView> {
       bindings: {
         const SingleActivator(LogicalKeyboardKey.keyS, meta: true): _save,
         const SingleActivator(LogicalKeyboardKey.keyS, control: true): _save,
+        const SingleActivator(LogicalKeyboardKey.keyB, meta: true): () =>
+            _wrap('**'),
+        const SingleActivator(LogicalKeyboardKey.keyB, control: true): () =>
+            _wrap('**'),
+        const SingleActivator(LogicalKeyboardKey.keyI, meta: true): () =>
+            _wrap('_'),
+        const SingleActivator(LogicalKeyboardKey.keyI, control: true): () =>
+            _wrap('_'),
+        const SingleActivator(LogicalKeyboardKey.keyE, meta: true): () =>
+            _wrap('`'),
+        const SingleActivator(LogicalKeyboardKey.keyE, control: true): () =>
+            _wrap('`'),
+        const SingleActivator(LogicalKeyboardKey.keyK, meta: true): _link,
+        const SingleActivator(LogicalKeyboardKey.keyK, control: true): _link,
       },
       child: Container(
         color: colors.bg,
@@ -438,6 +658,13 @@ class _NotebookViewState extends State<NotebookView> {
                       onSave: _save,
                       onAddTag: _addTag,
                       onRemoveTag: _removeTag,
+                      imageBaseDir: widget.session.path,
+                      onDrop: _onDropFiles,
+                      onPaste: _pasteIntoEditor,
+                      onWrap: _wrap,
+                      onPrefix: _prefixLines,
+                      onInsert: _insertAtCursor,
+                      onLink: _link,
                     ),
                   ),
                 ],
@@ -786,6 +1013,13 @@ class _NoteColumn extends StatelessWidget {
     required this.onSave,
     required this.onAddTag,
     required this.onRemoveTag,
+    required this.imageBaseDir,
+    required this.onDrop,
+    required this.onPaste,
+    required this.onWrap,
+    required this.onPrefix,
+    required this.onInsert,
+    required this.onLink,
   });
 
   final NotebookNote? note;
@@ -802,6 +1036,13 @@ class _NoteColumn extends StatelessWidget {
   final VoidCallback onSave;
   final ValueChanged<String> onAddTag;
   final ValueChanged<String> onRemoveTag;
+  final String imageBaseDir;
+  final ValueChanged<List<DropItem>> onDrop;
+  final VoidCallback onPaste;
+  final void Function(String left, [String? right]) onWrap;
+  final void Function(String prefix, {bool numbered}) onPrefix;
+  final ValueChanged<String> onInsert;
+  final VoidCallback onLink;
 
   @override
   Widget build(BuildContext context) {
@@ -887,16 +1128,41 @@ class _NoteColumn extends StatelessWidget {
           ),
         ),
         Divider(height: 1, color: colors.border),
+        if (editing)
+          _FormatBar(
+            onWrap: onWrap,
+            onPrefix: onPrefix,
+            onInsert: onInsert,
+            onLink: onLink,
+          ),
         Expanded(
-          child: editing
-              ? Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
-                  child: CodeEditor(controller: editor, focusNode: editorFocus),
-                )
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-                  child: AgentMarkdown(n.body),
-                ),
+          child: DropTarget(
+            onDragDone: (d) => onDrop(d.files),
+            child: editing
+                ? CallbackShortcuts(
+                    bindings: {
+                      const SingleActivator(
+                        LogicalKeyboardKey.keyV,
+                        meta: true,
+                      ): onPaste,
+                      const SingleActivator(
+                        LogicalKeyboardKey.keyV,
+                        control: true,
+                      ): onPaste,
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+                      child: CodeEditor(
+                        controller: editor,
+                        focusNode: editorFocus,
+                      ),
+                    ),
+                  )
+                : SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+                    child: AgentMarkdown(n.body, imageBaseDir: imageBaseDir),
+                  ),
+          ),
         ),
         // Rodapé: tags da nota (múltiplas), com remover e adicionar inline.
         Container(
@@ -946,6 +1212,159 @@ class _NoteColumn extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
+
+/// Barra de formatação do editor: negrito, itálico, riscado, títulos, listas,
+/// checklist, citação, código, link, imagem. Cada botão opera sobre a seleção
+/// do editor de fonte (markdown) — a nota continua sendo texto puro no disco.
+class _FormatBar extends StatelessWidget {
+  const _FormatBar({
+    required this.onWrap,
+    required this.onPrefix,
+    required this.onInsert,
+    required this.onLink,
+  });
+  final void Function(String left, [String? right]) onWrap;
+  final void Function(String prefix, {bool numbered}) onPrefix;
+  final ValueChanged<String> onInsert;
+  final VoidCallback onLink;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final tr = context.t.cockpit.notebook.format;
+    Widget sep() => Container(
+      width: 1,
+      height: 16,
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      color: colors.border,
+    );
+    return Container(
+      height: 34,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: colors.border)),
+      ),
+      child: Row(
+        children: [
+          _IconAction(
+            icon: Icons.format_bold,
+            tooltip: tr.bold,
+            onTap: () => onWrap('**'),
+          ),
+          _IconAction(
+            icon: Icons.format_italic,
+            tooltip: tr.italic,
+            onTap: () => onWrap('_'),
+          ),
+          _IconAction(
+            icon: Icons.strikethrough_s,
+            tooltip: tr.strike,
+            onTap: () => onWrap('~~'),
+          ),
+          sep(),
+          _IconAction(
+            icon: Icons.title,
+            tooltip: tr.heading1,
+            onTap: () => onPrefix('# '),
+          ),
+          _TextAction(
+            label: 'H2',
+            tooltip: tr.heading2,
+            onTap: () => onPrefix('## '),
+          ),
+          _TextAction(
+            label: 'H3',
+            tooltip: tr.heading3,
+            onTap: () => onPrefix('### '),
+          ),
+          sep(),
+          _IconAction(
+            icon: Icons.format_list_bulleted,
+            tooltip: tr.bullets,
+            onTap: () => onPrefix('- '),
+          ),
+          _IconAction(
+            icon: Icons.format_list_numbered,
+            tooltip: tr.numbered,
+            onTap: () => onPrefix('', numbered: true),
+          ),
+          _IconAction(
+            icon: Icons.checklist,
+            tooltip: tr.checklist,
+            onTap: () => onPrefix('- [ ] '),
+          ),
+          _IconAction(
+            icon: Icons.format_quote,
+            tooltip: tr.quote,
+            onTap: () => onPrefix('> '),
+          ),
+          sep(),
+          _IconAction(
+            icon: Icons.code,
+            tooltip: tr.code,
+            onTap: () => onWrap('`'),
+          ),
+          _IconAction(
+            icon: Icons.data_object,
+            tooltip: tr.codeBlock,
+            onTap: () => onInsert('```\n\n```\n'),
+          ),
+          _IconAction(icon: Icons.link, tooltip: tr.link, onTap: onLink),
+          _IconAction(
+            icon: Icons.horizontal_rule,
+            tooltip: tr.rule,
+            onTap: () => onInsert('---\n'),
+          ),
+          const Spacer(),
+          Text(
+            tr.imageHint,
+            style: context.typo.label.copyWith(
+              fontSize: 10.5,
+              color: colors.text3,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TextAction extends StatelessWidget {
+  const _TextAction({
+    required this.label,
+    required this.tooltip,
+    required this.onTap,
+  });
+  final String label;
+  final String tooltip;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return AppTooltip(
+      message: tooltip,
+      child: HoverTap(
+        borderRadius: BorderRadius.circular(5),
+        onTap: onTap,
+        child: SizedBox(
+          width: 28,
+          height: 28,
+          child: Center(
+            child: Text(
+              label,
+              style: context.typo.label.copyWith(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w700,
+                color: colors.text3,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class _TagChip extends StatelessWidget {
   const _TagChip(this.tag, {this.onRemove});

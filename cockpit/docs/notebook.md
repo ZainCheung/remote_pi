@@ -47,8 +47,15 @@ independente do nome.
 
 - Lista à esquerda agrupada por tag (sem tag → `agent` → alfabético). Uma nota
   com N tags aparece em N grupos. Grupos colapsam.
-- Clique no título edita inline; tags ficam no rodapé da nota (chips com ✕ +
-  campo "adicionar tag"). O lápis alterna para o fonte inteiro; `⌘S` salva.
+- O título é sempre um campo (uma linha; Enter grava). Tags ficam no rodapé da
+  nota (chips com ✕ + campo "adicionar tag").
+- O lápis alterna para o editor do **corpo** (o frontmatter fica escondido e é
+  preservado byte a byte). Barra de formatação: negrito `⌘B`, itálico `⌘I`,
+  riscado, H1–H3, listas, checklist, citação, código `⌘E`, bloco, link `⌘K`,
+  divisor. `⌘S` salva.
+- **Imagens**: colar (`⌘V`) ou arrastar no editor grava em `_assets/` dentro do
+  caderno e insere `![](_assets/nome.png)`. O preview resolve o caminho
+  relativo à pasta. Apagar nota não apaga assets.
 - Botão direito numa nota → **Apagar** (vai pra lixeira).
 - A pasta é observada (local): nota escrita por fora aparece sozinha. No
   workspace remoto use o botão de recarregar.

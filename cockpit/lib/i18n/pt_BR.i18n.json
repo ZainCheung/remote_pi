@@ -814,7 +814,25 @@
       "deleteConfirm": "Mover “${name}” pra lixeira?",
       "unsavedTitle": "Alterações não salvas",
       "unsavedMessage": "“${name}” tem alterações não salvas. Descartar?",
-      "discard": "Descartar"
+      "discard": "Descartar",
+      "imageFailed": "Não foi possível salvar a imagem",
+      "format": {
+        "bold": "Negrito (⌘B)",
+        "italic": "Itálico (⌘I)",
+        "strike": "Riscado",
+        "heading1": "Título 1",
+        "heading2": "Título 2",
+        "heading3": "Título 3",
+        "bullets": "Lista",
+        "numbered": "Lista numerada",
+        "checklist": "Checklist",
+        "quote": "Citação",
+        "code": "Código inline (⌘E)",
+        "codeBlock": "Bloco de código",
+        "link": "Link (⌘K)",
+        "rule": "Divisor",
+        "imageHint": "Cole ou arraste uma imagem → _assets/"
+      }
     }
   },
   "settings": {

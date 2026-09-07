@@ -814,7 +814,25 @@
       "deleteConfirm": "Move “${name}” to the trash?",
       "unsavedTitle": "Unsaved changes",
       "unsavedMessage": "“${name}” has unsaved changes. Discard them?",
-      "discard": "Discard"
+      "discard": "Discard",
+      "imageFailed": "Could not save the image",
+      "format": {
+        "bold": "Bold (⌘B)",
+        "italic": "Italic (⌘I)",
+        "strike": "Strikethrough",
+        "heading1": "Heading 1",
+        "heading2": "Heading 2",
+        "heading3": "Heading 3",
+        "bullets": "Bullet list",
+        "numbered": "Numbered list",
+        "checklist": "Checklist",
+        "quote": "Quote",
+        "code": "Inline code (⌘E)",
+        "codeBlock": "Code block",
+        "link": "Link (⌘K)",
+        "rule": "Divider",
+        "imageHint": "Paste or drop an image → _assets/"
+      }
     }
   },
   "settings": {
