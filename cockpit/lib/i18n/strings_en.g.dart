@@ -186,6 +186,7 @@ class Translations$cockpit$en {
 	late final Translations$cockpit$terminal$en terminal = Translations$cockpit$terminal$en.internal(_root);
 	late final Translations$cockpit$remoteHost$en remoteHost = Translations$cockpit$remoteHost$en.internal(_root);
 	late final Translations$cockpit$browserPane$en browserPane = Translations$cockpit$browserPane$en.internal(_root);
+	late final Translations$cockpit$gallery$en gallery = Translations$cockpit$gallery$en.internal(_root);
 }
 
 // Path: settings
@@ -1373,6 +1374,12 @@ class Translations$cockpit$fileTreePanel$en {
 
 	/// en: 'No changes.'
 	String get diffNoChanges => 'No changes.';
+
+	/// en: 'Gallery'
+	String get galleryTooltip => 'Gallery';
+
+	/// en: 'GALLERY'
+	String get sectionGallery => 'GALLERY';
 }
 
 // Path: cockpit.fileViewer
@@ -1563,8 +1570,8 @@ class Translations$cockpit$dbQueryView$en {
 	/// en: 'Select database'
 	String get selectDatabase => 'Select database';
 
-	/// en: 'No SQL connections — add one in the Database panel'
-	String get noSqlConnections => 'No SQL connections — add one in the Database panel';
+	/// en: 'No SQL connections'
+	String get noSqlConnections => 'No SQL connections';
 
 	/// en: 'Running…'
 	String get running => 'Running…';
@@ -2456,6 +2463,26 @@ class Translations$cockpit$browserPane$en {
 	String get go => 'Go';
 }
 
+// Path: cockpit.gallery
+class Translations$cockpit$gallery$en {
+	Translations$cockpit$gallery$en.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Special Cockpit documents that give you a visual of what the AI agent is doing.'
+	String get intro => 'Special Cockpit documents that give you a visual of what the AI agent is doing.';
+
+	/// en: 'Could not create the file'
+	String get createErrorTitle => 'Could not create the file';
+
+	late final Translations$cockpit$gallery$dbQuery$en dbQuery = Translations$cockpit$gallery$dbQuery$en.internal(_root);
+	late final Translations$cockpit$gallery$kanban$en kanban = Translations$cockpit$gallery$kanban$en.internal(_root);
+	late final Translations$cockpit$gallery$layout$en layout = Translations$cockpit$gallery$layout$en.internal(_root);
+	late final Translations$cockpit$gallery$httpRequest$en httpRequest = Translations$cockpit$gallery$httpRequest$en.internal(_root);
+}
+
 // Path: settings.language
 class Translations$settings$language$en {
 	Translations$settings$language$en.internal(this._root);
@@ -2870,6 +2897,66 @@ class Translations$cockpit$kanbanView$deleteColumnDialog$en {
 
 	/// en: 'This column is empty.'
 	String get emptyMessage => 'This column is empty.';
+}
+
+// Path: cockpit.gallery.dbQuery
+class Translations$cockpit$gallery$dbQuery$en {
+	Translations$cockpit$gallery$dbQuery$en.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Database query'
+	String get title => 'Database query';
+
+	/// en: 'SQL editor with a result grid, tied to a registered connection.'
+	String get description => 'SQL editor with a result grid, tied to a registered connection.';
+}
+
+// Path: cockpit.gallery.kanban
+class Translations$cockpit$gallery$kanban$en {
+	Translations$cockpit$gallery$kanban$en.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Kanban board'
+	String get title => 'Kanban board';
+
+	/// en: 'Columns and cards over plain markdown — drag, edit, comment.'
+	String get description => 'Columns and cards over plain markdown — drag, edit, comment.';
+}
+
+// Path: cockpit.gallery.layout
+class Translations$cockpit$gallery$layout$en {
+	Translations$cockpit$gallery$layout$en.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Pane layout'
+	String get title => 'Pane layout';
+
+	/// en: 'Terminals and splits to open at once, like tmuxinator. Can autorun on new worktrees.'
+	String get description => 'Terminals and splits to open at once, like tmuxinator. Can autorun on new worktrees.';
+}
+
+// Path: cockpit.gallery.httpRequest
+class Translations$cockpit$gallery$httpRequest$en {
+	Translations$cockpit$gallery$httpRequest$en.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'HTTP requests'
+	String get title => 'HTTP requests';
+
+	/// en: 'Write requests in a file and run them with the response side by side.'
+	String get description => 'Write requests in a file and run them with the response side by side.';
 }
 
 // Path: settings.page.header
@@ -4162,6 +4249,8 @@ extension on Translations {
 			'cockpit.fileTreePanel.diffWorkingTree' => 'Working tree',
 			'cockpit.fileTreePanel.diffBinaryFile' => 'Binary file - no text diff.',
 			'cockpit.fileTreePanel.diffNoChanges' => 'No changes.',
+			'cockpit.fileTreePanel.galleryTooltip' => 'Gallery',
+			'cockpit.fileTreePanel.sectionGallery' => 'GALLERY',
 			'cockpit.fileViewer.cantOpen' => 'Can\'t open this file.',
 			'cockpit.fileViewer.couldNotLoadImage' => 'Could not load the image.',
 			'cockpit.fileViewer.preview' => 'Preview',
@@ -4208,7 +4297,7 @@ extension on Translations {
 			'cockpit.dbQueryView.saveQueryAs' => 'Save query as',
 			'cockpit.dbQueryView.couldNotSave' => 'Could not save',
 			'cockpit.dbQueryView.selectDatabase' => 'Select database',
-			'cockpit.dbQueryView.noSqlConnections' => 'No SQL connections — add one in the Database panel',
+			'cockpit.dbQueryView.noSqlConnections' => 'No SQL connections',
 			'cockpit.dbQueryView.running' => 'Running…',
 			'cockpit.dbQueryView.runSelection' => 'Run selection',
 			'cockpit.dbQueryView.run' => 'Run',
@@ -4331,10 +4420,10 @@ extension on Translations {
 			'cockpit.dbConnectionDialog.sshTunnel' => 'SSH Tunnel',
 			'cockpit.dbConnectionDialog.sshHost' => 'SSH Host',
 			'cockpit.dbConnectionDialog.sshPort' => 'SSH Port',
-			'cockpit.dbConnectionDialog.sshUser' => 'SSH User',
-			'cockpit.dbConnectionDialog.privateKey' => 'Private key',
 			_ => null,
 		} ?? switch (path) {
+			'cockpit.dbConnectionDialog.sshUser' => 'SSH User',
+			'cockpit.dbConnectionDialog.privateKey' => 'Private key',
 			'cockpit.dbConnectionDialog.choosePrivateKeyPlaceholder' => 'Choose a private key…',
 			'cockpit.dbConnectionDialog.choosePrivateKeyDialogTitle' => 'Choose SSH private key',
 			'cockpit.dbConnectionDialog.keyPassphrase' => 'Key passphrase',
@@ -4464,6 +4553,16 @@ extension on Translations {
 			'cockpit.browserPane.reload' => 'Reload',
 			'cockpit.browserPane.urlHint' => 'Enter URL or address',
 			'cockpit.browserPane.go' => 'Go',
+			'cockpit.gallery.intro' => 'Special Cockpit documents that give you a visual of what the AI agent is doing.',
+			'cockpit.gallery.createErrorTitle' => 'Could not create the file',
+			'cockpit.gallery.dbQuery.title' => 'Database query',
+			'cockpit.gallery.dbQuery.description' => 'SQL editor with a result grid, tied to a registered connection.',
+			'cockpit.gallery.kanban.title' => 'Kanban board',
+			'cockpit.gallery.kanban.description' => 'Columns and cards over plain markdown — drag, edit, comment.',
+			'cockpit.gallery.layout.title' => 'Pane layout',
+			'cockpit.gallery.layout.description' => 'Terminals and splits to open at once, like tmuxinator. Can autorun on new worktrees.',
+			'cockpit.gallery.httpRequest.title' => 'HTTP requests',
+			'cockpit.gallery.httpRequest.description' => 'Write requests in a file and run them with the response side by side.',
 			'settings.language.title' => 'Language',
 			'settings.language.system' => 'System',
 			'settings.language.english' => 'English',

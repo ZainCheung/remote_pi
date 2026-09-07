@@ -98,6 +98,7 @@ class FileTreePanel extends StatefulWidget {
     this.footer,
     this.searchPanel,
     this.databasePanel,
+    this.galleryPanel,
     this.searchFocusSignal,
     this.tasksPanel,
     this.roots = const <WorkspaceRoot>[],
@@ -211,6 +212,9 @@ class FileTreePanel extends StatefulWidget {
   /// (a aba nem aparece no header).
   final Widget? databasePanel;
 
+  /// Aba Gallery (vitrine de documentos especiais). `null` = sem aba.
+  final Widget? galleryPanel;
+
   /// Painel de busca por conteúdo, fixado entre a árvore e o [footer]
   /// (Cmd+Shift+F). `null` quando não há projeto.
   final Widget? searchPanel;
@@ -319,7 +323,7 @@ class FileTreePanel extends StatefulWidget {
 /// Aba ativa do painel direito: árvore de arquivos, busca por conteúdo,
 /// source control ou conexões de banco (plano 51). Ordem visual no header:
 /// Files · Search · Source Control · Database.
-enum _RightPaneTab { files, search, sourceControl, database }
+enum _RightPaneTab { files, search, sourceControl, database, gallery }
 
 enum _SourceControlView { changes, history }
 
@@ -1016,9 +1020,14 @@ class _FileTreePanelState extends State<FileTreePanel> {
     if (tab == _RightPaneTab.database && !hasDatabase) {
       tab = _RightPaneTab.files;
     }
+    final hasGallery = widget.galleryPanel != null;
+    if (tab == _RightPaneTab.gallery && !hasGallery) {
+      tab = _RightPaneTab.files;
+    }
     final scMode = tab == _RightPaneTab.sourceControl;
     final searchMode = tab == _RightPaneTab.search;
     final dbMode = tab == _RightPaneTab.database;
+    final galleryMode = tab == _RightPaneTab.gallery;
 
     return Container(
       width: widget.width,
@@ -1067,6 +1076,14 @@ class _FileTreePanelState extends State<FileTreePanel> {
                     selected: dbMode,
                     onTap: () => setState(() => _tab = _RightPaneTab.database),
                   ),
+                if (hasGallery)
+                  _HeaderIcon(
+                    key: const ValueKey('gallery-tab'),
+                    icon: Icons.auto_awesome_mosaic_outlined,
+                    tooltip: context.t.cockpit.fileTreePanel.galleryTooltip,
+                    selected: galleryMode,
+                    onTap: () => setState(() => _tab = _RightPaneTab.gallery),
+                  ),
               ],
             ),
           ),
@@ -1097,6 +1114,8 @@ class _FileTreePanelState extends State<FileTreePanel> {
                 ),
               ],
             ),
+          if (widget.rootPath.isNotEmpty && galleryMode)
+            _PanelHeader(title: context.t.cockpit.fileTreePanel.sectionGallery),
           if (widget.rootPath.isNotEmpty && scMode)
             _PanelHeader(
               title: context.t.cockpit.fileTreePanel.sectionSourceControl,
@@ -1134,6 +1153,8 @@ class _FileTreePanelState extends State<FileTreePanel> {
                 ? (widget.searchPanel ?? const SizedBox.shrink())
                 : dbMode
                 ? (widget.databasePanel ?? const SizedBox.shrink())
+                : galleryMode
+                ? (widget.galleryPanel ?? const SizedBox.shrink())
                 : scMode
                 ? _sourceControlView == _SourceControlView.history
                       ? GitHistoryPanel(

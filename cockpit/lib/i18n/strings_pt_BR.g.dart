@@ -139,6 +139,7 @@ class _Translations$cockpit$pt_BR extends Translations$cockpit$en {
 	@override late final _Translations$cockpit$terminal$pt_BR terminal = _Translations$cockpit$terminal$pt_BR._(_root);
 	@override late final _Translations$cockpit$remoteHost$pt_BR remoteHost = _Translations$cockpit$remoteHost$pt_BR._(_root);
 	@override late final _Translations$cockpit$browserPane$pt_BR browserPane = _Translations$cockpit$browserPane$pt_BR._(_root);
+	@override late final _Translations$cockpit$gallery$pt_BR gallery = _Translations$cockpit$gallery$pt_BR._(_root);
 }
 
 // Path: settings
@@ -690,6 +691,8 @@ class _Translations$cockpit$fileTreePanel$pt_BR extends Translations$cockpit$fil
 	@override String get diffWorkingTree => 'Diretorio de trabalho';
 	@override String get diffBinaryFile => 'Arquivo binario - sem diff de texto.';
 	@override String get diffNoChanges => 'Sem alteracoes.';
+	@override String get galleryTooltip => 'Galeria';
+	@override String get sectionGallery => 'GALERIA';
 }
 
 // Path: cockpit.fileViewer
@@ -787,7 +790,7 @@ class _Translations$cockpit$dbQueryView$pt_BR extends Translations$cockpit$dbQue
 	@override String get saveQueryAs => 'Salvar query como';
 	@override String get couldNotSave => 'Não foi possível salvar';
 	@override String get selectDatabase => 'Selecionar banco de dados';
-	@override String get noSqlConnections => 'Nenhuma conexão SQL — adicione uma no painel Database';
+	@override String get noSqlConnections => 'Nenhuma conexão SQL';
 	@override String get running => 'Executando…';
 	@override String get runSelection => 'Executar seleção';
 	@override String get run => 'Executar';
@@ -1201,6 +1204,21 @@ class _Translations$cockpit$browserPane$pt_BR extends Translations$cockpit$brows
 	@override String get go => 'Ir';
 }
 
+// Path: cockpit.gallery
+class _Translations$cockpit$gallery$pt_BR extends Translations$cockpit$gallery$en {
+	_Translations$cockpit$gallery$pt_BR._(TranslationsPtBr root) : this._root = root, super.internal(root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get intro => 'Documentos especiais do Cockpit para que você tenha o visual do que o agente de IA esteja fazendo.';
+	@override String get createErrorTitle => 'Não foi possível criar o arquivo';
+	@override late final _Translations$cockpit$gallery$dbQuery$pt_BR dbQuery = _Translations$cockpit$gallery$dbQuery$pt_BR._(_root);
+	@override late final _Translations$cockpit$gallery$kanban$pt_BR kanban = _Translations$cockpit$gallery$kanban$pt_BR._(_root);
+	@override late final _Translations$cockpit$gallery$layout$pt_BR layout = _Translations$cockpit$gallery$layout$pt_BR._(_root);
+	@override late final _Translations$cockpit$gallery$httpRequest$pt_BR httpRequest = _Translations$cockpit$gallery$httpRequest$pt_BR._(_root);
+}
+
 // Path: settings.language
 class _Translations$settings$language$pt_BR extends Translations$settings$language$en {
 	_Translations$settings$language$pt_BR._(TranslationsPtBr root) : this._root = root, super.internal(root);
@@ -1407,6 +1425,50 @@ class _Translations$cockpit$kanbanView$deleteColumnDialog$pt_BR extends Translat
 	@override String get moveCards => 'Mover pra coluna anterior';
 	@override String get deleteAll => 'Apagar junto com a coluna';
 	@override String get emptyMessage => 'Esta coluna está vazia.';
+}
+
+// Path: cockpit.gallery.dbQuery
+class _Translations$cockpit$gallery$dbQuery$pt_BR extends Translations$cockpit$gallery$dbQuery$en {
+	_Translations$cockpit$gallery$dbQuery$pt_BR._(TranslationsPtBr root) : this._root = root, super.internal(root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Consulta de banco';
+	@override String get description => 'Editor SQL com grid de resultado, ligado a uma conexão registrada.';
+}
+
+// Path: cockpit.gallery.kanban
+class _Translations$cockpit$gallery$kanban$pt_BR extends Translations$cockpit$gallery$kanban$en {
+	_Translations$cockpit$gallery$kanban$pt_BR._(TranslationsPtBr root) : this._root = root, super.internal(root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Quadro kanban';
+	@override String get description => 'Colunas e cards sobre markdown puro — arraste, edite, comente.';
+}
+
+// Path: cockpit.gallery.layout
+class _Translations$cockpit$gallery$layout$pt_BR extends Translations$cockpit$gallery$layout$en {
+	_Translations$cockpit$gallery$layout$pt_BR._(TranslationsPtBr root) : this._root = root, super.internal(root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Layout de panes';
+	@override String get description => 'Terminais e splits pra abrir de uma vez, estilo tmuxinator. Pode rodar sozinho em worktrees novas.';
+}
+
+// Path: cockpit.gallery.httpRequest
+class _Translations$cockpit$gallery$httpRequest$pt_BR extends Translations$cockpit$gallery$httpRequest$en {
+	_Translations$cockpit$gallery$httpRequest$pt_BR._(TranslationsPtBr root) : this._root = root, super.internal(root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Requests HTTP';
+	@override String get description => 'Escreva requests num arquivo e execute com a resposta ao lado.';
 }
 
 // Path: settings.page.header
@@ -2162,6 +2224,8 @@ extension on TranslationsPtBr {
 			'cockpit.fileTreePanel.diffWorkingTree' => 'Diretorio de trabalho',
 			'cockpit.fileTreePanel.diffBinaryFile' => 'Arquivo binario - sem diff de texto.',
 			'cockpit.fileTreePanel.diffNoChanges' => 'Sem alteracoes.',
+			'cockpit.fileTreePanel.galleryTooltip' => 'Galeria',
+			'cockpit.fileTreePanel.sectionGallery' => 'GALERIA',
 			'cockpit.fileViewer.cantOpen' => 'Não é possível abrir este arquivo.',
 			'cockpit.fileViewer.couldNotLoadImage' => 'Não foi possível carregar a imagem.',
 			'cockpit.fileViewer.preview' => 'Pré-visualização',
@@ -2208,7 +2272,7 @@ extension on TranslationsPtBr {
 			'cockpit.dbQueryView.saveQueryAs' => 'Salvar query como',
 			'cockpit.dbQueryView.couldNotSave' => 'Não foi possível salvar',
 			'cockpit.dbQueryView.selectDatabase' => 'Selecionar banco de dados',
-			'cockpit.dbQueryView.noSqlConnections' => 'Nenhuma conexão SQL — adicione uma no painel Database',
+			'cockpit.dbQueryView.noSqlConnections' => 'Nenhuma conexão SQL',
 			'cockpit.dbQueryView.running' => 'Executando…',
 			'cockpit.dbQueryView.runSelection' => 'Executar seleção',
 			'cockpit.dbQueryView.run' => 'Executar',
@@ -2331,10 +2395,10 @@ extension on TranslationsPtBr {
 			'cockpit.dbConnectionDialog.sshTunnel' => 'Túnel SSH',
 			'cockpit.dbConnectionDialog.sshHost' => 'Host SSH',
 			'cockpit.dbConnectionDialog.sshPort' => 'Porta SSH',
-			'cockpit.dbConnectionDialog.sshUser' => 'Usuário SSH',
-			'cockpit.dbConnectionDialog.privateKey' => 'Chave privada',
 			_ => null,
 		} ?? switch (path) {
+			'cockpit.dbConnectionDialog.sshUser' => 'Usuário SSH',
+			'cockpit.dbConnectionDialog.privateKey' => 'Chave privada',
 			'cockpit.dbConnectionDialog.choosePrivateKeyPlaceholder' => 'Escolha uma chave privada…',
 			'cockpit.dbConnectionDialog.choosePrivateKeyDialogTitle' => 'Escolher chave privada SSH',
 			'cockpit.dbConnectionDialog.keyPassphrase' => 'Senha da chave',
@@ -2464,6 +2528,16 @@ extension on TranslationsPtBr {
 			'cockpit.browserPane.reload' => 'Recarregar',
 			'cockpit.browserPane.urlHint' => 'Digite a URL ou endereço',
 			'cockpit.browserPane.go' => 'Ir',
+			'cockpit.gallery.intro' => 'Documentos especiais do Cockpit para que você tenha o visual do que o agente de IA esteja fazendo.',
+			'cockpit.gallery.createErrorTitle' => 'Não foi possível criar o arquivo',
+			'cockpit.gallery.dbQuery.title' => 'Consulta de banco',
+			'cockpit.gallery.dbQuery.description' => 'Editor SQL com grid de resultado, ligado a uma conexão registrada.',
+			'cockpit.gallery.kanban.title' => 'Quadro kanban',
+			'cockpit.gallery.kanban.description' => 'Colunas e cards sobre markdown puro — arraste, edite, comente.',
+			'cockpit.gallery.layout.title' => 'Layout de panes',
+			'cockpit.gallery.layout.description' => 'Terminais e splits pra abrir de uma vez, estilo tmuxinator. Pode rodar sozinho em worktrees novas.',
+			'cockpit.gallery.httpRequest.title' => 'Requests HTTP',
+			'cockpit.gallery.httpRequest.description' => 'Escreva requests num arquivo e execute com a resposta ao lado.',
 			'settings.language.title' => 'Idioma',
 			'settings.language.system' => 'Sistema',
 			'settings.language.english' => 'Inglês',

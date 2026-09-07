@@ -385,7 +385,9 @@
       "diffModified": "Modificado ${ref}",
       "diffWorkingTree": "Directorio de trabajo",
       "diffBinaryFile": "Archivo binario - sin diff de texto.",
-      "diffNoChanges": "Sin cambios."
+      "diffNoChanges": "Sin cambios.",
+      "galleryTooltip": "Galería",
+      "sectionGallery": "GALERÍA"
     },
     "fileViewer": {
       "cantOpen": "No se puede abrir este archivo.",
@@ -448,7 +450,7 @@
       "saveQueryAs": "Guardar query como",
       "couldNotSave": "No se pudo guardar",
       "selectDatabase": "Seleccionar base de datos",
-      "noSqlConnections": "Sin conexiones SQL — añade una en el panel Database",
+      "noSqlConnections": "Sin conexiones SQL",
       "running": "Ejecutando…",
       "runSelection": "Ejecutar selección",
       "run": "Ejecutar",
@@ -758,6 +760,26 @@
       "reload": "Recargar",
       "urlHint": "Escribe la URL o dirección",
       "go": "Ir"
+    },
+    "gallery": {
+      "intro": "Documentos especiales de Cockpit para que veas lo que el agente de IA está haciendo.",
+      "createErrorTitle": "No se pudo crear el archivo",
+      "dbQuery": {
+        "title": "Consulta de base de datos",
+        "description": "Editor SQL con grilla de resultados, ligado a una conexión registrada."
+      },
+      "kanban": {
+        "title": "Tablero kanban",
+        "description": "Columnas y tarjetas sobre markdown puro: arrastra, edita, comenta."
+      },
+      "layout": {
+        "title": "Layout de paneles",
+        "description": "Terminales y splits para abrir de una vez, estilo tmuxinator. Puede ejecutarse solo en worktrees nuevos."
+      },
+      "httpRequest": {
+        "title": "Requests HTTP",
+        "description": "Escribe requests en un archivo y ejecútalos con la respuesta al lado."
+      }
     }
   },
   "settings": {

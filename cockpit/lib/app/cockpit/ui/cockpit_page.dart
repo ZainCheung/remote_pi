@@ -21,6 +21,8 @@ import 'package:cockpit/app/cockpit/domain/contracts/task_discovery.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/task_runner_gateway.dart';
 import 'package:cockpit/app/cockpit/ui/viewmodels/tasks_viewmodel.dart';
 import 'package:cockpit/app/cockpit/domain/entities/db_connection.dart';
+import 'package:cockpit/app/cockpit/domain/entities/gallery_template.dart';
+import 'package:cockpit/app/core/ui/file_operation_error_message.dart';
 import 'package:cockpit/app/cockpit/ui/viewmodels/cockpit_viewmodel.dart';
 import 'package:cockpit/app/cockpit/ui/viewmodels/update_viewmodel.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/remote_disconnected_banner.dart';
@@ -1026,6 +1028,25 @@ class _CenterPanel extends StatelessWidget {
 }
 
 /// Painel direito: árvore de arquivos, busca, DB e Tasks.
+/// Card da Gallery clicado: o VM cria o arquivo na raiz e abre a tab; a
+/// falha (tipada) vira diálogo aqui, onde há contexto pra traduzir.
+Future<void> _createFromGallery(
+  BuildContext context,
+  CockpitViewModel vm,
+  GalleryTemplate template,
+) async {
+  final result = await vm.createFromTemplate(template);
+  if (!context.mounted) return;
+  if (result case Failure(:final error)) {
+    await showConfirmDialog(
+      context,
+      title: context.t.cockpit.gallery.createErrorTitle,
+      message: fileOperationErrorMessage(context, error),
+      confirmLabel: context.t.common.ok,
+    );
+  }
+}
+
 class _TreePanel extends StatelessWidget {
   const _TreePanel({
     required this.treeWidth,
@@ -1168,6 +1189,11 @@ class _TreePanel extends StatelessWidget {
                   // Remoto: a root é a pasta do host
                   // (project.path é vazio).
                   workspaceRoot: vm.treeRootPath,
+                ),
+          galleryPanel: vm.selectedProject == null
+              ? null
+              : GalleryPanel(
+                  onCreate: (t) => _createFromGallery(context, vm, t),
                 ),
           // Task Run funciona local E remoto: no remoto a
           // descoberta lê o tasks.json do host (RemoteTask

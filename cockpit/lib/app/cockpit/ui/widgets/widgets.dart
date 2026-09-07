@@ -8,6 +8,7 @@ export 'confirm_dialog.dart';
 export 'content_search_panel.dart';
 export 'db_connection_dialog.dart';
 export 'db_panel.dart';
+export 'gallery_panel.dart';
 export 'db_query_view.dart';
 export 'empty_pane.dart';
 export 'file_finder_palette.dart';

@@ -42,6 +42,7 @@ import 'package:cockpit/app/cockpit/domain/contracts/worktree_manager.dart';
 import 'package:cockpit/app/cockpit/domain/entities/content_search.dart';
 import 'package:cockpit/app/cockpit/domain/entities/file_diff.dart';
 import 'package:cockpit/app/cockpit/domain/entities/file_node.dart';
+import 'package:cockpit/app/cockpit/domain/entities/gallery_template.dart';
 import 'package:cockpit/app/cockpit/domain/entities/file_view.dart';
 import 'package:cockpit/app/cockpit/domain/entities/kanban_document.dart';
 import 'package:cockpit/app/cockpit/domain/services/kanban_editor.dart';
@@ -2219,6 +2220,63 @@ class CockpitViewModel extends ChangeNotifier {
     String dirPath,
     String name,
   ) => files.createDirIn(dirPath, name);
+
+  /// Cria o documento de [template] na **raiz do workspace** ativo (em
+  /// multi-root é a pasta-mãe, não um dos repos) e abre na tab. Nome livre
+  /// (`dev.ckp` → `dev-2.ckp`…). Funciona local e remoto: no remoto lista a
+  /// raiz via `fs.list` pra achar o nome e grava via `fs.write`.
+  Future<Result<String, FileOperationError>> createFromTemplate(
+    GalleryTemplate template,
+  ) async {
+    final root = treeRootPath;
+    if (root.isEmpty) {
+      return const Failure(
+        FileOperationError(FileOperationErrorKind.noWorkspace),
+      );
+    }
+    final host = _activeRemoteHost();
+    final Iterable<String> taken;
+    try {
+      if (host != null) {
+        final service = await _remoteHosts.fileServiceFor(host);
+        taken = (await service.list(root)).map((e) => e.name);
+      } else {
+        taken = await Directory(root)
+            .list(followLinks: false)
+            .map((e) => e.path.split(Platform.pathSeparator).last)
+            .toList();
+      }
+    } catch (e) {
+      return Failure(
+        FileOperationError(
+          FileOperationErrorKind.osFailure,
+          detail: e.toString(),
+        ),
+      );
+    }
+    final name = template.uniqueFileName(taken);
+    final path = joinPath(root, name);
+    if (host != null) {
+      try {
+        final service = await _remoteHosts.fileServiceFor(host);
+        await service.write(path, utf8.encode(template.content));
+      } catch (e) {
+        return Failure(
+          FileOperationError(
+            FileOperationErrorKind.osFailure,
+            detail: e.toString(),
+          ),
+        );
+      }
+    } else if (!await _fileReader.write(path, template.content)) {
+      return const Failure(
+        FileOperationError(FileOperationErrorKind.writeFailed),
+      );
+    }
+    _bumpFileTree();
+    await openFile(path, isPreview: false);
+    return Success(path);
+  }
 
   Future<Result<void, FileOperationError>> renamePath(
     String path,

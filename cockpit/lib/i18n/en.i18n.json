@@ -385,7 +385,9 @@
       "diffModified": "Modified ${ref}",
       "diffWorkingTree": "Working tree",
       "diffBinaryFile": "Binary file - no text diff.",
-      "diffNoChanges": "No changes."
+      "diffNoChanges": "No changes.",
+      "galleryTooltip": "Gallery",
+      "sectionGallery": "GALLERY"
     },
     "fileViewer": {
       "cantOpen": "Can't open this file.",
@@ -448,7 +450,7 @@
       "saveQueryAs": "Save query as",
       "couldNotSave": "Could not save",
       "selectDatabase": "Select database",
-      "noSqlConnections": "No SQL connections — add one in the Database panel",
+      "noSqlConnections": "No SQL connections",
       "running": "Running…",
       "runSelection": "Run selection",
       "run": "Run",
@@ -758,6 +760,26 @@
       "reload": "Reload",
       "urlHint": "Enter URL or address",
       "go": "Go"
+    },
+    "gallery": {
+      "intro": "Special Cockpit documents that give you a visual of what the AI agent is doing.",
+      "createErrorTitle": "Could not create the file",
+      "dbQuery": {
+        "title": "Database query",
+        "description": "SQL editor with a result grid, tied to a registered connection."
+      },
+      "kanban": {
+        "title": "Kanban board",
+        "description": "Columns and cards over plain markdown — drag, edit, comment."
+      },
+      "layout": {
+        "title": "Pane layout",
+        "description": "Terminals and splits to open at once, like tmuxinator. Can autorun on new worktrees."
+      },
+      "httpRequest": {
+        "title": "HTTP requests",
+        "description": "Write requests in a file and run them with the response side by side."
+      }
     }
   },
   "settings": {
