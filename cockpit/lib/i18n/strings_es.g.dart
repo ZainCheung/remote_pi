@@ -1250,6 +1250,8 @@ class _Translations$cockpit$notebook$es extends Translations$cockpit$notebook$en
 	@override String get renameTag => 'Renombrar tag';
 	@override String get deleteTag => 'Eliminar tag';
 	@override String deleteTagConfirm({required Object name, required Object count}) => '¿Quitar “${name}” de ${count} notas? Las notas se conservan.';
+	@override String get showList => 'Mostrar lista de notas';
+	@override String get hideList => 'Ocultar lista de notas';
 }
 
 // Path: settings.language
@@ -2672,6 +2674,8 @@ extension on TranslationsEs {
 			'cockpit.notebook.renameTag' => 'Renombrar tag',
 			'cockpit.notebook.deleteTag' => 'Eliminar tag',
 			'cockpit.notebook.deleteTagConfirm' => ({required Object name, required Object count}) => '¿Quitar “${name}” de ${count} notas? Las notas se conservan.',
+			'cockpit.notebook.showList' => 'Mostrar lista de notas',
+			'cockpit.notebook.hideList' => 'Ocultar lista de notas',
 			'settings.language.title' => 'Idioma',
 			'settings.language.system' => 'Sistema',
 			'settings.language.english' => 'Inglés',
@@ -2999,10 +3003,10 @@ extension on TranslationsEs {
 			'automation.error.binaryFile' => 'No se puede generar un mensaje de commit para un archivo binario.',
 			'automation.error.noFileChanges' => 'No hay cambios que describir en este archivo.',
 			'automation.error.noStagedChanges' => 'No hay cambios en stage que describir.',
-			'automation.error.multipleRepositories' => 'Los cambios en stage pertenecen a varios repositorios. Genéralos por separado.',
-			'automation.error.diffUnavailable' => 'No se pudo leer el diff.',
 			_ => null,
 		} ?? switch (path) {
+			'automation.error.multipleRepositories' => 'Los cambios en stage pertenecen a varios repositorios. Genéralos por separado.',
+			'automation.error.diffUnavailable' => 'No se pudo leer el diff.',
 			'automation.error.notConfigured' => 'Configura un harness de mensajes de commit en Configuración.',
 			'fileOperation.error.alreadyExists' => ({required Object name}) => 'Ya existe: “${name}”.',
 			'fileOperation.error.notFound' => ({required Object name}) => 'No se encontró: “${name}”.',

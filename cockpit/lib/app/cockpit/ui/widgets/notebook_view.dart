@@ -82,6 +82,9 @@ class _NotebookViewState extends State<NotebookView> {
   /// Texto após um `[[` aberto na linha do cursor (autocomplete de nota);
   /// `null` = sem sugestão aberta.
   String? _linkQuery;
+
+  /// Coluna de notas recolhida (botão no cabeçalho, ao lado do caminho).
+  bool _listCollapsed = false;
   static const _autosaveDelay = Duration(milliseconds: 1500);
 
   CockpitViewModel get _vm => context.read<CockpitViewModel>();
@@ -892,28 +895,33 @@ class _NotebookViewState extends State<NotebookView> {
               onQuery: (q) => setState(() => _query = q),
               onNew: _newNote,
               onReload: _load,
+              listCollapsed: _listCollapsed,
+              onToggleList: () =>
+                  setState(() => _listCollapsed = !_listCollapsed),
             ),
             Expanded(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  SizedBox(
-                    width: 210,
-                    child: _NotesColumn(
-                      groups: _groups,
-                      loading: _loading,
-                      hasAny: _notes.isNotEmpty,
-                      selectedPath: _selectedPath,
-                      collapsed: _collapsed,
-                      onToggleGroup: (t) => setState(() {
-                        if (!_collapsed.remove(t)) _collapsed.add(t);
-                      }),
-                      onSelect: _select,
-                      onMenu: _noteMenu,
-                      onTagMenu: _tagMenu,
+                  if (!_listCollapsed)
+                    SizedBox(
+                      width: 210,
+                      child: _NotesColumn(
+                        groups: _groups,
+                        loading: _loading,
+                        hasAny: _notes.isNotEmpty,
+                        selectedPath: _selectedPath,
+                        collapsed: _collapsed,
+                        onToggleGroup: (t) => setState(() {
+                          if (!_collapsed.remove(t)) _collapsed.add(t);
+                        }),
+                        onSelect: _select,
+                        onMenu: _noteMenu,
+                        onTagMenu: _tagMenu,
+                      ),
                     ),
-                  ),
-                  VerticalDivider(width: 1, color: colors.border),
+                  if (!_listCollapsed)
+                    VerticalDivider(width: 1, color: colors.border),
                   Expanded(
                     child: _NoteColumn(
                       note: _selected,
@@ -959,6 +967,8 @@ class _NotebookViewState extends State<NotebookView> {
 class _Header extends StatelessWidget {
   const _Header({
     required this.path,
+    required this.listCollapsed,
+    required this.onToggleList,
     required this.search,
     required this.onQuery,
     required this.onNew,
@@ -967,6 +977,8 @@ class _Header extends StatelessWidget {
 
   /// Caminho do caderno relativo ao workspace (ou `~/…`, ou absoluto).
   final String path;
+  final bool listCollapsed;
+  final VoidCallback onToggleList;
   final TextEditingController search;
   final ValueChanged<String> onQuery;
   final VoidCallback onNew;
@@ -986,6 +998,14 @@ class _Header extends StatelessWidget {
         children: [
           // Caminho relativo ao workspace, como a barra do `.kanban`. Expanded
           // (não Spacer) pra absorver a sobra e empurrar busca/botões à borda.
+          _IconAction(
+            icon: listCollapsed
+                ? Icons.view_sidebar_outlined
+                : Icons.view_sidebar,
+            tooltip: listCollapsed ? tr.showList : tr.hideList,
+            onTap: onToggleList,
+          ),
+          const SizedBox(width: 8),
           Expanded(
             child: Text(
               path,

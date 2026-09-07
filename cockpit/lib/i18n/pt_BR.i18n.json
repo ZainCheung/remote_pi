@@ -831,7 +831,9 @@
       "backlinks": "Citada em",
       "renameTag": "Renomear tag",
       "deleteTag": "Apagar tag",
-      "deleteTagConfirm": "Remover “${name}” de ${count} notas? As notas ficam."
+      "deleteTagConfirm": "Remover “${name}” de ${count} notas? As notas ficam.",
+      "showList": "Mostrar lista de notas",
+      "hideList": "Ocultar lista de notas"
     }
   },
   "settings": {
