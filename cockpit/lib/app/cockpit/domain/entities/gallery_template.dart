@@ -28,30 +28,24 @@ enum GalleryTemplate {
         '\n'
         '## Done\n',
   ),
-  layout(
-    baseName: 'dev',
-    extension: 'ckp',
-    iconAsset: 'assets/branding/cockpit_logo.png',
+  notebook(
+    baseName: 'welcome',
+    extension: 'md',
+    relativeDir: 'notes.notebook',
+    fixedName: true,
+    opensParent: true,
+    iconAsset: 'assets/file_icons/folder-docs.svg',
     content:
-        '# Pane layout — apply with right-click → Open layout,\n'
-        '# or `cockpit orchestrate dev.ckp` from a tab.\n'
-        '# autorun: worktree   # apply automatically on new worktrees\n'
-        'panes:\n'
-        '  - name: Shell\n'
-        '    cwd: .\n'
-        '  - name: Agent\n'
-        '    cwd: .\n'
-        '    split: right\n'
-        '    command: claude\n',
-  ),
-  httpRequest(
-    baseName: 'requests',
-    extension: 'http',
-    iconAsset: 'assets/file_icons/http.svg',
-    content:
-        '### Ping\n'
-        'GET https://httpbin.org/get\n'
-        'Accept: application/json\n',
+        '---\n'
+        'title: Welcome\n'
+        'tags: [agent]\n'
+        'created: 2026-01-01T00:00\n'
+        'updated: 2026-01-01T00:00\n'
+        '---\n'
+        '\n'
+        'This folder is a **notebook**: one markdown file per note, each with a\n'
+        '`tags:` list in its frontmatter. Agents write notes here while they work;\n'
+        'you read, tag and edit them. Obsidian opens the same folder as-is.\n',
   ),
   html(
     baseName: 'view',
@@ -73,6 +67,15 @@ enum GalleryTemplate {
         '</body>\n'
         '</html>\n',
   ),
+  httpRequest(
+    baseName: 'requests',
+    extension: 'http',
+    iconAsset: 'assets/file_icons/http.svg',
+    content:
+        '### Ping\n'
+        'GET https://httpbin.org/get\n'
+        'Accept: application/json\n',
+  ),
   tasks(
     baseName: 'tasks',
     extension: 'json',
@@ -81,24 +84,21 @@ enum GalleryTemplate {
     iconAsset: 'assets/file_icons/console.svg',
     content: _tasksExample,
   ),
-  notebook(
-    baseName: 'welcome',
-    extension: 'md',
-    relativeDir: 'notes.notebook',
-    fixedName: true,
-    opensParent: true,
-    iconAsset: 'assets/file_icons/folder-docs.svg',
+  layout(
+    baseName: 'dev',
+    extension: 'ckp',
+    iconAsset: 'assets/branding/cockpit_logo.png',
     content:
-        '---\n'
-        'title: Welcome\n'
-        'tags: [agent]\n'
-        'created: 2026-01-01T00:00\n'
-        'updated: 2026-01-01T00:00\n'
-        '---\n'
-        '\n'
-        'This folder is a **notebook**: one markdown file per note, each with a\n'
-        '`tags:` list in its frontmatter. Agents write notes here while they work;\n'
-        'you read, tag and edit them. Obsidian opens the same folder as-is.\n',
+        '# Pane layout — apply with right-click → Open layout,\n'
+        '# or `cockpit orchestrate dev.ckp` from a tab.\n'
+        '# autorun: worktree   # apply automatically on new worktrees\n'
+        'panes:\n'
+        '  - name: Shell\n'
+        '    cwd: .\n'
+        '  - name: Agent\n'
+        '    cwd: .\n'
+        '    split: right\n'
+        '    command: claude\n',
   );
 
   const GalleryTemplate({
