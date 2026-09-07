@@ -52,6 +52,28 @@ class MarkdownEditingController extends TextEditingController {
   set value(TextEditingValue newValue) {
     final old = super.value;
     final sel = newValue.selection;
+    // Backspace logo depois de um marcador de lista ("- |", "- [ ] |", "1. |",
+    // "> |") apaga o marcador inteiro de uma vez — o usuário vê um ponto, não
+    // dois caracteres, então um Backspace só é o esperado.
+    if (sel.isCollapsed &&
+        old.selection.isCollapsed &&
+        newValue.text.length == old.text.length - 1 &&
+        sel.baseOffset == old.selection.baseOffset - 1 &&
+        old.text.substring(0, sel.baseOffset) ==
+            newValue.text.substring(0, sel.baseOffset)) {
+      final caret = old.selection.baseOffset;
+      final lineStart = old.text.lastIndexOf('\n', caret - 1) + 1;
+      final head = old.text.substring(lineStart, caret);
+      final m = _listPrefix.firstMatch(head);
+      if (m != null && m.group(0)!.length == head.length) {
+        final indent = m.group(1)!.length;
+        super.value = TextEditingValue(
+          text: old.text.replaceRange(lineStart + indent, caret, ''),
+          selection: TextSelection.collapsed(offset: lineStart + indent),
+        );
+        return;
+      }
+    }
     if (sel.isCollapsed &&
         newValue.text.length == old.text.length + 1 &&
         sel.baseOffset > 0 &&

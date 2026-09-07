@@ -119,4 +119,30 @@ void main() {
     await tester.pump();
     expect(c.text, 'a\n- [ ] dois');
   });
+
+  test('Backspace right after a list marker removes the whole marker', () {
+    final c = MarkdownEditingController(text: 'x\n- [ ] ');
+    c.selection = const TextSelection.collapsed(offset: 8);
+    c.value = const TextEditingValue(
+      text: 'x\n- [ ]',
+      selection: TextSelection.collapsed(offset: 7),
+    );
+    expect(c.text, 'x\n');
+    expect(c.selection.baseOffset, 2);
+    final b = MarkdownEditingController(text: '- abc');
+    b.selection = const TextSelection.collapsed(offset: 2);
+    b.value = const TextEditingValue(
+      text: '-abc',
+      selection: TextSelection.collapsed(offset: 1),
+    );
+    expect(b.text, 'abc');
+    // Backspace no meio do texto segue normal.
+    final n = MarkdownEditingController(text: '- abc');
+    n.selection = const TextSelection.collapsed(offset: 5);
+    n.value = const TextEditingValue(
+      text: '- ab',
+      selection: TextSelection.collapsed(offset: 4),
+    );
+    expect(n.text, '- ab');
+  });
 }
