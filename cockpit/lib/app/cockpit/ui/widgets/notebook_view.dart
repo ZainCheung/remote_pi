@@ -20,8 +20,7 @@ import 'package:pasteboard/pasteboard.dart';
 import 'package:flutter/material.dart'
     as material
     show TextField, InputDecoration, InputBorder;
-import 'package:flutter/services.dart'
-    show FilteringTextInputFormatter, LogicalKeyboardKey;
+import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
@@ -311,9 +310,7 @@ class _NotebookViewState extends State<NotebookView> {
     _titleFocus.requestFocus();
   }
 
-  /// Grava o título (autosave, perder o foco ou troca de nota). Quebra de
-  /// linha nunca entra (formatter), mas o campo **quebra visualmente** quando
-  /// o título é longo.
+  /// Grava o título (autosave, perder o foco ou troca de nota).
   Future<void> _commitTitle() async {
     _titleAutosave?.cancel();
     final sel = _selected;
@@ -961,7 +958,7 @@ class _NoteRow extends StatelessWidget {
                   ],
                   Expanded(
                     child: Text(
-                      n.title,
+                      n.title.replaceAll('\n', ' '),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: context.typo.label.copyWith(
@@ -1083,17 +1080,14 @@ class _NoteColumn extends StatelessWidget {
                       },
                       // Sempre um campo (sem alternar texto ↔ campo). Material
                       // sem decoração: o TextField do shadcn sempre desenha
-                      // anel de foco + fundo. Título longo quebra em várias
-                      // linhas visuais; Enter não insere quebra (o título é um
-                      // valor de uma linha no frontmatter).
+                      // anel de foco + fundo. Multilinha de verdade: Enter
+                      // quebra e o campo cresce; no frontmatter a quebra vai
+                      // como `\n` dentro de aspas.
                       child: material.TextField(
                         controller: titleCtrl,
                         focusNode: titleFocus,
                         maxLines: null,
-                        keyboardType: TextInputType.text,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.deny('\n'),
-                        ],
+                        keyboardType: TextInputType.multiline,
                         cursorColor: colors.text,
                         style: context.typo.label.copyWith(
                           fontSize: 18,

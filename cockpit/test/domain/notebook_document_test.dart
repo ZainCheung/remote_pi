@@ -74,4 +74,13 @@ Corpo.
     expect(n.body, 'new **bold**\n');
     expect(NotebookNote.replaceBody('plain', 'x'), 'x');
   });
+
+  test('multi-line title round-trips through the frontmatter', () {
+    final raw = NotebookNote.setTitle(
+      '---\ntags: [a]\n---\nb',
+      'Linha 1\nLinha "2"',
+    );
+    expect(raw, contains('title: "Linha 1\\nLinha \\"2\\""'));
+    expect(NotebookNote.parse('/n.md', raw).title, 'Linha 1\nLinha "2"');
+  });
 }

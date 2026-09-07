@@ -224,16 +224,27 @@ class NotebookNote {
     return DateTime.tryParse(_unquote(v).trim());
   }
 
+  /// Tira aspas simples/duplas; em aspas duplas, desfaz `\\n` e `\\"` (é como
+  /// [_quoteIfNeeded] grava título com quebra de linha).
   static String _unquote(String v) {
     final s = v.trim();
-    if (s.length >= 2 &&
-        ((s.startsWith('"') && s.endsWith('"')) ||
-            (s.startsWith("'") && s.endsWith("'")))) {
+    if (s.length >= 2 && s.startsWith('"') && s.endsWith('"')) {
+      return s
+          .substring(1, s.length - 1)
+          .replaceAll('\\n', '\n')
+          .replaceAll('\\"', '"');
+    }
+    if (s.length >= 2 && s.startsWith("'") && s.endsWith("'")) {
       return s.substring(1, s.length - 1);
     }
     return s;
   }
 
-  static String _quoteIfNeeded(String v) =>
-      v.contains(':') || v.contains('#') ? '"${v.replaceAll('"', '\\"')}"' : v;
+  /// Aspas duplas quando o valor tem `:`/`#` (YAML) ou quebra de linha — a
+  /// quebra vira `\\n` pra o frontmatter continuar com uma linha por chave.
+  static String _quoteIfNeeded(String v) {
+    if (!v.contains(':') && !v.contains('#') && !v.contains('\n')) return v;
+    final esc = v.replaceAll('"', '\\"').replaceAll('\n', '\\n');
+    return '"$esc"';
+  }
 }
