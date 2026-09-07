@@ -1,5 +1,6 @@
 import 'package:cockpit/app/core/ui/themes/themes.dart';
 import 'package:cockpit/app/core/ui/widgets/markdown_editing_controller.dart';
+import 'package:flutter/material.dart' as material;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' show ShadcnApp, Brightness;
@@ -24,7 +25,8 @@ void main() {
         ),
       ),
     );
-    expect(span.toPlainText(), src);
+    // WidgetSpan vira U+FFFC no plain text; fora disso o texto é idêntico.
+    expect(span.toPlainText().length, src.length);
     var boldSeen = false;
     span.visitChildren((s) {
       if (s is TextSpan && s.text == 'bold') {
@@ -70,5 +72,32 @@ void main() {
       selection: TextSelection.collapsed(offset: 8),
     );
     expect(t.text, '- [x] y\n- [ ] ');
+  });
+
+  testWidgets('renders inside a real TextField (inline glyphs allowed)', (
+    tester,
+  ) async {
+    final c = MarkdownEditingController(text: '- um\n- [x] dois\n**b**');
+    await tester.pumpWidget(
+      ShadcnApp(
+        theme: buildTheme(brightness: Brightness.dark),
+        home: material.Material(
+          child: material.TextField(controller: c, maxLines: null),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.byType(material.TextField), findsOneWidget);
+    // Digitar e mover o cursor por cima dos glifos não pode estourar.
+    await tester.tap(find.byType(material.TextField));
+    await tester.pump();
+    c.selection = const TextSelection.collapsed(offset: 1);
+    await tester.pump();
+    await tester.enterText(
+      find.byType(material.TextField),
+      '- um x\n- [x] dois\n**b**',
+    );
+    await tester.pump();
+    expect(tester.takeException(), isNull);
   });
 }

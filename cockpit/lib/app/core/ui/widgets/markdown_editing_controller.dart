@@ -1,4 +1,5 @@
 import 'package:cockpit/app/core/ui/themes/themes.dart';
+import 'package:flutter/material.dart' show Icons;
 import 'package:flutter/widgets.dart';
 
 /// `TextEditingController` que pinta markdown **ao vivo** enquanto se digita:
@@ -160,19 +161,21 @@ class MarkdownEditingController extends TextEditingController {
         spans.add(TextSpan(text: nl, style: base));
       } else if (_task.firstMatch(line) case final m?) {
         final done = m.group(2)!.contains(RegExp(r'\[[xX]\]'));
-        final mk = m.group(2)!; // "- [ ] "
+        final mk = m.group(2)!; // "- [ ] " — 6 chars: - ␠ [ x ] ␠
         spans.add(TextSpan(text: m.group(1), style: base));
-        // "- " some fora da linha do cursor; a caixa "[ ]"/"[x]" fica sempre.
-        spans.add(TextSpan(text: mk.substring(0, 2), style: marker));
+        // Some "- [" e "]"; o caractere de dentro vira a caixa desenhada.
+        // Cada WidgetSpan substitui exatamente UM caractere → os offsets
+        // do texto batem e o cursor segue certo.
+        spans.add(TextSpan(text: mk.substring(0, 3), style: hidden));
         spans.add(
-          TextSpan(
-            text: mk.substring(2),
-            style: base.copyWith(
-              color: done ? colors.online : colors.accent,
-              fontWeight: FontWeight.w600,
-            ),
+          _glyph(
+            done ? Icons.check_box : Icons.check_box_outline_blank,
+            base,
+            done ? colors.online : colors.accent,
           ),
         );
+        spans.add(TextSpan(text: mk.substring(4, 5), style: hidden));
+        spans.add(TextSpan(text: mk.substring(5), style: base));
         final body = done
             ? base.copyWith(
                 color: colors.text3,
@@ -181,8 +184,15 @@ class MarkdownEditingController extends TextEditingController {
             : base;
         spans.addAll(_inlineSpans(m.group(3)!, body, colors, marker, mono));
         spans.add(TextSpan(text: nl, style: base));
-      } else if ((_bullet.firstMatch(line) ?? _numbered.firstMatch(line))
-          case final m?) {
+      } else if (_bullet.firstMatch(line) case final m?) {
+        // "- texto" → "• texto": o hífen vira um ponto desenhado (1 char ↔ 1
+        // WidgetSpan), o espaço fica.
+        spans.add(TextSpan(text: m.group(1), style: base));
+        spans.add(_glyph(Icons.circle, base, colors.text2, scale: 0.42));
+        spans.add(TextSpan(text: m.group(2)!.substring(1), style: base));
+        spans.addAll(_inlineSpans(m.group(3)!, base, colors, marker, mono));
+        spans.add(TextSpan(text: nl, style: base));
+      } else if (_numbered.firstMatch(line) case final m?) {
         spans.add(TextSpan(text: m.group(1), style: base));
         spans.add(
           TextSpan(
@@ -216,6 +226,27 @@ class MarkdownEditingController extends TextEditingController {
     }
     assert(offset == text.length);
     return TextSpan(style: base, children: spans);
+  }
+
+  /// Ícone inline no lugar de um caractere. `alignment: middle` centra na
+  /// linha; o tamanho segue a fonte do texto.
+  static WidgetSpan _glyph(
+    IconData icon,
+    TextStyle base,
+    Color color, {
+    double scale = 1.0,
+  }) {
+    final size = (base.fontSize ?? 14) * 1.1;
+    return WidgetSpan(
+      alignment: PlaceholderAlignment.middle,
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: Center(
+          child: Icon(icon, size: size * scale, color: color),
+        ),
+      ),
+    );
   }
 
   static List<InlineSpan> _inlineSpans(
