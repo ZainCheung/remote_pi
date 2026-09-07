@@ -10,6 +10,9 @@ import 'package:cockpit/app/core/ui/widgets/code_editing_controller.dart';
 import 'package:cockpit/app/core/ui/widgets/hover_tap.dart';
 import 'package:cockpit/app/core/utils/path_utils.dart';
 import 'package:cockpit/i18n/strings.g.dart';
+import 'package:flutter/material.dart'
+    as material
+    show TextField, InputDecoration, InputBorder;
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
@@ -749,17 +752,24 @@ class _NoteColumn extends StatelessWidget {
                         onFocusChange: (has) {
                           if (!has) onCommitTitle();
                         },
-                        child: TextField(
+                        // Material sem decoração: o TextField do shadcn
+                        // sempre desenha anel de foco + fundo, e aqui o
+                        // título tem que parecer texto puro em edição.
+                        child: material.TextField(
                           controller: titleCtrl,
                           focusNode: titleFocus,
+                          maxLines: 1,
+                          cursorColor: colors.text,
                           style: context.typo.label.copyWith(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                             color: colors.text,
                           ),
-                          border: Border.all(color: Colors.transparent),
-                          borderRadius: BorderRadius.zero,
-                          padding: EdgeInsets.zero,
+                          decoration: const material.InputDecoration(
+                            isCollapsed: true,
+                            border: material.InputBorder.none,
+                            contentPadding: EdgeInsets.zero,
+                          ),
                           onSubmitted: (_) => onCommitTitle(),
                         ),
                       )
