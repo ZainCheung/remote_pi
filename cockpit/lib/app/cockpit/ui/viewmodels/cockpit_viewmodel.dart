@@ -786,10 +786,15 @@ class CockpitViewModel extends ChangeNotifier {
         final joined = path.endsWith('/')
             ? '$path${e.name}'
             : '$path/${e.name}';
-        (e.isDirectory ? dirs : files).add(
+        // `.notebook` ordena entre os arquivos (mesma regra do lister local).
+        (e.isDirectory && !isNotebookFolder(e.name) ? dirs : files).add(
           FileNode(name: e.name, path: joined, isDirectory: e.isDirectory),
         );
       }
+      int byName(FileNode a, FileNode b) =>
+          a.name.toLowerCase().compareTo(b.name.toLowerCase());
+      dirs.sort(byName);
+      files.sort(byName);
       return [...dirs, ...files];
     } catch (_) {
       // Falha de conexão/permissão → árvore vazia (sem crash); o badge de
