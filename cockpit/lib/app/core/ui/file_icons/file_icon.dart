@@ -18,6 +18,8 @@ const Map<String, String> _extensionOverrides = {
   'kanban': 'todo',
   'http': 'http',
   'rest': 'http',
+  // Caderno: SVG nosso (tile preto, bloco de notas branco), não do tema.
+  'notebook': 'cockpit-notebook',
 };
 
 String fileIconName(String fileName) {
@@ -88,13 +90,12 @@ class FileTypeIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // `.ckp` (layout), `.notebook` (caderno) e a pasta `.cockpit/` (config)
-    // usam o logo do próprio Cockpit — não são tipos que o material-icon-theme
-    // conheça.
+    // `.ckp` (layout) e a pasta `.cockpit/` (config) usam o logo do próprio
+    // Cockpit — não são tipos que o material-icon-theme conheça. O `.notebook`
+    // tem SVG próprio via `_extensionOverrides` (a árvore o renderiza como
+    // arquivo, então cai em `fileIconName`).
     final lower = name.toLowerCase();
-    if (lower.endsWith('.ckp') ||
-        lower.endsWith('.notebook') ||
-        (_isFolder && lower == '.cockpit')) {
+    if (lower.endsWith('.ckp') || (_isFolder && lower == '.cockpit')) {
       return Image.asset(
         'assets/branding/cockpit_logo.png',
         width: size,

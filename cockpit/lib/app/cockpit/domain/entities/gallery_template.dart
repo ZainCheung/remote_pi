@@ -34,7 +34,7 @@ enum GalleryTemplate {
     relativeDir: 'notes.notebook',
     fixedName: true,
     opensParent: true,
-    iconAsset: 'assets/file_icons/folder-docs.svg',
+    iconAsset: 'assets/file_icons/cockpit-notebook.svg',
     content:
         '---\n'
         'title: Welcome\n'
