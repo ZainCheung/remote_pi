@@ -2481,6 +2481,8 @@ class Translations$cockpit$gallery$en {
 	late final Translations$cockpit$gallery$kanban$en kanban = Translations$cockpit$gallery$kanban$en.internal(_root);
 	late final Translations$cockpit$gallery$layout$en layout = Translations$cockpit$gallery$layout$en.internal(_root);
 	late final Translations$cockpit$gallery$httpRequest$en httpRequest = Translations$cockpit$gallery$httpRequest$en.internal(_root);
+	late final Translations$cockpit$gallery$html$en html = Translations$cockpit$gallery$html$en.internal(_root);
+	late final Translations$cockpit$gallery$tasks$en tasks = Translations$cockpit$gallery$tasks$en.internal(_root);
 }
 
 // Path: settings.language
@@ -2957,6 +2959,36 @@ class Translations$cockpit$gallery$httpRequest$en {
 
 	/// en: 'Write requests in a file and run them with the response side by side.'
 	String get description => 'Write requests in a file and run them with the response side by side.';
+}
+
+// Path: cockpit.gallery.html
+class Translations$cockpit$gallery$html$en {
+	Translations$cockpit$gallery$html$en.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'HTML view'
+	String get title => 'HTML view';
+
+	/// en: 'A page the agent writes and Cockpit renders directly — mind maps, diagrams, charts, anything.'
+	String get description => 'A page the agent writes and Cockpit renders directly — mind maps, diagrams, charts, anything.';
+}
+
+// Path: cockpit.gallery.tasks
+class Translations$cockpit$gallery$tasks$en {
+	Translations$cockpit$gallery$tasks$en.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Tasks'
+	String get title => 'Tasks';
+
+	/// en: 'Commands to run from the Tasks panel (dev server, tests, build). Lives in .cockpit/tasks.json.'
+	String get description => 'Commands to run from the Tasks panel (dev server, tests, build). Lives in .cockpit/tasks.json.';
 }
 
 // Path: settings.page.header
@@ -4563,6 +4595,10 @@ extension on Translations {
 			'cockpit.gallery.layout.description' => 'Terminals and splits to open at once, like tmuxinator. Can autorun on new worktrees.',
 			'cockpit.gallery.httpRequest.title' => 'HTTP requests',
 			'cockpit.gallery.httpRequest.description' => 'Write requests in a file and run them with the response side by side.',
+			'cockpit.gallery.html.title' => 'HTML view',
+			'cockpit.gallery.html.description' => 'A page the agent writes and Cockpit renders directly — mind maps, diagrams, charts, anything.',
+			'cockpit.gallery.tasks.title' => 'Tasks',
+			'cockpit.gallery.tasks.description' => 'Commands to run from the Tasks panel (dev server, tests, build). Lives in .cockpit/tasks.json.',
 			'settings.language.title' => 'Language',
 			'settings.language.system' => 'System',
 			'settings.language.english' => 'English',

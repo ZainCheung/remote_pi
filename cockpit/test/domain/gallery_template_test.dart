@@ -19,6 +19,12 @@ void main() {
     });
   });
 
+  test('tasks lives under .cockpit with a fixed name', () {
+    expect(GalleryTemplate.tasks.relativePath, '.cockpit/tasks.json');
+    expect(GalleryTemplate.tasks.fixedName, isTrue);
+    expect(GalleryTemplate.html.relativePath, 'view.html');
+  });
+
   test('every template has content and a colored asset', () {
     for (final t in GalleryTemplate.values) {
       expect(t.content, isNotEmpty);

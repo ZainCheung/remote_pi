@@ -1217,6 +1217,8 @@ class _Translations$cockpit$gallery$es extends Translations$cockpit$gallery$en {
 	@override late final _Translations$cockpit$gallery$kanban$es kanban = _Translations$cockpit$gallery$kanban$es._(_root);
 	@override late final _Translations$cockpit$gallery$layout$es layout = _Translations$cockpit$gallery$layout$es._(_root);
 	@override late final _Translations$cockpit$gallery$httpRequest$es httpRequest = _Translations$cockpit$gallery$httpRequest$es._(_root);
+	@override late final _Translations$cockpit$gallery$html$es html = _Translations$cockpit$gallery$html$es._(_root);
+	@override late final _Translations$cockpit$gallery$tasks$es tasks = _Translations$cockpit$gallery$tasks$es._(_root);
 }
 
 // Path: settings.language
@@ -1469,6 +1471,28 @@ class _Translations$cockpit$gallery$httpRequest$es extends Translations$cockpit$
 	// Translations
 	@override String get title => 'Requests HTTP';
 	@override String get description => 'Escribe requests en un archivo y ejecútalos con la respuesta al lado.';
+}
+
+// Path: cockpit.gallery.html
+class _Translations$cockpit$gallery$html$es extends Translations$cockpit$gallery$html$en {
+	_Translations$cockpit$gallery$html$es._(TranslationsEs root) : this._root = root, super.internal(root);
+
+	final TranslationsEs _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Vista HTML';
+	@override String get description => 'Una página que el agente escribe y Cockpit renderiza directo: mapa mental, diagrama, gráfico, lo que sea.';
+}
+
+// Path: cockpit.gallery.tasks
+class _Translations$cockpit$gallery$tasks$es extends Translations$cockpit$gallery$tasks$en {
+	_Translations$cockpit$gallery$tasks$es._(TranslationsEs root) : this._root = root, super.internal(root);
+
+	final TranslationsEs _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Tareas';
+	@override String get description => 'Comandos para ejecutar desde el panel de Tasks (dev server, tests, build). Vive en .cockpit/tasks.json.';
 }
 
 // Path: settings.page.header
@@ -2538,6 +2562,10 @@ extension on TranslationsEs {
 			'cockpit.gallery.layout.description' => 'Terminales y splits para abrir de una vez, estilo tmuxinator. Puede ejecutarse solo en worktrees nuevos.',
 			'cockpit.gallery.httpRequest.title' => 'Requests HTTP',
 			'cockpit.gallery.httpRequest.description' => 'Escribe requests en un archivo y ejecútalos con la respuesta al lado.',
+			'cockpit.gallery.html.title' => 'Vista HTML',
+			'cockpit.gallery.html.description' => 'Una página que el agente escribe y Cockpit renderiza directo: mapa mental, diagrama, gráfico, lo que sea.',
+			'cockpit.gallery.tasks.title' => 'Tareas',
+			'cockpit.gallery.tasks.description' => 'Comandos para ejecutar desde el panel de Tasks (dev server, tests, build). Vive en .cockpit/tasks.json.',
 			'settings.language.title' => 'Idioma',
 			'settings.language.system' => 'Sistema',
 			'settings.language.english' => 'Inglés',

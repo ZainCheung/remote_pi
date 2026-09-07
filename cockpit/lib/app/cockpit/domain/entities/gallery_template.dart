@@ -1,7 +1,8 @@
 /// Um "documento especial" do Cockpit que a aba Gallery sabe criar na raiz do
 /// workspace: extensão própria + conteúdo inicial que já abre na tab certa
 /// (`.dbq` → editor SQL, `.kanban` → quadro, `.ckp` → layout, `.http` →
-/// cliente HTTP). Título/descrição são i18n na UI; aqui só o que é dado.
+/// cliente HTTP, `.html` → preview renderizado, `.cockpit/tasks.json` → aba
+/// Tasks). Título/descrição são i18n na UI; aqui só o que é dado.
 enum GalleryTemplate {
   dbQuery(
     baseName: 'query',
@@ -51,6 +52,34 @@ enum GalleryTemplate {
         '### Ping\n'
         'GET https://httpbin.org/get\n'
         'Accept: application/json\n',
+  ),
+  html(
+    baseName: 'view',
+    extension: 'html',
+    iconAsset: 'assets/file_icons/html.svg',
+    content:
+        '<!doctype html>\n'
+        '<html lang="en">\n'
+        '<head>\n'
+        '  <meta charset="utf-8">\n'
+        '  <title>View</title>\n'
+        '  <style>\n'
+        '    body { font-family: system-ui, sans-serif; margin: 2rem; }\n'
+        '  </style>\n'
+        '</head>\n'
+        '<body>\n'
+        '  <h1>Hello from Cockpit</h1>\n'
+        '  <p>Ask the agent to draw anything here — a mind map, a diagram, a chart.</p>\n'
+        '</body>\n'
+        '</html>\n',
+  ),
+  tasks(
+    baseName: 'tasks',
+    extension: 'json',
+    relativeDir: '.cockpit',
+    fixedName: true,
+    iconAsset: 'assets/file_icons/console.svg',
+    content: _tasksExample,
   );
 
   const GalleryTemplate({
@@ -58,7 +87,18 @@ enum GalleryTemplate {
     required this.extension,
     required this.iconAsset,
     required this.content,
+    this.relativeDir = '',
+    this.fixedName = false,
   });
+
+  /// Subpasta (relativa à raiz) onde o arquivo mora; vazio = raiz. A pasta é
+  /// criada quando falta.
+  final String relativeDir;
+
+  /// `true` = o nome é contrato do app (ex.: `.cockpit/tasks.json` é o único
+  /// que a aba Tasks lê): se já existe, **abre** o existente em vez de criar
+  /// um `-2`.
+  final bool fixedName;
 
   /// Nome sugerido sem extensão (`dev` → `dev.ckp`, `dev-2.ckp` se já existe).
   final String baseName;
@@ -72,6 +112,11 @@ enum GalleryTemplate {
 
   String get fileName => '$baseName.$extension';
 
+  /// Caminho relativo à raiz, com a subpasta quando houver
+  /// (`.cockpit/tasks.json`).
+  String get relativePath =>
+      relativeDir.isEmpty ? fileName : '$relativeDir/$fileName';
+
   /// Primeiro nome livre dado o conjunto de [taken] (basenames da raiz,
   /// comparados sem case): `dev.ckp`, `dev-2.ckp`, `dev-3.ckp`…
   String uniqueFileName(Iterable<String> taken) {
@@ -83,3 +128,77 @@ enum GalleryTemplate {
     }
   }
 }
+
+/// Modelo de `.cockpit/tasks.json` gerado pelo botão "Create tasks.json":
+/// um exemplo de Flutter (watch + hot reload), Node e C#. O usuário edita os
+/// `cwd`/comandos pro projeto dele. Ver `docs/tasks-json.md`.
+const String _tasksExample = '''
+{
+  // .cockpit/tasks.json — Cockpit Task Run config (JSONC: // , /* */ and
+  // trailing commas are allowed; they're stripped before parsing).
+  // Lives at the workspace root you open in Cockpit. Detected tasks (npm
+  // scripts, pubspec) appear automatically; this file adds/overrides them.
+  // Full reference: cockpit/docs/tasks-json.md
+  "tasks": [
+    {
+      "label": "Flutter Example", // shown in the Tasks list
+      "cwd": "app", // run dir, relative to this file (monorepo-friendly)
+      "command": "flutter", // base executable
+      "args": ["run"], // base args, before the profile
+      "kind": "watch", // "watch" = long-running (dev server); else "oneShot"
+      // Optional: only show this task on some OSes — "macos" | "windows" |
+      // "linux", as a string or array. Omitted -> visible everywhere.
+      // "platforms": ["macos", "linux"],
+      // Interactive keys -> buttons that write a key to the process stdin.
+      // primary=true shows a fixed button; the rest go under a key menu.
+      // icon: bolt | refresh | restart | stop (omit -> a chip with the key).
+      "interactiveKeys": [
+        { "key": "r", "label": "Hot reload", "icon": "bolt", "primary": true },
+        { "key": "R", "label": "Hot restart", "icon": "restart", "primary": true },
+        { "key": "p", "label": "Toggle debug paint" },
+        { "key": "o", "label": "Toggle platform" }
+      ],
+      // Reload-on-save: `flutter run` doesn't reload on save by itself (that's
+      // an IDE plugin) — Cockpit watches the files and fires `onChange`.
+      "watch": {
+        "paths": ["lib", "assets"], // dirs to watch (relative to cwd)
+        "ignore": ["build", ".dart_tool"], // skip these (avoid loops)
+        "onChange": "Hot reload", // an interactiveKey label, or "__restart__"
+        "debounceMs": 300 // wait after a change before firing
+      },
+      // Drive the building/running badge by matching the output.
+      "progressPatterns": [
+        { "begin": "Performing hot reload", "end": "Reloaded .* in .*ms" },
+        { "begin": "Performing hot restart", "end": "Restarted application in .*ms" }
+      ],
+      // Named arg/env variants, picked by the chip before Run (flavor /
+      // dart-define just become args here — no stack-specific keys).
+      "profiles": [
+        { "name": "web", "args": ["-d", "chrome"] },
+        { "name": "macos", "args": ["-d", "macos"] }
+      ]
+    },
+    {
+      // No "kind" -> defaults to "oneShot".
+      "label": "Node Example",
+      "cwd": "site",
+      "command": "npm",
+      "args": ["run", "dev"]
+      // Browser auto-open. "preview": true (default) opens the first local URL
+      // found in the output; false turns it off; a string opens that fixed URL
+      // right at start.
+      // "preview": "http://localhost:3000",
+      // When it opens: "always" (default: start and restart), "start" (only on
+      // start — Restart and the file watcher won't reopen it) or "never".
+      // "previewOpen": "start",
+    },
+    {
+      "label": "C# Example",
+      "cwd": "api",
+      "command": "dotnet",
+      "args": ["watch", "run"],
+      "kind": "watch"
+    }
+  ]
+}
+''';

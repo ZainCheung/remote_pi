@@ -1217,6 +1217,8 @@ class _Translations$cockpit$gallery$pt_BR extends Translations$cockpit$gallery$e
 	@override late final _Translations$cockpit$gallery$kanban$pt_BR kanban = _Translations$cockpit$gallery$kanban$pt_BR._(_root);
 	@override late final _Translations$cockpit$gallery$layout$pt_BR layout = _Translations$cockpit$gallery$layout$pt_BR._(_root);
 	@override late final _Translations$cockpit$gallery$httpRequest$pt_BR httpRequest = _Translations$cockpit$gallery$httpRequest$pt_BR._(_root);
+	@override late final _Translations$cockpit$gallery$html$pt_BR html = _Translations$cockpit$gallery$html$pt_BR._(_root);
+	@override late final _Translations$cockpit$gallery$tasks$pt_BR tasks = _Translations$cockpit$gallery$tasks$pt_BR._(_root);
 }
 
 // Path: settings.language
@@ -1469,6 +1471,28 @@ class _Translations$cockpit$gallery$httpRequest$pt_BR extends Translations$cockp
 	// Translations
 	@override String get title => 'Requests HTTP';
 	@override String get description => 'Escreva requests num arquivo e execute com a resposta ao lado.';
+}
+
+// Path: cockpit.gallery.html
+class _Translations$cockpit$gallery$html$pt_BR extends Translations$cockpit$gallery$html$en {
+	_Translations$cockpit$gallery$html$pt_BR._(TranslationsPtBr root) : this._root = root, super.internal(root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Visual HTML';
+	@override String get description => 'Uma página que o agente escreve e o Cockpit renderiza direto — mapa mental, diagrama, gráfico, o que for.';
+}
+
+// Path: cockpit.gallery.tasks
+class _Translations$cockpit$gallery$tasks$pt_BR extends Translations$cockpit$gallery$tasks$en {
+	_Translations$cockpit$gallery$tasks$pt_BR._(TranslationsPtBr root) : this._root = root, super.internal(root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Tarefas';
+	@override String get description => 'Comandos pra rodar pelo painel de Tasks (dev server, testes, build). Mora em .cockpit/tasks.json.';
 }
 
 // Path: settings.page.header
@@ -2538,6 +2562,10 @@ extension on TranslationsPtBr {
 			'cockpit.gallery.layout.description' => 'Terminais e splits pra abrir de uma vez, estilo tmuxinator. Pode rodar sozinho em worktrees novas.',
 			'cockpit.gallery.httpRequest.title' => 'Requests HTTP',
 			'cockpit.gallery.httpRequest.description' => 'Escreva requests num arquivo e execute com a resposta ao lado.',
+			'cockpit.gallery.html.title' => 'Visual HTML',
+			'cockpit.gallery.html.description' => 'Uma página que o agente escreve e o Cockpit renderiza direto — mapa mental, diagrama, gráfico, o que for.',
+			'cockpit.gallery.tasks.title' => 'Tarefas',
+			'cockpit.gallery.tasks.description' => 'Comandos pra rodar pelo painel de Tasks (dev server, testes, build). Mora em .cockpit/tasks.json.',
 			'settings.language.title' => 'Idioma',
 			'settings.language.system' => 'Sistema',
 			'settings.language.english' => 'Inglês',

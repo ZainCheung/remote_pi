@@ -2223,8 +2223,10 @@ class CockpitViewModel extends ChangeNotifier {
 
   /// Cria o documento de [template] na **raiz do workspace** ativo (em
   /// multi-root é a pasta-mãe, não um dos repos) e abre na tab. Nome livre
-  /// (`dev.ckp` → `dev-2.ckp`…). Funciona local e remoto: no remoto lista a
-  /// raiz via `fs.list` pra achar o nome e grava via `fs.write`.
+  /// (`dev.ckp` → `dev-2.ckp`…), salvo `fixedName` (ex.: `.cockpit/tasks.json`),
+  /// que **abre** o existente. Subpasta (`relativeDir`) é criada quando falta.
+  /// Funciona local e remoto: no remoto lista a pasta via `fs.list` pra achar
+  /// o nome e grava via `fs.write` (o host cria a pasta-pai).
   Future<Result<String, FileOperationError>> createFromTemplate(
     GalleryTemplate template,
   ) async {
@@ -2234,17 +2236,30 @@ class CockpitViewModel extends ChangeNotifier {
         FileOperationError(FileOperationErrorKind.noWorkspace),
       );
     }
+    final dir = template.relativeDir.isEmpty
+        ? root
+        : joinPath(root, template.relativeDir);
     final host = _activeRemoteHost();
-    final Iterable<String> taken;
+    var taken = const <String>[];
     try {
       if (host != null) {
         final service = await _remoteHosts.fileServiceFor(host);
-        taken = (await service.list(root)).map((e) => e.name);
+        try {
+          taken = (await service.list(dir)).map((e) => e.name).toList();
+        } catch (_) {
+          // Subpasta ainda não existe no host — nada tomado.
+          if (template.relativeDir.isEmpty) rethrow;
+        }
       } else {
-        taken = await Directory(root)
-            .list(followLinks: false)
-            .map((e) => e.path.split(Platform.pathSeparator).last)
-            .toList();
+        final d = Directory(dir);
+        if (await d.exists()) {
+          taken = await d
+              .list(followLinks: false)
+              .map((e) => e.path.split(Platform.pathSeparator).last)
+              .toList();
+        } else if (template.relativeDir.isNotEmpty) {
+          await d.create(recursive: true);
+        }
       }
     } catch (e) {
       return Failure(
@@ -2254,8 +2269,17 @@ class CockpitViewModel extends ChangeNotifier {
         ),
       );
     }
-    final name = template.uniqueFileName(taken);
-    final path = joinPath(root, name);
+    final lowerTaken = taken.map((n) => n.toLowerCase()).toSet();
+    if (template.fixedName &&
+        lowerTaken.contains(template.fileName.toLowerCase())) {
+      final existing = joinPath(dir, template.fileName);
+      await openFile(existing, isPreview: false);
+      return Success(existing);
+    }
+    final name = template.fixedName
+        ? template.fileName
+        : template.uniqueFileName(taken);
+    final path = joinPath(dir, name);
     if (host != null) {
       try {
         final service = await _remoteHosts.fileServiceFor(host);

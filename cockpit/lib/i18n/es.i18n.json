@@ -779,6 +779,14 @@
       "httpRequest": {
         "title": "Requests HTTP",
         "description": "Escribe requests en un archivo y ejecútalos con la respuesta al lado."
+      },
+      "html": {
+        "title": "Vista HTML",
+        "description": "Una página que el agente escribe y Cockpit renderiza directo: mapa mental, diagrama, gráfico, lo que sea."
+      },
+      "tasks": {
+        "title": "Tareas",
+        "description": "Comandos para ejecutar desde el panel de Tasks (dev server, tests, build). Vive en .cockpit/tasks.json."
       }
     }
   },

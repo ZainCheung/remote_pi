@@ -779,6 +779,14 @@
       "httpRequest": {
         "title": "HTTP requests",
         "description": "Write requests in a file and run them with the response side by side."
+      },
+      "html": {
+        "title": "HTML view",
+        "description": "A page the agent writes and Cockpit renders directly — mind maps, diagrams, charts, anything."
+      },
+      "tasks": {
+        "title": "Tasks",
+        "description": "Commands to run from the Tasks panel (dev server, tests, build). Lives in .cockpit/tasks.json."
       }
     }
   },
