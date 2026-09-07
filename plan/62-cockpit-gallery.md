@@ -1,8 +1,8 @@
 # 62 — Cockpit: aba Gallery (documentos especiais)
 
 > **Status**: PARCIAL. Passos 1 e 2 implementados (2026-09-07). Mermaid
-> cortado. Caderno (passo 4) com **design aprovado**; 4a, 4b, CLI e a barra de
-> formatação feitos; faltam WYSIWYG (4c) e links (4d).
+> cortado. Caderno (passo 4) com **design aprovado**; 4a, 4b, 4c e CLI feitos;
+> falta 4d (links `[[...]]` + backlinks).
 
 ## Contexto
 
@@ -96,6 +96,7 @@ edita cru e depois troca pra preview". Decisões fechadas (2026-09-07):
 | **N8** | **Duas colunas**, sem coluna de tags: lista à esquerda **agrupada por tag** (sem tag primeiro, depois `agent`, depois alfabético; nota com N tags aparece em N grupos, estilo Apple Notes) e nota no centro |
 | **N9** | Tags editáveis **no rodapé da nota**: chips removíveis + campo "adicionar tag". Título edita **inline** ao clicar (campo sem borda). **Sem datas** na UI |
 | **N10** | "Nova nota" cria `Untitled` direto, seleciona e foca o título. O nome do arquivo não acompanha o título (metadado só) |
+| **N11** | Edição é **markdown ao vivo** num só modo (sem alternar fonte/preview): formatação pintada sobre o texto, marcadores visíveis esmaecidos. Sem editor rico de terceiros |
 
 Implementado (commits `5ed3d60` → `d1e19fe`): `NotebookNote` (domain),
 `NotebookSession`, `NotebookView` (lista agrupada, preview markdown, edição do
