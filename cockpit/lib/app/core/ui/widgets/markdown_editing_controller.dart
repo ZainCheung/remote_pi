@@ -482,14 +482,17 @@ class _InlineImage extends StatelessWidget {
   final String path;
   final String alt;
 
+  static const double boxHeight = 220;
+  static const double boxWidth = 480;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: SizedBox(
-        width: 480,
-        height: 220,
+        width: boxWidth,
+        height: boxHeight,
         child: Align(
           alignment: Alignment.centerLeft,
           child: ClipRRect(

@@ -1330,6 +1330,12 @@ class _NoteColumn extends StatelessWidget {
                   focusNode: editorFocus,
                   maxLines: null,
                   minLines: 8,
+                  // O TextField do Material força altura de linha fixa via
+                  // StrutStyle → títulos maiores e a caixa da imagem não
+                  // entravam na medida do campo (a imagem "vazava" por cima
+                  // e a 1ª linha sumia sem scroll). Sem strut, cada linha
+                  // mede o que contém.
+                  strutStyle: StrutStyle.disabled,
                   textAlignVertical: TextAlignVertical.top,
                   keyboardType: TextInputType.multiline,
                   cursorColor: colors.text,

@@ -194,4 +194,33 @@ void main() {
     expect(opened, 'Outra nota');
     expect(c.text, 'x\nveja [[Outra nota]] ok');
   });
+
+  testWidgets('tall inline image makes the field grow (strut disabled)', (
+    tester,
+  ) async {
+    final c = MarkdownEditingController(
+      text: 'linha 1\n![](nope.png)\nlinha 3',
+      imageBaseDir: '/tmp/none.notebook',
+    );
+    final key = GlobalKey();
+    await tester.pumpWidget(
+      ShadcnApp(
+        theme: buildTheme(brightness: Brightness.dark),
+        home: material.Material(
+          child: SingleChildScrollView(
+            child: material.TextField(
+              key: key,
+              controller: c,
+              maxLines: null,
+              strutStyle: StrutStyle.disabled,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    final box = key.currentContext!.findRenderObject() as RenderBox;
+    // 3 linhas de texto (~72) + caixa da imagem (220) → bem acima de 200.
+    expect(box.size.height, greaterThan(200));
+  });
 }
