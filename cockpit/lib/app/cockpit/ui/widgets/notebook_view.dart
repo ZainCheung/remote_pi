@@ -69,6 +69,10 @@ class _NotebookViewState extends State<NotebookView> {
   StreamSubscription<void>? _watch;
   Timer? _watchDebounce;
 
+  /// Autosave: reinicia a cada tecla; grava quando o usuário para de digitar.
+  Timer? _autosave;
+  static const _autosaveDelay = Duration(milliseconds: 1500);
+
   CockpitViewModel get _vm => context.read<CockpitViewModel>();
 
   @override
@@ -87,6 +91,7 @@ class _NotebookViewState extends State<NotebookView> {
 
   @override
   void dispose() {
+    _flush();
     _watchDebounce?.cancel();
     _watch?.cancel();
     widget.session.removeListener(_onSession);
@@ -112,6 +117,14 @@ class _NotebookViewState extends State<NotebookView> {
     final sel = _selected;
     final dirty = sel != null && _editor.text != sel.body;
     if (dirty != _dirty) setState(() => _dirty = dirty);
+    _autosave?.cancel();
+    if (dirty) _autosave = Timer(_autosaveDelay, _save);
+  }
+
+  /// Grava agora o que estiver pendente (troca de nota, fechar a aba).
+  void _flush() {
+    _autosave?.cancel();
+    if (_dirty && !_saving) _save();
   }
 
   NotebookNote? get _selected {
@@ -152,7 +165,8 @@ class _NotebookViewState extends State<NotebookView> {
 
   void _syncEditor() {
     final sel = _selected;
-    _editor.text = sel?.body ?? '';
+    final body = sel?.body ?? '';
+    if (_editor.text != body) _editor.text = body;
     _dirty = false;
     // O título é sempre um campo; só realinha com o disco quando o usuário
     // não está digitando nele.
@@ -161,16 +175,11 @@ class _NotebookViewState extends State<NotebookView> {
 
   Future<void> _select(NotebookNote n) async {
     if (n.path == _selectedPath) return;
-    if (_editing && _dirty) {
-      final tr = context.t.cockpit.notebook;
-      final discard = await showConfirmDialog(
-        context,
-        title: tr.unsavedTitle,
-        message: tr.unsavedMessage(name: _selected?.title ?? ''),
-        confirmLabel: tr.discard,
-        danger: true,
-      );
-      if (!discard || !mounted) return;
+    // Autosave: o que estiver pendente vai pro disco antes de trocar.
+    if (_dirty) {
+      _autosave?.cancel();
+      await _save();
+      if (!mounted) return;
     }
     setState(() {
       _selectedPath = n.path;
@@ -324,8 +333,9 @@ class _NotebookViewState extends State<NotebookView> {
   }
 
   Future<void> _save() async {
+    _autosave?.cancel();
     final sel = _selected;
-    if (sel == null || _saving) return;
+    if (sel == null || _saving || !_dirty) return;
     setState(() => _saving = true);
     final content = NotebookNote.touchUpdated(
       NotebookNote.replaceBody(sel.raw, _editor.text),
@@ -1093,24 +1103,6 @@ class _NoteColumn extends StatelessWidget {
                   ],
                 ),
               ),
-              if (editing && dirty)
-                HoverTap(
-                  color: colors.accent,
-                  borderRadius: BorderRadius.circular(6),
-                  onTap: saving ? () {} : onSave,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    child: Text(
-                      tr.save,
-                      style: context.typo.label.copyWith(
-                        color: colors.accentText,
-                      ),
-                    ),
-                  ),
-                ),
               const SizedBox(width: 4),
               _IconAction(
                 icon: editing ? Icons.visibility_outlined : Icons.edit_outlined,

@@ -1238,7 +1238,6 @@ class _Translations$cockpit$notebook$pt_BR extends Translations$cockpit$notebook
 	@override String get selectNote => 'Selecione uma nota';
 	@override String get edit => 'Editar';
 	@override String get preview => 'Preview';
-	@override String get save => 'Salvar';
 	@override String get reload => 'Recarregar do disco';
 	@override String get untagged => 'sem tag';
 	@override String noteCount({required Object count}) => '${count} notas';
@@ -1248,9 +1247,6 @@ class _Translations$cockpit$notebook$pt_BR extends Translations$cockpit$notebook
 	@override String get untitled => 'Sem título';
 	@override String get deleteNote => 'Apagar nota';
 	@override String deleteConfirm({required Object name}) => 'Mover “${name}” pra lixeira?';
-	@override String get unsavedTitle => 'Alterações não salvas';
-	@override String unsavedMessage({required Object name}) => '“${name}” tem alterações não salvas. Descartar?';
-	@override String get discard => 'Descartar';
 	@override String get imageFailed => 'Não foi possível salvar a imagem';
 	@override late final _Translations$cockpit$notebook$format$pt_BR format = _Translations$cockpit$notebook$format$pt_BR._(_root);
 }
@@ -2644,7 +2640,6 @@ extension on TranslationsPtBr {
 			'cockpit.notebook.selectNote' => 'Selecione uma nota',
 			'cockpit.notebook.edit' => 'Editar',
 			'cockpit.notebook.preview' => 'Preview',
-			'cockpit.notebook.save' => 'Salvar',
 			'cockpit.notebook.reload' => 'Recarregar do disco',
 			'cockpit.notebook.untagged' => 'sem tag',
 			'cockpit.notebook.noteCount' => ({required Object count}) => '${count} notas',
@@ -2654,9 +2649,6 @@ extension on TranslationsPtBr {
 			'cockpit.notebook.untitled' => 'Sem título',
 			'cockpit.notebook.deleteNote' => 'Apagar nota',
 			'cockpit.notebook.deleteConfirm' => ({required Object name}) => 'Mover “${name}” pra lixeira?',
-			'cockpit.notebook.unsavedTitle' => 'Alterações não salvas',
-			'cockpit.notebook.unsavedMessage' => ({required Object name}) => '“${name}” tem alterações não salvas. Descartar?',
-			'cockpit.notebook.discard' => 'Descartar',
 			'cockpit.notebook.imageFailed' => 'Não foi possível salvar a imagem',
 			'cockpit.notebook.format.bold' => 'Negrito (⌘B)',
 			'cockpit.notebook.format.italic' => 'Itálico (⌘I)',
@@ -3001,12 +2993,12 @@ extension on TranslationsPtBr {
 			'automation.error.noStagedChanges' => 'Não há mudanças no stage a descrever.',
 			'automation.error.multipleRepositories' => 'As mudanças no stage pertencem a repositórios diferentes. Gere uma de cada vez.',
 			'automation.error.diffUnavailable' => 'Não foi possível ler o diff.',
-			_ => null,
-		} ?? switch (path) {
 			'automation.error.notConfigured' => 'Configure um harness de mensagem de commit em Configurações.',
 			'fileOperation.error.alreadyExists' => ({required Object name}) => 'Já existe: “${name}”.',
 			'fileOperation.error.notFound' => ({required Object name}) => 'Não encontrado: “${name}”.',
 			'fileOperation.error.invalidPath' => 'Caminho inválido.',
+			_ => null,
+		} ?? switch (path) {
 			'fileOperation.error.emptyName' => 'O nome não pode ficar vazio.',
 			'fileOperation.error.noWorkspace' => 'Nenhum workspace selecionado.',
 			'fileOperation.error.cannotMoveIntoItself' => 'Não é possível mover uma pasta para dentro dela mesma.',

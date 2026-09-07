@@ -55,7 +55,9 @@ independente do nome.
   esmaecidos — o arquivo continua markdown puro. O frontmatter fica escondido e
   é preservado byte a byte. Barra de formatação: negrito `⌘B`, itálico `⌘I`,
   riscado, H1–H3, listas, checklist, citação, código `⌘E`, bloco, link `⌘K`,
-  divisor. `⌘S` salva. O olho abre uma leitura renderizada (com imagens).
+  divisor. **Salva sozinho** (~1,5 s depois de parar de digitar, e ao trocar de
+  nota ou fechar a aba); `⌘S` força na hora. O olho abre uma leitura
+  renderizada (com imagens).
 - **Imagens**: colar (`⌘V`) ou arrastar no editor grava em `_assets/` dentro do
   caderno e insere `![](_assets/nome.png)`. O preview resolve o caminho
   relativo à pasta. Apagar nota não apaga assets.

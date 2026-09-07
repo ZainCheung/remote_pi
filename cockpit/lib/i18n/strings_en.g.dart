@@ -2519,9 +2519,6 @@ class Translations$cockpit$notebook$en {
 	/// en: 'Preview'
 	String get preview => 'Preview';
 
-	/// en: 'Save'
-	String get save => 'Save';
-
 	/// en: 'Reload from disk'
 	String get reload => 'Reload from disk';
 
@@ -2548,15 +2545,6 @@ class Translations$cockpit$notebook$en {
 
 	/// en: 'Move “${name}” to the trash?'
 	String deleteConfirm({required Object name}) => 'Move “${name}” to the trash?';
-
-	/// en: 'Unsaved changes'
-	String get unsavedTitle => 'Unsaved changes';
-
-	/// en: '“${name}” has unsaved changes. Discard them?'
-	String unsavedMessage({required Object name}) => '“${name}” has unsaved changes. Discard them?';
-
-	/// en: 'Discard'
-	String get discard => 'Discard';
 
 	/// en: 'Could not save the image'
 	String get imageFailed => 'Could not save the image';
@@ -4754,7 +4742,6 @@ extension on Translations {
 			'cockpit.notebook.selectNote' => 'Select a note',
 			'cockpit.notebook.edit' => 'Edit',
 			'cockpit.notebook.preview' => 'Preview',
-			'cockpit.notebook.save' => 'Save',
 			'cockpit.notebook.reload' => 'Reload from disk',
 			'cockpit.notebook.untagged' => 'untagged',
 			'cockpit.notebook.noteCount' => ({required Object count}) => '${count} notes',
@@ -4764,9 +4751,6 @@ extension on Translations {
 			'cockpit.notebook.untitled' => 'Untitled',
 			'cockpit.notebook.deleteNote' => 'Delete note',
 			'cockpit.notebook.deleteConfirm' => ({required Object name}) => 'Move “${name}” to the trash?',
-			'cockpit.notebook.unsavedTitle' => 'Unsaved changes',
-			'cockpit.notebook.unsavedMessage' => ({required Object name}) => '“${name}” has unsaved changes. Discard them?',
-			'cockpit.notebook.discard' => 'Discard',
 			'cockpit.notebook.imageFailed' => 'Could not save the image',
 			'cockpit.notebook.format.bold' => 'Bold (⌘B)',
 			'cockpit.notebook.format.italic' => 'Italic (⌘I)',
@@ -5111,12 +5095,12 @@ extension on Translations {
 			'automation.error.noStagedChanges' => 'There are no staged changes to describe.',
 			'automation.error.multipleRepositories' => 'Staged changes belong to multiple repositories. Generate them separately.',
 			'automation.error.diffUnavailable' => 'Could not read the diff.',
-			_ => null,
-		} ?? switch (path) {
 			'automation.error.notConfigured' => 'Configure a commit message harness in Settings.',
 			'fileOperation.error.alreadyExists' => ({required Object name}) => 'Already exists: “${name}”.',
 			'fileOperation.error.notFound' => ({required Object name}) => 'Not found: “${name}”.',
 			'fileOperation.error.invalidPath' => 'Invalid path.',
+			_ => null,
+		} ?? switch (path) {
 			'fileOperation.error.emptyName' => 'The name cannot be empty.',
 			'fileOperation.error.noWorkspace' => 'No workspace selected.',
 			'fileOperation.error.cannotMoveIntoItself' => 'Cannot move a folder into itself.',

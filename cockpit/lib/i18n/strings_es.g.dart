@@ -1238,7 +1238,6 @@ class _Translations$cockpit$notebook$es extends Translations$cockpit$notebook$en
 	@override String get selectNote => 'Selecciona una nota';
 	@override String get edit => 'Editar';
 	@override String get preview => 'Vista previa';
-	@override String get save => 'Guardar';
 	@override String get reload => 'Recargar del disco';
 	@override String get untagged => 'sin tag';
 	@override String noteCount({required Object count}) => '${count} notas';
@@ -1248,9 +1247,6 @@ class _Translations$cockpit$notebook$es extends Translations$cockpit$notebook$en
 	@override String get untitled => 'Sin título';
 	@override String get deleteNote => 'Eliminar nota';
 	@override String deleteConfirm({required Object name}) => '¿Mover “${name}” a la papelera?';
-	@override String get unsavedTitle => 'Cambios sin guardar';
-	@override String unsavedMessage({required Object name}) => '“${name}” tiene cambios sin guardar. ¿Descartarlos?';
-	@override String get discard => 'Descartar';
 	@override String get imageFailed => 'No se pudo guardar la imagen';
 	@override late final _Translations$cockpit$notebook$format$es format = _Translations$cockpit$notebook$format$es._(_root);
 }
@@ -2644,7 +2640,6 @@ extension on TranslationsEs {
 			'cockpit.notebook.selectNote' => 'Selecciona una nota',
 			'cockpit.notebook.edit' => 'Editar',
 			'cockpit.notebook.preview' => 'Vista previa',
-			'cockpit.notebook.save' => 'Guardar',
 			'cockpit.notebook.reload' => 'Recargar del disco',
 			'cockpit.notebook.untagged' => 'sin tag',
 			'cockpit.notebook.noteCount' => ({required Object count}) => '${count} notas',
@@ -2654,9 +2649,6 @@ extension on TranslationsEs {
 			'cockpit.notebook.untitled' => 'Sin título',
 			'cockpit.notebook.deleteNote' => 'Eliminar nota',
 			'cockpit.notebook.deleteConfirm' => ({required Object name}) => '¿Mover “${name}” a la papelera?',
-			'cockpit.notebook.unsavedTitle' => 'Cambios sin guardar',
-			'cockpit.notebook.unsavedMessage' => ({required Object name}) => '“${name}” tiene cambios sin guardar. ¿Descartarlos?',
-			'cockpit.notebook.discard' => 'Descartar',
 			'cockpit.notebook.imageFailed' => 'No se pudo guardar la imagen',
 			'cockpit.notebook.format.bold' => 'Negrita (⌘B)',
 			'cockpit.notebook.format.italic' => 'Cursiva (⌘I)',
@@ -3001,12 +2993,12 @@ extension on TranslationsEs {
 			'automation.error.noStagedChanges' => 'No hay cambios en stage que describir.',
 			'automation.error.multipleRepositories' => 'Los cambios en stage pertenecen a varios repositorios. Genéralos por separado.',
 			'automation.error.diffUnavailable' => 'No se pudo leer el diff.',
-			_ => null,
-		} ?? switch (path) {
 			'automation.error.notConfigured' => 'Configura un harness de mensajes de commit en Configuración.',
 			'fileOperation.error.alreadyExists' => ({required Object name}) => 'Ya existe: “${name}”.',
 			'fileOperation.error.notFound' => ({required Object name}) => 'No se encontró: “${name}”.',
 			'fileOperation.error.invalidPath' => 'Ruta inválida.',
+			_ => null,
+		} ?? switch (path) {
 			'fileOperation.error.emptyName' => 'El nombre no puede estar vacío.',
 			'fileOperation.error.noWorkspace' => 'Ningún workspace seleccionado.',
 			'fileOperation.error.cannotMoveIntoItself' => 'No se puede mover una carpeta dentro de sí misma.',

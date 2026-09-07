@@ -802,7 +802,6 @@
       "selectNote": "Select a note",
       "edit": "Edit",
       "preview": "Preview",
-      "save": "Save",
       "reload": "Reload from disk",
       "untagged": "untagged",
       "noteCount": "${count} notes",
@@ -812,9 +811,6 @@
       "untitled": "Untitled",
       "deleteNote": "Delete note",
       "deleteConfirm": "Move “${name}” to the trash?",
-      "unsavedTitle": "Unsaved changes",
-      "unsavedMessage": "“${name}” has unsaved changes. Discard them?",
-      "discard": "Discard",
       "imageFailed": "Could not save the image",
       "format": {
         "bold": "Bold (⌘B)",

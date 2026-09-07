@@ -802,7 +802,6 @@
       "selectNote": "Selecione uma nota",
       "edit": "Editar",
       "preview": "Preview",
-      "save": "Salvar",
       "reload": "Recarregar do disco",
       "untagged": "sem tag",
       "noteCount": "${count} notas",
@@ -812,9 +811,6 @@
       "untitled": "Sem título",
       "deleteNote": "Apagar nota",
       "deleteConfirm": "Mover “${name}” pra lixeira?",
-      "unsavedTitle": "Alterações não salvas",
-      "unsavedMessage": "“${name}” tem alterações não salvas. Descartar?",
-      "discard": "Descartar",
       "imageFailed": "Não foi possível salvar a imagem",
       "format": {
         "bold": "Negrito (⌘B)",
