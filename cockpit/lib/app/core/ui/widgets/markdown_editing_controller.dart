@@ -435,8 +435,13 @@ class MarkdownEditingController extends TextEditingController {
 }
 
 /// Imagem inline do editor. `FileImage` é chaveado por caminho no ImageCache
-/// do Flutter, então reconstruir a cada tecla não decodifica de novo. Altura
-/// limitada pra não engolir a tela; erro de leitura mostra o caminho.
+/// do Flutter, então reconstruir a cada tecla não decodifica de novo.
+///
+/// O tamanho é **fixo** (não depende da decodificação): um placeholder inline
+/// que cresce depois do primeiro frame deixa o texto do campo com o layout
+/// antigo até algo forçar re-layout (era a imagem "por cima" que só se
+/// ajeitava ao rolar). Com caixa fixa o layout do texto é o mesmo antes e
+/// depois de a imagem chegar. Erro de leitura mostra o caminho.
 class _InlineImage extends StatelessWidget {
   const _InlineImage({required this.path, required this.alt});
   final String path;
@@ -447,19 +452,26 @@ class _InlineImage extends StatelessWidget {
     final colors = context.colors;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(6),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxHeight: 260, maxWidth: 560),
-          child: Image(
-            image: FileImage(File(path)),
-            fit: BoxFit.contain,
-            alignment: Alignment.centerLeft,
-            errorBuilder: (_, _, _) => Text(
-              alt,
-              style: context.typo.mono.copyWith(
-                fontSize: 11,
-                color: colors.text3,
+      child: SizedBox(
+        width: 480,
+        height: 220,
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: Image(
+              image: FileImage(File(path)),
+              fit: BoxFit.contain,
+              alignment: Alignment.centerLeft,
+              // Sem fade/troca de tamanho entre frames: o que muda é só o
+              // conteúdo dentro da caixa.
+              gaplessPlayback: true,
+              errorBuilder: (_, _, _) => Text(
+                alt,
+                style: context.typo.mono.copyWith(
+                  fontSize: 11,
+                  color: colors.text3,
+                ),
               ),
             ),
           ),
