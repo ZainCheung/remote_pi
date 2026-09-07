@@ -824,8 +824,12 @@
         "code": "Inline code (⌘E)",
         "codeBlock": "Code block",
         "link": "Link (⌘K)",
-        "rule": "Divider"
-      }
+        "rule": "Divider",
+        "noteLink": "Link to a note ([[…]])",
+        "noteLinkSearch": "Search notes",
+        "image": "Insert image…"
+      },
+      "backlinks": "Linked from"
     }
   },
   "settings": {

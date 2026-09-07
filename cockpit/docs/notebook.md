@@ -65,6 +65,14 @@ independente do nome.
 - A pasta é observada (local): nota escrita por fora aparece sozinha. No
   workspace remoto use o botão de recarregar.
 
+## Links entre notas
+
+`[[Título da nota]]` no corpo vira um chip clicável (abre a nota; se não
+existe, cria com esse título). Digitar `[[` mostra sugestões de títulos sob a
+barra; clicar completa. O botão de "link pra nota" da barra abre um menu com
+busca. No rodapé da nota, **Citada em** lista as notas que apontam pra ela
+(backlinks). A comparação de título ignora maiúsculas.
+
 ## CLI
 
 ```sh

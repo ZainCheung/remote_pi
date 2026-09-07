@@ -16,6 +16,7 @@ import 'package:cockpit/app/core/ui/widgets/hover_tap.dart';
 import 'package:cockpit/app/core/utils/path_utils.dart';
 import 'package:cockpit/i18n/strings.g.dart';
 import 'package:desktop_drop/desktop_drop.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:pasteboard/pasteboard.dart';
 import 'package:flutter/material.dart'
     as material
@@ -70,6 +71,10 @@ class _NotebookViewState extends State<NotebookView> {
   /// Autosave: reinicia a cada tecla; grava quando o usuário para de digitar.
   Timer? _autosave;
   Timer? _titleAutosave;
+
+  /// Texto após um `[[` aberto na linha do cursor (autocomplete de nota);
+  /// `null` = sem sugestão aberta.
+  String? _linkQuery;
   static const _autosaveDelay = Duration(milliseconds: 1500);
 
   CockpitViewModel get _vm => context.read<CockpitViewModel>();
@@ -79,7 +84,9 @@ class _NotebookViewState extends State<NotebookView> {
     super.initState();
     _seenReload = widget.session.reloadTick;
     widget.session.addListener(_onSession);
-    _editor.addListener(_onEdited);
+    _editor
+      ..addListener(_onEdited)
+      ..onWikiLink = _openLinkedNote;
     _titleCtrl.addListener(_onTitleEdited);
     _load();
     // Nota escrita pelo agente (ou pelo Obsidian) aparece sozinha.
@@ -122,6 +129,149 @@ class _NotebookViewState extends State<NotebookView> {
     if (dirty != _dirty) setState(() => _dirty = dirty);
     _autosave?.cancel();
     if (dirty) _autosave = Timer(_autosaveDelay, _save);
+    // Autocomplete de [[link]]: `[[` aberto antes do cursor, sem `]]` ainda.
+    final selNow = _editor.selection;
+    String? q;
+    if (selNow.isValid && selNow.isCollapsed) {
+      final before = _editor.text.substring(0, selNow.baseOffset);
+      final m = RegExp(r'\[\[([^\]\n]*)$').firstMatch(before);
+      if (m != null) q = m.group(1)!;
+    }
+    if (q != _linkQuery) setState(() => _linkQuery = q);
+  }
+
+  /// Sugestões pro `[[` aberto: títulos que contêm o texto digitado (a nota
+  /// atual fora), no máximo 8.
+  List<NotebookNote> get _linkSuggestions {
+    final q = _linkQuery;
+    if (q == null) return const [];
+    final lower = q.toLowerCase();
+    return _notes
+        .where(
+          (n) =>
+              n.path != _selectedPath &&
+              (lower.isEmpty || n.title.toLowerCase().contains(lower)),
+        )
+        .take(8)
+        .toList();
+  }
+
+  /// Completa o `[[` aberto com [title] e fecha o link.
+  void _completeLink(String title) {
+    final sel = _editor.selection;
+    if (!sel.isValid) return;
+    final before = _editor.text.substring(0, sel.baseOffset);
+    final open = before.lastIndexOf('[[');
+    if (open < 0) return;
+    final ins = '[[${_singleLine(title)}]] ';
+    _editor.value = TextEditingValue(
+      text: _editor.text.replaceRange(open, sel.baseOffset, ins),
+      selection: TextSelection.collapsed(offset: open + ins.length),
+    );
+    setState(() => _linkQuery = null);
+    _editorFocus.requestFocus();
+  }
+
+  static String _singleLine(String t) => t.replaceAll('\n', ' ').trim();
+
+  NotebookNote? _noteByTitle(String title) {
+    final t = _singleLine(title).toLowerCase();
+    for (final n in _notes) {
+      if (_singleLine(n.title).toLowerCase() == t) return n;
+    }
+    return null;
+  }
+
+  /// Clique num `[[Título]]`: abre a nota; se não existe, cria com esse título.
+  Future<void> _openLinkedNote(String title) async {
+    final existing = _noteByTitle(title);
+    if (existing != null) {
+      await _select(existing);
+      return;
+    }
+    final now = DateTime.now();
+    final clean = _singleLine(title);
+    var path = joinPath(
+      widget.session.path,
+      NotebookNote.fileNameFor(clean, now),
+    );
+    final taken = _notes.map((n) => n.path).toSet();
+    var i = 2;
+    while (taken.contains(path)) {
+      path = joinPath(
+        widget.session.path,
+        NotebookNote.fileNameFor('$clean $i', now),
+      );
+      i++;
+    }
+    final ok = await _vm.writeTextAt(
+      path,
+      NotebookNote.template(title: clean, tags: const [], now: now),
+    );
+    if (!mounted || !ok) return;
+    _selectedPath = path;
+    await _load();
+    if (mounted) _editorFocus.requestFocus();
+  }
+
+  /// Notas que apontam pra [n] via `[[título]]`.
+  List<NotebookNote> _backlinksOf(NotebookNote n) {
+    final t = _singleLine(n.title).toLowerCase();
+    return _notes.where((o) {
+      if (o.path == n.path) return false;
+      for (final m in MarkdownEditingController.wikiLink.allMatches(o.body)) {
+        if (_singleLine(m.group(1)!).toLowerCase() == t) return true;
+      }
+      return false;
+    }).toList();
+  }
+
+  /// Botão "link pra nota" da barra: menu com busca; insere `[[Título]]`.
+  Future<void> _pickNoteLink() async {
+    final others = _notes.where((n) => n.path != _selectedPath).toList();
+    if (others.isEmpty) return;
+    final choice = await showAppMenu<String>(
+      context,
+      searchHint: context.t.cockpit.notebook.format.noteLinkSearch,
+      searchThreshold: 6,
+      items: [
+        for (final n in others)
+          AppMenuItem(
+            value: n.path,
+            label: _singleLine(n.title),
+            icon: Icons.description_outlined,
+          ),
+      ],
+    );
+    if (!mounted || choice == null) return;
+    final n = _notes.firstWhere((x) => x.path == choice);
+    _insertInline('[[${_singleLine(n.title)}]] ');
+  }
+
+  /// Insere [snippet] no cursor sem forçar quebra de linha antes.
+  void _insertInline(String snippet) {
+    final t = _editor.text;
+    var sel = _editor.selection;
+    if (!sel.isValid) sel = TextSelection.collapsed(offset: t.length);
+    _editor.value = TextEditingValue(
+      text: t.substring(0, sel.start) + snippet + t.substring(sel.end),
+      selection: TextSelection.collapsed(offset: sel.start + snippet.length),
+    );
+    _editorFocus.requestFocus();
+  }
+
+  /// Botão "imagem" da barra: file picker → `_assets/` + `![]()`.
+  Future<void> _pickImage() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: _imageExts.toList(),
+      allowMultiple: true,
+    );
+    if (!mounted || result == null) return;
+    for (final f in result.files) {
+      final path = f.path;
+      if (path != null) await _addImageFile(path);
+    }
   }
 
   /// Título: mesmo debounce do corpo; grava quando parar de digitar.
@@ -684,6 +834,14 @@ class _NotebookViewState extends State<NotebookView> {
                       onPrefix: _prefixLines,
                       onInsert: _insertAtCursor,
                       onLink: _link,
+                      onNoteLink: _pickNoteLink,
+                      onPickImage: _pickImage,
+                      linkSuggestions: _linkSuggestions,
+                      onCompleteLink: _completeLink,
+                      backlinks: _selected == null
+                          ? const []
+                          : _backlinksOf(_selected!),
+                      onOpenNote: _select,
                     ),
                   ),
                 ],
@@ -1029,6 +1187,12 @@ class _NoteColumn extends StatelessWidget {
     required this.onPrefix,
     required this.onInsert,
     required this.onLink,
+    required this.onNoteLink,
+    required this.onPickImage,
+    required this.linkSuggestions,
+    required this.onCompleteLink,
+    required this.backlinks,
+    required this.onOpenNote,
   });
 
   final NotebookNote? note;
@@ -1049,6 +1213,12 @@ class _NoteColumn extends StatelessWidget {
   final void Function(String prefix, {bool numbered}) onPrefix;
   final ValueChanged<String> onInsert;
   final VoidCallback onLink;
+  final VoidCallback onNoteLink;
+  final VoidCallback onPickImage;
+  final List<NotebookNote> linkSuggestions;
+  final ValueChanged<String> onCompleteLink;
+  final List<NotebookNote> backlinks;
+  final ValueChanged<NotebookNote> onOpenNote;
 
   @override
   Widget build(BuildContext context) {
@@ -1116,7 +1286,11 @@ class _NoteColumn extends StatelessWidget {
           onPrefix: onPrefix,
           onInsert: onInsert,
           onLink: onLink,
+          onNoteLink: onNoteLink,
+          onPickImage: onPickImage,
         ),
+        if (linkSuggestions.isNotEmpty)
+          _LinkSuggestions(notes: linkSuggestions, onPick: onCompleteLink),
         Expanded(
           child: DropTarget(
             onDragDone: (d) => onDrop(d.files),
@@ -1153,6 +1327,66 @@ class _NoteColumn extends StatelessWidget {
             ),
           ),
         ),
+        // Referências: notas que linkam pra esta ([[título]]).
+        if (backlinks.isNotEmpty)
+          Container(
+            padding: const EdgeInsets.fromLTRB(20, 8, 12, 8),
+            decoration: BoxDecoration(
+              border: Border(top: BorderSide(color: colors.border)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 3),
+                  child: Icon(
+                    Icons.call_received,
+                    size: 13,
+                    color: colors.text3,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  tr.backlinks,
+                  style: context.typo.label.copyWith(
+                    fontSize: 11,
+                    color: colors.text3,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    children: [
+                      for (final b in backlinks)
+                        HoverTap(
+                          borderRadius: BorderRadius.circular(5),
+                          onTap: () => onOpenNote(b),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 1,
+                            ),
+                            decoration: BoxDecoration(
+                              color: colors.accent.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: Text(
+                              b.title.replaceAll('\n', ' '),
+                              style: context.typo.label.copyWith(
+                                fontSize: 11,
+                                color: colors.accent,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         // Rodapé: tags da nota (múltiplas), com remover e adicionar inline.
         Container(
           padding: const EdgeInsets.fromLTRB(20, 8, 12, 8),
@@ -1211,11 +1445,15 @@ class _FormatBar extends StatelessWidget {
     required this.onPrefix,
     required this.onInsert,
     required this.onLink,
+    required this.onNoteLink,
+    required this.onPickImage,
   });
   final void Function(String left, [String? right]) onWrap;
   final void Function(String prefix, {bool numbered}) onPrefix;
   final ValueChanged<String> onInsert;
   final VoidCallback onLink;
+  final VoidCallback onNoteLink;
+  final VoidCallback onPickImage;
 
   @override
   Widget build(BuildContext context) {
@@ -1303,6 +1541,74 @@ class _FormatBar extends StatelessWidget {
             icon: Icons.horizontal_rule,
             tooltip: tr.rule,
             onTap: () => onInsert('---\n'),
+          ),
+          sep(),
+          _IconAction(
+            icon: Icons.description_outlined,
+            tooltip: tr.noteLink,
+            onTap: onNoteLink,
+          ),
+          _IconAction(
+            icon: Icons.image_outlined,
+            tooltip: tr.image,
+            onTap: onPickImage,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Faixa de sugestões do `[[`: aparece sob a barra enquanto há um link
+/// aberto na linha do cursor; clicar completa. Digitar filtra; `]]` fecha.
+class _LinkSuggestions extends StatelessWidget {
+  const _LinkSuggestions({required this.notes, required this.onPick});
+  final List<NotebookNote> notes;
+  final ValueChanged<String> onPick;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: colors.panel2,
+        border: Border(bottom: BorderSide(color: colors.border)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.description_outlined, size: 13, color: colors.text3),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Wrap(
+              spacing: 6,
+              runSpacing: 4,
+              children: [
+                for (final n in notes)
+                  HoverTap(
+                    key: ValueKey('suggest-${n.path}'),
+                    borderRadius: BorderRadius.circular(5),
+                    onTap: () => onPick(n.title),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: colors.border),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Text(
+                        n.title.replaceAll('\n', ' '),
+                        style: context.typo.label.copyWith(
+                          fontSize: 11.5,
+                          color: colors.text,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ],
       ),

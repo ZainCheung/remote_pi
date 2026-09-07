@@ -1247,6 +1247,7 @@ class _Translations$cockpit$notebook$es extends Translations$cockpit$notebook$en
 	@override String deleteConfirm({required Object name}) => '¿Mover “${name}” a la papelera?';
 	@override String get imageFailed => 'No se pudo guardar la imagen';
 	@override late final _Translations$cockpit$notebook$format$es format = _Translations$cockpit$notebook$format$es._(_root);
+	@override String get backlinks => 'Enlazada desde';
 }
 
 // Path: settings.language
@@ -1555,6 +1556,9 @@ class _Translations$cockpit$notebook$format$es extends Translations$cockpit$note
 	@override String get codeBlock => 'Bloque de código';
 	@override String get link => 'Enlace (⌘K)';
 	@override String get rule => 'Divisor';
+	@override String get noteLink => 'Enlace a una nota ([[…]])';
+	@override String get noteLinkSearch => 'Buscar notas';
+	@override String get image => 'Insertar imagen…';
 }
 
 // Path: settings.page.header
@@ -2660,6 +2664,10 @@ extension on TranslationsEs {
 			'cockpit.notebook.format.codeBlock' => 'Bloque de código',
 			'cockpit.notebook.format.link' => 'Enlace (⌘K)',
 			'cockpit.notebook.format.rule' => 'Divisor',
+			'cockpit.notebook.format.noteLink' => 'Enlace a una nota ([[…]])',
+			'cockpit.notebook.format.noteLinkSearch' => 'Buscar notas',
+			'cockpit.notebook.format.image' => 'Insertar imagen…',
+			'cockpit.notebook.backlinks' => 'Enlazada desde',
 			'settings.language.title' => 'Idioma',
 			'settings.language.system' => 'Sistema',
 			'settings.language.english' => 'Inglés',
@@ -2991,12 +2999,12 @@ extension on TranslationsEs {
 			'automation.error.diffUnavailable' => 'No se pudo leer el diff.',
 			'automation.error.notConfigured' => 'Configura un harness de mensajes de commit en Configuración.',
 			'fileOperation.error.alreadyExists' => ({required Object name}) => 'Ya existe: “${name}”.',
+			_ => null,
+		} ?? switch (path) {
 			'fileOperation.error.notFound' => ({required Object name}) => 'No se encontró: “${name}”.',
 			'fileOperation.error.invalidPath' => 'Ruta inválida.',
 			'fileOperation.error.emptyName' => 'El nombre no puede estar vacío.',
 			'fileOperation.error.noWorkspace' => 'Ningún workspace seleccionado.',
-			_ => null,
-		} ?? switch (path) {
 			'fileOperation.error.cannotMoveIntoItself' => 'No se puede mover una carpeta dentro de sí misma.',
 			'fileOperation.error.clipboardEmpty' => 'El portapapeles está vacío.',
 			'fileOperation.error.notScratchTab' => 'Esta pestaña no es un archivo temporal.',

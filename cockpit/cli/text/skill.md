@@ -363,6 +363,12 @@ Rules that matter:
   metadata. Don't rename files to "fix" titles.
 - Keep the frontmatter keys as they are (`title`, `tags`, `created`,
   `updated`); the app rewrites only those lines and leaves the body untouched.
+- **Link notes with `[[Title]]`** (exact title, case-insensitive). The app
+  renders it as a clickable chip and lists backlinks on the target note. Use
+  it to connect a finding to the decision it led to, or a summary to the
+  notes it summarizes.
+- Images: put files under `_assets/` inside the notebook and reference them
+  as `![](_assets/name.png)` — the app draws them inline.
 
 ## Target (--tab-id)
 

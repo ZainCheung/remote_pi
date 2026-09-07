@@ -824,8 +824,12 @@
         "code": "Código inline (⌘E)",
         "codeBlock": "Bloque de código",
         "link": "Enlace (⌘K)",
-        "rule": "Divisor"
-      }
+        "rule": "Divisor",
+        "noteLink": "Enlace a una nota ([[…]])",
+        "noteLinkSearch": "Buscar notas",
+        "image": "Insertar imagen…"
+      },
+      "backlinks": "Enlazada desde"
     }
   },
   "settings": {

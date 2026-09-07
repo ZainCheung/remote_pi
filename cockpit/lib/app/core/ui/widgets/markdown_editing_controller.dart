@@ -26,6 +26,12 @@ class MarkdownEditingController extends TextEditingController {
   /// Mutável: a mesma controller serve várias notas do mesmo caderno.
   String? imageBaseDir;
 
+  /// Clique num `[[Título]]` fora da linha do cursor. `null` = link só pinta.
+  void Function(String title)? onWikiLink;
+
+  /// `[[Título]]` — link entre notas do caderno (estilo Obsidian).
+  static final wikiLink = RegExp(r'\[\[([^\]\n]+)\]\]');
+
   static final _heading = RegExp(r'^(#{1,6})( )(.*)$');
   static final _task = RegExp(r'^(\s*)([-*+] \[[ xX]\] )(.*)$');
   static final _bullet = RegExp(r'^(\s*)([-*+] )(.*)$');
@@ -43,7 +49,8 @@ class MarkdownEditingController extends TextEditingController {
     r'|((?<![\w*])\*[^*\n]+?\*(?![\w*])|(?<![\w_])_[^_\n]+?_(?![\w_]))'
     r'|(~~[^~\n]+?~~)'
     r'|(!\[[^\]\n]*\]\([^)\n]*\))'
-    r'|(\[[^\]\n]+\]\([^)\n]*\))',
+    r'|(\[[^\]\n]+\]\([^)\n]*\))'
+    r'|(\[\[[^\]\n]+\]\])',
   );
 
   static final _listPrefix = RegExp(
@@ -379,6 +386,34 @@ class MarkdownEditingController extends TextEditingController {
           );
           out.add(TextSpan(text: tok.substring(1), style: marker));
         }
+      } else if (m.group(8) != null) {
+        // [[Título]] — link pra outra nota. Fora da linha do cursor vira um
+        // chip clicável (WidgetSpan no primeiro char, resto escondido); na
+        // linha do cursor mostra a sintaxe com o título em destaque.
+        final title = tok.substring(2, tok.length - 2);
+        final hiddenLine = marker.fontSize == 0.1;
+        if (hiddenLine) {
+          out.add(
+            WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              child: _WikiLinkChip(
+                title: title,
+                style: base,
+                onTap: onWikiLink == null ? null : () => onWikiLink!(title),
+              ),
+            ),
+          );
+          out.add(TextSpan(text: tok.substring(1), style: marker));
+        } else {
+          out.add(TextSpan(text: '[[', style: mk));
+          out.add(
+            TextSpan(
+              text: title,
+              style: base.copyWith(color: colors.accent),
+            ),
+          );
+          out.add(TextSpan(text: ']]', style: mk));
+        }
       } else {
         // [texto](url) — texto como link, url esmaecida.
         final close = tok.indexOf('](');
@@ -476,6 +511,48 @@ class _InlineImage extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Chip de link entre notas: título em cor de destaque com um ícone
+/// discreto; clique abre (ou cria) a nota.
+class _WikiLinkChip extends StatelessWidget {
+  const _WikiLinkChip({required this.title, required this.style, this.onTap});
+  final String title;
+  final TextStyle style;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final chip = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+      decoration: BoxDecoration(
+        color: colors.accent.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.description_outlined,
+            size: (style.fontSize ?? 14) * 0.85,
+            color: colors.accent,
+          ),
+          const SizedBox(width: 4),
+          Text(title, style: style.copyWith(color: colors.accent)),
+        ],
+      ),
+    );
+    if (onTap == null) return chip;
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: chip,
       ),
     );
   }

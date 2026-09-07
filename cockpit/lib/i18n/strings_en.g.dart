@@ -2544,6 +2544,9 @@ class Translations$cockpit$notebook$en {
 	String get imageFailed => 'Could not save the image';
 
 	late final Translations$cockpit$notebook$format$en format = Translations$cockpit$notebook$format$en.internal(_root);
+
+	/// en: 'Linked from'
+	String get backlinks => 'Linked from';
 }
 
 // Path: settings.language
@@ -3116,6 +3119,15 @@ class Translations$cockpit$notebook$format$en {
 
 	/// en: 'Divider'
 	String get rule => 'Divider';
+
+	/// en: 'Link to a note ([[…]])'
+	String get noteLink => 'Link to a note ([[…]])';
+
+	/// en: 'Search notes'
+	String get noteLinkSearch => 'Search notes';
+
+	/// en: 'Insert image…'
+	String get image => 'Insert image…';
 }
 
 // Path: settings.page.header
@@ -4758,6 +4770,10 @@ extension on Translations {
 			'cockpit.notebook.format.codeBlock' => 'Code block',
 			'cockpit.notebook.format.link' => 'Link (⌘K)',
 			'cockpit.notebook.format.rule' => 'Divider',
+			'cockpit.notebook.format.noteLink' => 'Link to a note ([[…]])',
+			'cockpit.notebook.format.noteLinkSearch' => 'Search notes',
+			'cockpit.notebook.format.image' => 'Insert image…',
+			'cockpit.notebook.backlinks' => 'Linked from',
 			'settings.language.title' => 'Language',
 			'settings.language.system' => 'System',
 			'settings.language.english' => 'English',
@@ -5089,12 +5105,12 @@ extension on Translations {
 			'automation.error.diffUnavailable' => 'Could not read the diff.',
 			'automation.error.notConfigured' => 'Configure a commit message harness in Settings.',
 			'fileOperation.error.alreadyExists' => ({required Object name}) => 'Already exists: “${name}”.',
+			_ => null,
+		} ?? switch (path) {
 			'fileOperation.error.notFound' => ({required Object name}) => 'Not found: “${name}”.',
 			'fileOperation.error.invalidPath' => 'Invalid path.',
 			'fileOperation.error.emptyName' => 'The name cannot be empty.',
 			'fileOperation.error.noWorkspace' => 'No workspace selected.',
-			_ => null,
-		} ?? switch (path) {
 			'fileOperation.error.cannotMoveIntoItself' => 'Cannot move a folder into itself.',
 			'fileOperation.error.clipboardEmpty' => 'Clipboard is empty.',
 			'fileOperation.error.notScratchTab' => 'This tab is not a scratch file.',

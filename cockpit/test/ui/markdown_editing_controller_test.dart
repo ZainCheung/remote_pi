@@ -173,4 +173,25 @@ void main() {
     expect(widgets, 1);
     expect(span.toPlainText().length, c.text.length);
   });
+
+  testWidgets('[[link]] off the cursor line is a tappable chip', (
+    tester,
+  ) async {
+    String? opened;
+    final c = MarkdownEditingController(text: 'x\nveja [[Outra nota]] ok')
+      ..onWikiLink = (t) => opened = t;
+    await tester.pumpWidget(
+      ShadcnApp(
+        theme: buildTheme(brightness: Brightness.dark),
+        home: material.Material(
+          child: material.TextField(controller: c, maxLines: null),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.tap(find.text('Outra nota'));
+    await tester.pump();
+    expect(opened, 'Outra nota');
+    expect(c.text, 'x\nveja [[Outra nota]] ok');
+  });
 }
