@@ -1,8 +1,8 @@
 # 62 — Cockpit: aba Gallery (documentos especiais)
 
-> **Status**: PARCIAL. Passos 1 e 2 implementados em `cockpit` (2026-09-07;
-> `1dc8daf` e o commit seguinte). Mermaid cortado (ver abaixo). Resta o
-> **Caderno** (passo 4), a única coisa nova de fato.
+> **Status**: PARCIAL. Passos 1 e 2 implementados (2026-09-07). Mermaid
+> cortado. Caderno (passo 4) com **design aprovado** e protótipo funcional na
+> main; faltam as sub-waves 4a–4d + CLI.
 
 ## Contexto
 
@@ -79,57 +79,51 @@ dado estruturado. Mermaid, mapa mental e Excalidraw são visualização de mão
 motor nosso. Kanban e Caderno passam no critério; Tarefas e Layout são
 operacionais.
 
-### 4. Card **Caderno** (`.notebook`)
+### 4. Card **Caderno** (`.notebook`) — DESIGN APROVADO, EM ANDAMENTO
 
 Um caderno de notas curtas com tags, no lugar de "um `.md` longo que o usuário
-edita cru e depois troca pra preview". Decisões fechadas em conversa
-(2026-09-07):
+edita cru e depois troca pra preview". Decisões fechadas (2026-09-07):
 
 | # | Decisão |
 |---|---|
 | **N1** | `nome.notebook/` é uma **pasta**, um `.md` por nota. Diff por nota no git, o agente edita uma sem tocar as outras, e o Obsidian abre a mesma pasta sem conversão |
-| **N2** | Frontmatter por nota: `title`, `tags` (lista, **ao menos uma**), `created`, `updated`. Sem tag = a UI atribui `untagged` |
+| **N2** | Frontmatter por nota: `title`, `tags` (lista), `created`, `updated`. Sem tag = grupo "sem tag" na UI |
 | **N3** | Imagens **entram**: pasta `_assets/` dentro do `.notebook`, colar imagem grava o arquivo e insere `![](_assets/x.png)` |
 | **N4** | Sincronização é o **git**, nada próprio. Sem plugins |
-| **N5** | Tag reservada `agent` marca notas criadas pelo agente; a UI destaca notas novas desde a última leitura |
+| **N5** | Tag reservada `agent` marca notas criadas pelo agente |
 | **N6** | Edição segue a regra do kanban: mutações como emenda de linhas sobre o texto original; markdown que não modelamos fica intacto |
+| **N7** | Na árvore a pasta é **item único** com o logo do Cockpit, sem expandir (como o `.app` do Finder). Duplo clique abre a tab |
+| **N8** | **Duas colunas**, sem coluna de tags: lista à esquerda **agrupada por tag** (sem tag primeiro, depois `agent`, depois alfabético; nota com N tags aparece em N grupos, estilo Apple Notes) e nota no centro |
+| **N9** | Tags editáveis **no rodapé da nota**: chips removíveis + campo "adicionar tag". Título edita **inline** ao clicar (campo sem borda). **Sem datas** na UI |
+| **N10** | "Nova nota" cria `Untitled` direto, seleciona e foca o título. O nome do arquivo não acompanha o título (metadado só) |
 
-Layout da tab (`NotebookView` sobre uma sessão própria, não `FileViewerSession`,
-porque o alvo é uma pasta):
+Implementado (commits `5ed3d60` → `d1e19fe`): `NotebookNote` (domain),
+`NotebookSession`, `NotebookView` (lista agrupada, preview markdown, edição do
+fonte com save, tags e título inline), pasta como item único na árvore, card na
+Gallery (`notes.notebook/welcome.md`), persistência da tab, local e remoto via
+`readTextAt`/`writeTextAt`.
 
-```
-┌────────────┬──────────────────────────────┬───────────┐
-│ notas      │ nota ativa                   │ tags      │
-│ (busca,    │ (editor)                     │ agent (3) │
-│  por       │                              │ relay (5) │
-│  updated)  │                              │ bug   (2) │
-└────────────┴──────────────────────────────┴───────────┘
-```
+Falta, em ordem:
 
-Escopo da wave (entrega **junta**, uma wave só; a ordem abaixo é só a ordem interna de construção):
+- **4a — Robustez do protótipo**: watcher da pasta (nota criada pelo agente
+  aparece sem "recarregar"); apagar nota (botão direito na lista, vai pra
+  lixeira); Cmd+S no editor; aviso de alteração não salva ao trocar de nota;
+  rename opcional do arquivo quando o título muda (decidir — hoje N10 diz não).
+- **4b — Imagens** (N3): colar/arrastar imagem grava em `_assets/` e insere o
+  markdown; preview resolve o caminho relativo à pasta; "assets órfãos" limpa.
+- **4c — Edição rica** (WYSIWYG sem alternar modo). Avaliar pacote de editor
+  rico que serialize para markdown; blocos não modelados caem no editor de
+  texto. Só depois de 4a estável.
+- **4d — Links `[[titulo]]`** entre notas + backlinks. Base do mapa mental
+  futuro, se um dia voltar.
+- **CLI**: `cockpit note add <notebook> --tag <t> --title <t> < corpo` para o
+  agente criar notas sem escrever frontmatter na mão. Documentar o formato em
+  `docs/notebook.md` para o agente e para a skill `cockpit-cli`.
 
-- **4a — caderno com tags** (`.notebook`, `_assets/`, lista, busca, filtro por
-  tag, editor de texto + preview ao lado). Criar nota = `Nova nota` gera
-  `YYYY-MM-DD-slug.md` com frontmatter. Card na galeria cria
-  `notes.notebook/` com uma nota de boas-vindas taggeada `agent`.
-- **4b — imagens**: colar/arrastar imagem grava em `_assets/` e insere o
-  markdown; preview renderiza. Excluir nota não apaga assets (podem ser
-  compartilhados); botão "assets órfãos" limpa.
-- **4c — edição rica** (WYSIWYG sem alternar modo). Construir sobre 4a;
-  avaliar pacote de editor rico que serialize para markdown e cair no editor
-  de texto para blocos não modelados.
-- **4d — links `[[titulo]]`** entre notas, backlinks no painel direito. Base do
-  mapa mental futuro.
-
-CLI: `cockpit note add <notebook> --tag <t> --title <t> < corpo` para o agente
-criar notas sem escrever frontmatter na mão (pode vir em 4a se for barato).
-
-Aceite (wave inteira): card cria o caderno; colar imagem grava em `_assets/`;
-edição rica não alterna modo e preserva blocos não modelados; `[[titulo]]`
-navega e aparece em backlinks; nota nova aparece na lista e filtra por tag;
-editar e salvar preserva frontmatter e blocos não modelados; um `.md` escrito
-à mão pelo agente (ou pelo Obsidian) aparece sem precisar de nada; funciona em
-workspace remoto.
+Aceite (wave inteira): card cria o caderno; nota escrita à mão pelo agente (ou
+pelo Obsidian) aparece sozinha; colar imagem grava em `_assets/`; edição rica
+não alterna modo e preserva blocos não modelados; `[[titulo]]` navega e aparece
+em backlinks; funciona em workspace remoto.
 
 ## Ordem
 
