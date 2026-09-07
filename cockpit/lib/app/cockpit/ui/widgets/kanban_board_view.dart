@@ -889,45 +889,84 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
       padding: const EdgeInsets.only(bottom: 12),
       children: [
         for (var i = 0; i < _doc.columns.length; i++) ...[
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-            color: colors.panel2,
-            child: Row(
-              children: [
-                Text(
-                  _doc.columns[i].name.toUpperCase(),
-                  style: typo.mono.copyWith(
-                    fontSize: 10.5,
-                    letterSpacing: 0.9,
-                    color: colors.text2,
+          // Cabeçalho da seção também é alvo: soltar nele manda pro FIM da
+          // coluna (mesmo contrato da coluna no modo quadro).
+          DragTarget<_CardDrag>(
+            onWillAcceptWithDetails: (d) => d.data.column != i,
+            onAcceptWithDetails: (d) => _moveCard(d.data.card, i),
+            builder: (context, candidate, _) => Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+              color: candidate.isEmpty ? colors.panel2 : colors.accentSoft,
+              child: Row(
+                children: [
+                  Text(
+                    _doc.columns[i].name.toUpperCase(),
+                    style: typo.mono.copyWith(
+                      fontSize: 10.5,
+                      letterSpacing: 0.9,
+                      color: colors.text2,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 7),
-                Text(
-                  '${_doc.columns[i].cards.length}',
-                  style: typo.mono.copyWith(
-                    fontSize: 10.5,
-                    color: colors.text4,
+                  const SizedBox(width: 7),
+                  Text(
+                    '${_doc.columns[i].cards.length}',
+                    style: typo.mono.copyWith(
+                      fontSize: 10.5,
+                      color: colors.text4,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-          for (final card in _doc.columns[i].cards)
-            _ListRow(
-              card: card,
-              doc: _doc,
-              isLastColumn: i == _doc.columns.length - 1,
-              selected: _selectedKey == _keyOf(card),
-              onAdvance: () => _advance(card),
-              onOpen: () {
-                final key = _keyOf(card);
-                _selectDetail(_selectedKey == key ? null : key);
-              },
-              onMenu: (position) => _showCardMenu(context, card, i, position),
-            ),
+          for (final (index, card) in _doc.columns[i].cards.indexed)
+            _listSlot(context, card, i, index),
         ],
       ],
+    );
+  }
+
+  /// Linha da lista + zona de soltar acima dela (inserção por posição), e a
+  /// própria linha arrastável — mesmo par mouse/toque do modo quadro.
+  Widget _listSlot(
+    BuildContext context,
+    KanbanCard card,
+    int column,
+    int index,
+  ) {
+    final row = _ListRow(
+      card: card,
+      doc: _doc,
+      isLastColumn: column == _doc.columns.length - 1,
+      selected: _selectedKey == _keyOf(card),
+      onAdvance: () => _advance(card),
+      onOpen: () {
+        final key = _keyOf(card);
+        _selectDetail(_selectedKey == key ? null : key);
+      },
+      onMenu: (position) => _showCardMenu(context, card, column, position),
+    );
+    final data = _CardDrag(card: card, column: column);
+    final draggable = _MouseDraggable<_CardDrag>(
+      data: data,
+      feedback: _DragFeedback(child: SizedBox(width: 360, child: row)),
+      childWhenDragging: Opacity(opacity: 0.35, child: row),
+      child: _TouchDraggable<_CardDrag>(
+        data: data,
+        feedback: _DragFeedback(child: SizedBox(width: 360, child: row)),
+        childWhenDragging: Opacity(opacity: 0.35, child: row),
+        onDragStarted: HapticFeedback.selectionClick,
+        child: row,
+      ),
+    );
+    return DragTarget<_CardDrag>(
+      onWillAcceptWithDetails: (d) => d.data.card.startLine != card.startLine,
+      onAcceptWithDetails: (d) =>
+          _moveCard(d.data.card, column, atIndex: index),
+      builder: (context, candidate, _) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [if (candidate.isNotEmpty) const _DropIndicator(), draggable],
+      ),
     );
   }
 }
