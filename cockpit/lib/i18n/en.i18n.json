@@ -796,8 +796,6 @@
     "notebook": {
       "notes": "Notes",
       "newNote": "New note",
-      "newNoteTitle": "New note",
-      "titlePlaceholder": "Title",
       "searchPlaceholder": "Search notes",
       "empty": "No notes yet. Create one, or ask the agent to write here.",
       "noMatch": "No note matches.",
@@ -810,7 +808,8 @@
       "noteCount": "${count} notes",
       "saveFailed": "Could not save the note",
       "createFailed": "Could not create the note",
-      "addTag": "add tag"
+      "addTag": "add tag",
+      "untitled": "Untitled"
     }
   },
   "settings": {

@@ -1232,8 +1232,6 @@ class _Translations$cockpit$notebook$pt_BR extends Translations$cockpit$notebook
 	// Translations
 	@override String get notes => 'Notas';
 	@override String get newNote => 'Nova nota';
-	@override String get newNoteTitle => 'Nova nota';
-	@override String get titlePlaceholder => 'Título';
 	@override String get searchPlaceholder => 'Buscar notas';
 	@override String get empty => 'Nenhuma nota ainda. Crie uma, ou peça pro agente escrever aqui.';
 	@override String get noMatch => 'Nenhuma nota bate com o filtro.';
@@ -1247,6 +1245,7 @@ class _Translations$cockpit$notebook$pt_BR extends Translations$cockpit$notebook
 	@override String get saveFailed => 'Não foi possível salvar a nota';
 	@override String get createFailed => 'Não foi possível criar a nota';
 	@override String get addTag => 'adicionar tag';
+	@override String get untitled => 'Sem título';
 }
 
 // Path: settings.language
@@ -2609,8 +2608,6 @@ extension on TranslationsPtBr {
 			'cockpit.gallery.notebook.description' => 'Uma pasta de notas curtas com tags. O agente escreve, você lê e edita. Abre no Obsidian também.',
 			'cockpit.notebook.notes' => 'Notas',
 			'cockpit.notebook.newNote' => 'Nova nota',
-			'cockpit.notebook.newNoteTitle' => 'Nova nota',
-			'cockpit.notebook.titlePlaceholder' => 'Título',
 			'cockpit.notebook.searchPlaceholder' => 'Buscar notas',
 			'cockpit.notebook.empty' => 'Nenhuma nota ainda. Crie uma, ou peça pro agente escrever aqui.',
 			'cockpit.notebook.noMatch' => 'Nenhuma nota bate com o filtro.',
@@ -2624,6 +2621,7 @@ extension on TranslationsPtBr {
 			'cockpit.notebook.saveFailed' => 'Não foi possível salvar a nota',
 			'cockpit.notebook.createFailed' => 'Não foi possível criar a nota',
 			'cockpit.notebook.addTag' => 'adicionar tag',
+			'cockpit.notebook.untitled' => 'Sem título',
 			'settings.language.title' => 'Idioma',
 			'settings.language.system' => 'Sistema',
 			'settings.language.english' => 'Inglês',
@@ -2972,9 +2970,9 @@ extension on TranslationsPtBr {
 			'fileOperation.error.nameHasSlash' => 'O nome não pode conter “/”.',
 			'fileOperation.error.invalidName' => 'Nome inválido.',
 			'theme.error.io' => 'Não foi possível ler ou gravar o arquivo do tema.',
+			'theme.error.ioDetail' => ({required Object detail}) => 'Não foi possível ler ou gravar o arquivo do tema: ${detail}',
 			_ => null,
 		} ?? switch (path) {
-			'theme.error.ioDetail' => ({required Object detail}) => 'Não foi possível ler ou gravar o arquivo do tema: ${detail}',
 			'theme.error.malformedJson' => ({required Object detail}) => 'Este arquivo não é um JSON válido: ${detail}',
 			'theme.error.invalidTheme' => 'Este arquivo não é um tema válido.',
 			'theme.error.reservedId' => 'Este tema usa o id de um tema nativo. Mude o "id" no arquivo e importe de novo.',

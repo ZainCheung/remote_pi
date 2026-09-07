@@ -54,4 +54,15 @@ Corpo.
     final c = NotebookNote.setTags(a, []);
     expect(NotebookNote.parse('/n.md', c).tags, [kUntagged]);
   });
+
+  test('setTitle rewrites the title line only', () {
+    final a = NotebookNote.setTitle(
+      '---\ntitle: x\ntags: [a]\n---\nb',
+      'Novo: t',
+    );
+    final n = NotebookNote.parse('/n.md', a);
+    expect(n.title, 'Novo: t');
+    expect(n.tags, ['a']);
+    expect(n.body, 'b');
+  });
 }

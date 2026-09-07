@@ -796,8 +796,6 @@
     "notebook": {
       "notes": "Notas",
       "newNote": "Nova nota",
-      "newNoteTitle": "Nova nota",
-      "titlePlaceholder": "Título",
       "searchPlaceholder": "Buscar notas",
       "empty": "Nenhuma nota ainda. Crie uma, ou peça pro agente escrever aqui.",
       "noMatch": "Nenhuma nota bate com o filtro.",
@@ -810,7 +808,8 @@
       "noteCount": "${count} notas",
       "saveFailed": "Não foi possível salvar a nota",
       "createFailed": "Não foi possível criar a nota",
-      "addTag": "adicionar tag"
+      "addTag": "adicionar tag",
+      "untitled": "Sem título"
     }
   },
   "settings": {

@@ -2501,12 +2501,6 @@ class Translations$cockpit$notebook$en {
 	/// en: 'New note'
 	String get newNote => 'New note';
 
-	/// en: 'New note'
-	String get newNoteTitle => 'New note';
-
-	/// en: 'Title'
-	String get titlePlaceholder => 'Title';
-
 	/// en: 'Search notes'
 	String get searchPlaceholder => 'Search notes';
 
@@ -2545,6 +2539,9 @@ class Translations$cockpit$notebook$en {
 
 	/// en: 'add tag'
 	String get addTag => 'add tag';
+
+	/// en: 'Untitled'
+	String get untitled => 'Untitled';
 }
 
 // Path: settings.language
@@ -4680,8 +4677,6 @@ extension on Translations {
 			'cockpit.gallery.notebook.description' => 'A folder of short notes with tags. Agents write, you read and edit. Opens in Obsidian too.',
 			'cockpit.notebook.notes' => 'Notes',
 			'cockpit.notebook.newNote' => 'New note',
-			'cockpit.notebook.newNoteTitle' => 'New note',
-			'cockpit.notebook.titlePlaceholder' => 'Title',
 			'cockpit.notebook.searchPlaceholder' => 'Search notes',
 			'cockpit.notebook.empty' => 'No notes yet. Create one, or ask the agent to write here.',
 			'cockpit.notebook.noMatch' => 'No note matches.',
@@ -4695,6 +4690,7 @@ extension on Translations {
 			'cockpit.notebook.saveFailed' => 'Could not save the note',
 			'cockpit.notebook.createFailed' => 'Could not create the note',
 			'cockpit.notebook.addTag' => 'add tag',
+			'cockpit.notebook.untitled' => 'Untitled',
 			'settings.language.title' => 'Language',
 			'settings.language.system' => 'System',
 			'settings.language.english' => 'English',
@@ -5043,9 +5039,9 @@ extension on Translations {
 			'fileOperation.error.nameHasSlash' => 'Name cannot contain “/”.',
 			'fileOperation.error.invalidName' => 'Invalid name.',
 			'theme.error.io' => 'Could not read or write the theme file.',
+			'theme.error.ioDetail' => ({required Object detail}) => 'Could not read or write the theme file: ${detail}',
 			_ => null,
 		} ?? switch (path) {
-			'theme.error.ioDetail' => ({required Object detail}) => 'Could not read or write the theme file: ${detail}',
 			'theme.error.malformedJson' => ({required Object detail}) => 'This file is not valid JSON: ${detail}',
 			'theme.error.invalidTheme' => 'This file is not a valid theme.',
 			'theme.error.reservedId' => 'This theme uses the id of a built-in theme. Change "id" in the file and import again.',

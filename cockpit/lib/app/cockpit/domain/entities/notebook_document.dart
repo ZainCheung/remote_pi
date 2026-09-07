@@ -142,8 +142,20 @@ class NotebookNote {
   /// frontmatter, cria um só com `tags:`. Lista vazia grava `[]` (a UI mostra
   /// como sem tag).
   static String setTags(String raw, List<String> tags) {
-    final line =
-        'tags: [${tags.map((t) => t.trim().toLowerCase()).where((t) => t.isNotEmpty).toSet().join(', ')}]';
+    final clean = tags
+        .map((t) => t.trim().toLowerCase())
+        .where((t) => t.isNotEmpty)
+        .toSet();
+    return _setField(raw, 'tags', '[${clean.join(', ')}]');
+  }
+
+  /// Substitui (ou insere) `title:` no frontmatter de [raw]. O nome do
+  /// arquivo não muda — o título é só metadado.
+  static String setTitle(String raw, String title) =>
+      _setField(raw, 'title', _quoteIfNeeded(title.trim()));
+
+  static String _setField(String raw, String key, String value) {
+    final line = '$key: $value';
     final lines = raw.split('\n');
     if (lines.isEmpty || !_fence.hasMatch(lines.first)) {
       return '---\n$line\n---\n\n$raw';
@@ -153,7 +165,7 @@ class NotebookNote {
         lines.insert(i, line);
         return lines.join('\n');
       }
-      if (lines[i].toLowerCase().startsWith('tags:')) {
+      if (lines[i].toLowerCase().startsWith('$key:')) {
         lines[i] = line;
         return lines.join('\n');
       }

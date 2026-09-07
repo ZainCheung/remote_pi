@@ -41,6 +41,9 @@ class _NotebookViewState extends State<NotebookView> {
   String? _selectedPath;
   final Set<String> _collapsed = <String>{};
   final TextEditingController _tagInput = TextEditingController();
+  final TextEditingController _titleCtrl = TextEditingController();
+  final FocusNode _titleFocus = FocusNode(debugLabel: 'notebookTitle');
+  bool _editingTitle = false;
   String _query = '';
   bool _editing = false;
   bool _dirty = false;
@@ -73,6 +76,8 @@ class _NotebookViewState extends State<NotebookView> {
     _editorFocus.dispose();
     _search.dispose();
     _tagInput.dispose();
+    _titleCtrl.dispose();
+    _titleFocus.dispose();
     super.dispose();
   }
 
@@ -135,6 +140,7 @@ class _NotebookViewState extends State<NotebookView> {
     setState(() {
       _selectedPath = n.path;
       _editing = false;
+      _editingTitle = false;
       _syncEditor();
     });
   }
@@ -192,6 +198,36 @@ class _NotebookViewState extends State<NotebookView> {
     await _load();
   }
 
+  void _startTitleEdit() {
+    final sel = _selected;
+    if (sel == null) return;
+    _titleCtrl.text = sel.title;
+    _titleCtrl.selection = TextSelection(
+      baseOffset: 0,
+      extentOffset: _titleCtrl.text.length,
+    );
+    setState(() => _editingTitle = true);
+    _titleFocus.requestFocus();
+  }
+
+  Future<void> _commitTitle() async {
+    final sel = _selected;
+    if (!_editingTitle) return;
+    setState(() => _editingTitle = false);
+    final title = _titleCtrl.text.trim();
+    if (sel == null || title.isEmpty || title == sel.title || _saving) return;
+    final base = _editing ? _editor.text : sel.raw;
+    setState(() => _saving = true);
+    final content = NotebookNote.touchUpdated(
+      NotebookNote.setTitle(base, title),
+      DateTime.now(),
+    );
+    final ok = await _vm.writeTextAt(sel.path, content);
+    if (!mounted) return;
+    setState(() => _saving = false);
+    if (ok) await _load();
+  }
+
   void _addTag(String raw) {
     final sel = _selected;
     final t = raw.trim().toLowerCase().replaceAll(RegExp(r'\s+'), '-');
@@ -229,44 +265,27 @@ class _NotebookViewState extends State<NotebookView> {
     await _load();
   }
 
+  /// Cria "Untitled" direto (sem diálogo), seleciona e já abre o título pra
+  /// edição — o usuário renomeia ali mesmo.
   Future<void> _newNote() async {
-    final tr = context.t.cockpit.notebook;
-    final ctrl = TextEditingController();
-    final title = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(tr.newNoteTitle),
-        content: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 360),
-          child: TextField(
-            controller: ctrl,
-            autofocus: true,
-            placeholder: Text(tr.titlePlaceholder),
-            onSubmitted: (v) => Navigator.of(ctx).pop(v),
-          ),
-        ),
-        actions: [
-          GhostButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(ctx.t.common.cancel),
-          ),
-          PrimaryButton(
-            onPressed: () => Navigator.of(ctx).pop(ctrl.text),
-            child: Text(ctx.t.common.create),
-          ),
-        ],
-      ),
-    );
-    if (!mounted || title == null || title.trim().isEmpty) return;
+    final title = context.t.cockpit.notebook.untitled;
     final now = DateTime.now();
-    const tags = <String>[];
-    final path = joinPath(
+    var path = joinPath(
       widget.session.path,
-      NotebookNote.fileNameFor(title.trim(), now),
+      NotebookNote.fileNameFor(title, now),
     );
+    var i = 2;
+    final taken = _notes.map((n) => n.path).toSet();
+    while (taken.contains(path)) {
+      path = joinPath(
+        widget.session.path,
+        NotebookNote.fileNameFor('$title $i', now),
+      );
+      i++;
+    }
     final ok = await _vm.writeTextAt(
       path,
-      NotebookNote.template(title: title.trim(), tags: tags, now: now),
+      NotebookNote.template(title: title, tags: const [], now: now),
     );
     if (!mounted) return;
     if (!ok) {
@@ -279,9 +298,9 @@ class _NotebookViewState extends State<NotebookView> {
       return;
     }
     _selectedPath = path;
-    _editing = true;
+    _editing = false;
     await _load();
-    if (mounted) _editorFocus.requestFocus();
+    if (mounted) _startTitleEdit();
   }
 
   @override
@@ -327,6 +346,11 @@ class _NotebookViewState extends State<NotebookView> {
                     editor: _editor,
                     editorFocus: _editorFocus,
                     tagInput: _tagInput,
+                    titleCtrl: _titleCtrl,
+                    titleFocus: _titleFocus,
+                    editingTitle: _editingTitle,
+                    onStartTitleEdit: _startTitleEdit,
+                    onCommitTitle: _commitTitle,
                     onToggleEdit: () => setState(() {
                       _editing = !_editing;
                       if (_editing) _editorFocus.requestFocus();
@@ -624,16 +648,6 @@ class _NoteRow extends StatelessWidget {
             const SizedBox(height: 1),
             Row(
               children: [
-                if (n.sortDate != null) ...[
-                  Text(
-                    _shortDate(n.sortDate!),
-                    style: context.typo.label.copyWith(
-                      fontSize: 10,
-                      color: colors.text3,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                ],
                 Expanded(
                   child: Text(
                     _excerpt(n.body),
@@ -663,16 +677,6 @@ class _NoteRow extends StatelessWidget {
         );
     return line.replaceAll(RegExp(r'[*_`>#\[\]]'), '');
   }
-
-  static String _shortDate(DateTime d) {
-    String two(int n) => n.toString().padLeft(2, '0');
-    final now = DateTime.now();
-    final sameDay =
-        d.year == now.year && d.month == now.month && d.day == now.day;
-    return sameDay
-        ? '${two(d.hour)}:${two(d.minute)}'
-        : '${two(d.day)}/${two(d.month)}';
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -686,6 +690,11 @@ class _NoteColumn extends StatelessWidget {
     required this.editor,
     required this.editorFocus,
     required this.tagInput,
+    required this.titleCtrl,
+    required this.titleFocus,
+    required this.editingTitle,
+    required this.onStartTitleEdit,
+    required this.onCommitTitle,
     required this.onToggleEdit,
     required this.onSave,
     required this.onAddTag,
@@ -699,6 +708,11 @@ class _NoteColumn extends StatelessWidget {
   final CodeEditingController editor;
   final FocusNode editorFocus;
   final TextEditingController tagInput;
+  final TextEditingController titleCtrl;
+  final FocusNode titleFocus;
+  final bool editingTitle;
+  final VoidCallback onStartTitleEdit;
+  final VoidCallback onCommitTitle;
   final VoidCallback onToggleEdit;
   final VoidCallback onSave;
   final ValueChanged<String> onAddTag;
@@ -730,24 +744,37 @@ class _NoteColumn extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      n.title,
-                      style: context.typo.label.copyWith(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: colors.text,
-                      ),
-                    ),
-                    if (n.updated != null) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        _fullDate(n.updated!),
-                        style: context.typo.label.copyWith(
-                          fontSize: 11,
-                          color: colors.text3,
+                    if (editingTitle)
+                      Focus(
+                        onFocusChange: (has) {
+                          if (!has) onCommitTitle();
+                        },
+                        child: TextField(
+                          controller: titleCtrl,
+                          focusNode: titleFocus,
+                          style: context.typo.label.copyWith(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: colors.text,
+                          ),
+                          border: Border.all(color: Colors.transparent),
+                          borderRadius: BorderRadius.zero,
+                          padding: EdgeInsets.zero,
+                          onSubmitted: (_) => onCommitTitle(),
+                        ),
+                      )
+                    else
+                      HoverTap(
+                        onTap: onStartTitleEdit,
+                        child: Text(
+                          n.title,
+                          style: context.typo.label.copyWith(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: colors.text,
+                          ),
                         ),
                       ),
-                    ],
                   ],
                 ),
               ),
@@ -835,11 +862,6 @@ class _NoteColumn extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  static String _fullDate(DateTime d) {
-    String two(int n) => n.toString().padLeft(2, '0');
-    return '${d.year}-${two(d.month)}-${two(d.day)} ${two(d.hour)}:${two(d.minute)}';
   }
 }
 
