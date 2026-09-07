@@ -891,8 +891,6 @@ class _NotebookViewState extends State<NotebookView> {
                 widget.session.path,
                 widget.workspaceRoot,
               ),
-              search: _search,
-              onQuery: (q) => setState(() => _query = q),
               onNew: _newNote,
               onReload: _load,
               listCollapsed: _listCollapsed,
@@ -918,6 +916,8 @@ class _NotebookViewState extends State<NotebookView> {
                         onSelect: _select,
                         onMenu: _noteMenu,
                         onTagMenu: _tagMenu,
+                        search: _search,
+                        onQuery: (q) => setState(() => _query = q),
                       ),
                     ),
                   if (!_listCollapsed)
@@ -969,8 +969,6 @@ class _Header extends StatelessWidget {
     required this.path,
     required this.listCollapsed,
     required this.onToggleList,
-    required this.search,
-    required this.onQuery,
     required this.onNew,
     required this.onReload,
   });
@@ -979,8 +977,6 @@ class _Header extends StatelessWidget {
   final String path;
   final bool listCollapsed;
   final VoidCallback onToggleList;
-  final TextEditingController search;
-  final ValueChanged<String> onQuery;
   final VoidCallback onNew;
   final VoidCallback onReload;
 
@@ -1017,22 +1013,6 @@ class _Header extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          SizedBox(
-            width: 220,
-            height: 28,
-            child: TextField(
-              controller: search,
-              onChanged: onQuery,
-              placeholder: Text(tr.searchPlaceholder),
-              features: const [
-                InputFeature.leading(Icon(Icons.search, size: 14)),
-              ],
-              style: context.typo.label.copyWith(color: colors.text),
-              border: Border.all(color: colors.border),
-              borderRadius: BorderRadius.circular(6),
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            ),
-          ),
           const SizedBox(width: 8),
           _IconAction(icon: Icons.refresh, tooltip: tr.reload, onTap: onReload),
           const SizedBox(width: 4),
@@ -1116,6 +1096,8 @@ class _NotesColumn extends StatelessWidget {
     required this.onSelect,
     required this.onMenu,
     required this.onTagMenu,
+    required this.search,
+    required this.onQuery,
   });
 
   final List<(String, List<NotebookNote>)> groups;
@@ -1127,11 +1109,46 @@ class _NotesColumn extends StatelessWidget {
   final ValueChanged<NotebookNote> onSelect;
   final void Function(NotebookNote, Offset) onMenu;
   final void Function(String, Offset) onTagMenu;
+  final TextEditingController search;
+  final ValueChanged<String> onQuery;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final tr = context.t.cockpit.notebook;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Busca no topo da lista: filtra os grupos abaixo.
+        Padding(
+          padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
+          child: SizedBox(
+            height: 28,
+            child: TextField(
+              controller: search,
+              onChanged: onQuery,
+              placeholder: Text(tr.searchPlaceholder),
+              features: const [
+                InputFeature.leading(Icon(Icons.search, size: 14)),
+                InputFeature.clear(),
+              ],
+              style: context.typo.label.copyWith(color: colors.text),
+              border: Border.all(color: colors.border),
+              borderRadius: BorderRadius.circular(6),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            ),
+          ),
+        ),
+        Expanded(child: _body(context, colors, tr)),
+      ],
+    );
+  }
+
+  Widget _body(
+    BuildContext context,
+    AppColors colors,
+    Translations$cockpit$notebook$en tr,
+  ) {
     if (loading) return const Center(child: CircularProgressIndicator());
     if (groups.isEmpty) {
       return Padding(
