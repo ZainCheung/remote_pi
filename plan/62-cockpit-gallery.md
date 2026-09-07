@@ -1,8 +1,8 @@
 # 62 — Cockpit: aba Gallery (documentos especiais)
 
 > **Status**: PARCIAL. Passos 1 e 2 implementados (2026-09-07). Mermaid
-> cortado. Caderno (passo 4) com **design aprovado**; 4a, 4b, 4c e CLI feitos;
-> falta 4d (links `[[...]]` + backlinks).
+> cortado. Caderno (passo 4) com **design aprovado**; 4a–4d e CLI feitos. Caderno
+> completo; resta só limpeza de assets órfãos (baixa prioridade).
 
 ## Contexto
 
@@ -134,7 +134,7 @@ comprometido — ver ideias futuras.
 
 - [x] Aba Gallery com `.dbq`, `.kanban`, `.ckp`, `.http` (passo 1)
 - [x] Cards Tarefas (`.cockpit/tasks.json`, reutilizando o exemplo do painel) e Visual HTML (passo 2)
-- [ ] Caderno completo (passo 4: pasta `.notebook`, tags, busca, imagens, edição rica, links) e card na galeria
+- [x] Caderno completo (passo 4: pasta `.notebook`, tags, busca, imagens, edição rica, links) e card na galeria
 - [ ] `flutter analyze` limpo e `flutter test` verde em cada passo
 - [ ] i18n en/pt-BR/es para todo card novo
 
