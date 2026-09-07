@@ -766,11 +766,11 @@
       "createErrorTitle": "No se pudo crear el archivo",
       "dbQuery": {
         "title": "Consulta de base de datos",
-        "description": "Editor SQL con grilla de resultados, ligado a una conexión registrada."
+        "description": "Editor SQL con grilla de resultados, usando una de las conexiones registradas."
       },
       "kanban": {
         "title": "Tablero kanban",
-        "description": "Columnas y tarjetas sobre markdown puro: arrastra, edita, comenta."
+        "description": "Columnas y tarjetas guardadas como markdown puro. Arrastra, edita y comenta."
       },
       "layout": {
         "title": "Layout de paneles",
@@ -782,11 +782,11 @@
       },
       "html": {
         "title": "Vista HTML",
-        "description": "Una página que el agente escribe y Cockpit renderiza directo: mapa mental, diagrama, gráfico, lo que sea."
+        "description": "Una página que el agente escribe y Cockpit renderiza directo: mapa mental, diagrama, gráfico, lo que necesites."
       },
       "tasks": {
         "title": "Tareas",
-        "description": "Comandos para ejecutar desde el panel de Tasks (dev server, tests, build). Vive en .cockpit/tasks.json."
+        "description": "Comandos para ejecutar desde el panel de Tasks, como dev server, tests y build. Vive en .cockpit/tasks.json."
       },
       "notebook": {
         "title": "Cuaderno",

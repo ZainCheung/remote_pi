@@ -1470,7 +1470,7 @@ class _Translations$cockpit$gallery$dbQuery$es extends Translations$cockpit$gall
 
 	// Translations
 	@override String get title => 'Consulta de base de datos';
-	@override String get description => 'Editor SQL con grilla de resultados, ligado a una conexión registrada.';
+	@override String get description => 'Editor SQL con grilla de resultados, usando una de las conexiones registradas.';
 }
 
 // Path: cockpit.gallery.kanban
@@ -1481,7 +1481,7 @@ class _Translations$cockpit$gallery$kanban$es extends Translations$cockpit$galle
 
 	// Translations
 	@override String get title => 'Tablero kanban';
-	@override String get description => 'Columnas y tarjetas sobre markdown puro: arrastra, edita, comenta.';
+	@override String get description => 'Columnas y tarjetas guardadas como markdown puro. Arrastra, edita y comenta.';
 }
 
 // Path: cockpit.gallery.layout
@@ -1514,7 +1514,7 @@ class _Translations$cockpit$gallery$html$es extends Translations$cockpit$gallery
 
 	// Translations
 	@override String get title => 'Vista HTML';
-	@override String get description => 'Una página que el agente escribe y Cockpit renderiza directo: mapa mental, diagrama, gráfico, lo que sea.';
+	@override String get description => 'Una página que el agente escribe y Cockpit renderiza directo: mapa mental, diagrama, gráfico, lo que necesites.';
 }
 
 // Path: cockpit.gallery.tasks
@@ -1525,7 +1525,7 @@ class _Translations$cockpit$gallery$tasks$es extends Translations$cockpit$galler
 
 	// Translations
 	@override String get title => 'Tareas';
-	@override String get description => 'Comandos para ejecutar desde el panel de Tasks (dev server, tests, build). Vive en .cockpit/tasks.json.';
+	@override String get description => 'Comandos para ejecutar desde el panel de Tasks, como dev server, tests y build. Vive en .cockpit/tasks.json.';
 }
 
 // Path: cockpit.gallery.notebook
@@ -2625,17 +2625,17 @@ extension on TranslationsEs {
 			'cockpit.gallery.intro' => 'Documentos especiales de Cockpit para que veas lo que el agente de IA está haciendo.',
 			'cockpit.gallery.createErrorTitle' => 'No se pudo crear el archivo',
 			'cockpit.gallery.dbQuery.title' => 'Consulta de base de datos',
-			'cockpit.gallery.dbQuery.description' => 'Editor SQL con grilla de resultados, ligado a una conexión registrada.',
+			'cockpit.gallery.dbQuery.description' => 'Editor SQL con grilla de resultados, usando una de las conexiones registradas.',
 			'cockpit.gallery.kanban.title' => 'Tablero kanban',
-			'cockpit.gallery.kanban.description' => 'Columnas y tarjetas sobre markdown puro: arrastra, edita, comenta.',
+			'cockpit.gallery.kanban.description' => 'Columnas y tarjetas guardadas como markdown puro. Arrastra, edita y comenta.',
 			'cockpit.gallery.layout.title' => 'Layout de paneles',
 			'cockpit.gallery.layout.description' => 'Terminales y splits para abrir de una vez, estilo tmuxinator. Puede ejecutarse solo en worktrees nuevos.',
 			'cockpit.gallery.httpRequest.title' => 'Requests HTTP',
 			'cockpit.gallery.httpRequest.description' => 'Escribe requests en un archivo y ejecútalos con la respuesta al lado.',
 			'cockpit.gallery.html.title' => 'Vista HTML',
-			'cockpit.gallery.html.description' => 'Una página que el agente escribe y Cockpit renderiza directo: mapa mental, diagrama, gráfico, lo que sea.',
+			'cockpit.gallery.html.description' => 'Una página que el agente escribe y Cockpit renderiza directo: mapa mental, diagrama, gráfico, lo que necesites.',
 			'cockpit.gallery.tasks.title' => 'Tareas',
-			'cockpit.gallery.tasks.description' => 'Comandos para ejecutar desde el panel de Tasks (dev server, tests, build). Vive en .cockpit/tasks.json.',
+			'cockpit.gallery.tasks.description' => 'Comandos para ejecutar desde el panel de Tasks, como dev server, tests y build. Vive en .cockpit/tasks.json.',
 			'cockpit.gallery.notebook.title' => 'Cuaderno',
 			'cockpit.gallery.notebook.description' => 'Una carpeta de notas cortas con tags. El agente escribe, tú lees y editas. También abre en Obsidian.',
 			'cockpit.notebook.notes' => 'Notas',

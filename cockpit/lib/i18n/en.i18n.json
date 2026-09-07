@@ -766,31 +766,31 @@
       "createErrorTitle": "Could not create the file",
       "dbQuery": {
         "title": "Database query",
-        "description": "SQL editor with a result grid, tied to a registered connection."
+        "description": "SQL editor with a result grid, using one of the registered connections."
       },
       "kanban": {
         "title": "Kanban board",
-        "description": "Columns and cards over plain markdown — drag, edit, comment."
+        "description": "Columns and cards stored as plain markdown. Drag, edit and comment."
       },
       "layout": {
         "title": "Pane layout",
-        "description": "Terminals and splits to open at once, like tmuxinator. Can autorun on new worktrees."
+        "description": "Terminals and splits to open in one go, like tmuxinator. Can run automatically on new worktrees."
       },
       "httpRequest": {
         "title": "HTTP requests",
-        "description": "Write requests in a file and run them with the response side by side."
+        "description": "Write requests in a file and run them with the response next to it."
       },
       "html": {
         "title": "HTML view",
-        "description": "A page the agent writes and Cockpit renders directly — mind maps, diagrams, charts, anything."
+        "description": "A page the agent writes and Cockpit renders directly: mind maps, diagrams, charts, whatever you need."
       },
       "tasks": {
         "title": "Tasks",
-        "description": "Commands to run from the Tasks panel (dev server, tests, build). Lives in .cockpit/tasks.json."
+        "description": "Commands to run from the Tasks panel, such as the dev server, tests and build. Stored in .cockpit/tasks.json."
       },
       "notebook": {
         "title": "Notebook",
-        "description": "A folder of short notes with tags. Agents write, you read and edit. Opens in Obsidian too."
+        "description": "A folder of short notes with tags. The agent writes, you read and edit. Also opens in Obsidian."
       }
     },
     "notebook": {

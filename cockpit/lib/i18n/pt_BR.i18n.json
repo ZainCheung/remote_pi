@@ -766,15 +766,15 @@
       "createErrorTitle": "Não foi possível criar o arquivo",
       "dbQuery": {
         "title": "Consulta de banco",
-        "description": "Editor SQL com grid de resultado, ligado a uma conexão registrada."
+        "description": "Editor SQL com grid de resultado, usando uma das conexões registradas."
       },
       "kanban": {
         "title": "Quadro kanban",
-        "description": "Colunas e cards sobre markdown puro — arraste, edite, comente."
+        "description": "Colunas e cards gravados como markdown puro. Arraste, edite e comente."
       },
       "layout": {
         "title": "Layout de panes",
-        "description": "Terminais e splits pra abrir de uma vez, estilo tmuxinator. Pode rodar sozinho em worktrees novas."
+        "description": "Terminais e splits para abrir de uma vez, estilo tmuxinator. Pode rodar sozinho em worktrees novas."
       },
       "httpRequest": {
         "title": "Requests HTTP",
@@ -782,11 +782,11 @@
       },
       "html": {
         "title": "Visual HTML",
-        "description": "Uma página que o agente escreve e o Cockpit renderiza direto — mapa mental, diagrama, gráfico, o que for."
+        "description": "Uma página que o agente escreve e o Cockpit renderiza direto: mapa mental, diagrama, gráfico, o que precisar."
       },
       "tasks": {
         "title": "Tarefas",
-        "description": "Comandos pra rodar pelo painel de Tasks (dev server, testes, build). Mora em .cockpit/tasks.json."
+        "description": "Comandos para rodar pelo painel de Tasks, como dev server, testes e build. Fica em .cockpit/tasks.json."
       },
       "notebook": {
         "title": "Caderno",

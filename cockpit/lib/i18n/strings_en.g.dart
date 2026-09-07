@@ -2988,8 +2988,8 @@ class Translations$cockpit$gallery$dbQuery$en {
 	/// en: 'Database query'
 	String get title => 'Database query';
 
-	/// en: 'SQL editor with a result grid, tied to a registered connection.'
-	String get description => 'SQL editor with a result grid, tied to a registered connection.';
+	/// en: 'SQL editor with a result grid, using one of the registered connections.'
+	String get description => 'SQL editor with a result grid, using one of the registered connections.';
 }
 
 // Path: cockpit.gallery.kanban
@@ -3003,8 +3003,8 @@ class Translations$cockpit$gallery$kanban$en {
 	/// en: 'Kanban board'
 	String get title => 'Kanban board';
 
-	/// en: 'Columns and cards over plain markdown — drag, edit, comment.'
-	String get description => 'Columns and cards over plain markdown — drag, edit, comment.';
+	/// en: 'Columns and cards stored as plain markdown. Drag, edit and comment.'
+	String get description => 'Columns and cards stored as plain markdown. Drag, edit and comment.';
 }
 
 // Path: cockpit.gallery.layout
@@ -3018,8 +3018,8 @@ class Translations$cockpit$gallery$layout$en {
 	/// en: 'Pane layout'
 	String get title => 'Pane layout';
 
-	/// en: 'Terminals and splits to open at once, like tmuxinator. Can autorun on new worktrees.'
-	String get description => 'Terminals and splits to open at once, like tmuxinator. Can autorun on new worktrees.';
+	/// en: 'Terminals and splits to open in one go, like tmuxinator. Can run automatically on new worktrees.'
+	String get description => 'Terminals and splits to open in one go, like tmuxinator. Can run automatically on new worktrees.';
 }
 
 // Path: cockpit.gallery.httpRequest
@@ -3033,8 +3033,8 @@ class Translations$cockpit$gallery$httpRequest$en {
 	/// en: 'HTTP requests'
 	String get title => 'HTTP requests';
 
-	/// en: 'Write requests in a file and run them with the response side by side.'
-	String get description => 'Write requests in a file and run them with the response side by side.';
+	/// en: 'Write requests in a file and run them with the response next to it.'
+	String get description => 'Write requests in a file and run them with the response next to it.';
 }
 
 // Path: cockpit.gallery.html
@@ -3048,8 +3048,8 @@ class Translations$cockpit$gallery$html$en {
 	/// en: 'HTML view'
 	String get title => 'HTML view';
 
-	/// en: 'A page the agent writes and Cockpit renders directly — mind maps, diagrams, charts, anything.'
-	String get description => 'A page the agent writes and Cockpit renders directly — mind maps, diagrams, charts, anything.';
+	/// en: 'A page the agent writes and Cockpit renders directly: mind maps, diagrams, charts, whatever you need.'
+	String get description => 'A page the agent writes and Cockpit renders directly: mind maps, diagrams, charts, whatever you need.';
 }
 
 // Path: cockpit.gallery.tasks
@@ -3063,8 +3063,8 @@ class Translations$cockpit$gallery$tasks$en {
 	/// en: 'Tasks'
 	String get title => 'Tasks';
 
-	/// en: 'Commands to run from the Tasks panel (dev server, tests, build). Lives in .cockpit/tasks.json.'
-	String get description => 'Commands to run from the Tasks panel (dev server, tests, build). Lives in .cockpit/tasks.json.';
+	/// en: 'Commands to run from the Tasks panel, such as the dev server, tests and build. Stored in .cockpit/tasks.json.'
+	String get description => 'Commands to run from the Tasks panel, such as the dev server, tests and build. Stored in .cockpit/tasks.json.';
 }
 
 // Path: cockpit.gallery.notebook
@@ -3078,8 +3078,8 @@ class Translations$cockpit$gallery$notebook$en {
 	/// en: 'Notebook'
 	String get title => 'Notebook';
 
-	/// en: 'A folder of short notes with tags. Agents write, you read and edit. Opens in Obsidian too.'
-	String get description => 'A folder of short notes with tags. Agents write, you read and edit. Opens in Obsidian too.';
+	/// en: 'A folder of short notes with tags. The agent writes, you read and edit. Also opens in Obsidian.'
+	String get description => 'A folder of short notes with tags. The agent writes, you read and edit. Also opens in Obsidian.';
 }
 
 // Path: cockpit.notebook.format
@@ -4739,19 +4739,19 @@ extension on Translations {
 			'cockpit.gallery.intro' => 'Special Cockpit documents that give you a visual of what the AI agent is doing.',
 			'cockpit.gallery.createErrorTitle' => 'Could not create the file',
 			'cockpit.gallery.dbQuery.title' => 'Database query',
-			'cockpit.gallery.dbQuery.description' => 'SQL editor with a result grid, tied to a registered connection.',
+			'cockpit.gallery.dbQuery.description' => 'SQL editor with a result grid, using one of the registered connections.',
 			'cockpit.gallery.kanban.title' => 'Kanban board',
-			'cockpit.gallery.kanban.description' => 'Columns and cards over plain markdown — drag, edit, comment.',
+			'cockpit.gallery.kanban.description' => 'Columns and cards stored as plain markdown. Drag, edit and comment.',
 			'cockpit.gallery.layout.title' => 'Pane layout',
-			'cockpit.gallery.layout.description' => 'Terminals and splits to open at once, like tmuxinator. Can autorun on new worktrees.',
+			'cockpit.gallery.layout.description' => 'Terminals and splits to open in one go, like tmuxinator. Can run automatically on new worktrees.',
 			'cockpit.gallery.httpRequest.title' => 'HTTP requests',
-			'cockpit.gallery.httpRequest.description' => 'Write requests in a file and run them with the response side by side.',
+			'cockpit.gallery.httpRequest.description' => 'Write requests in a file and run them with the response next to it.',
 			'cockpit.gallery.html.title' => 'HTML view',
-			'cockpit.gallery.html.description' => 'A page the agent writes and Cockpit renders directly — mind maps, diagrams, charts, anything.',
+			'cockpit.gallery.html.description' => 'A page the agent writes and Cockpit renders directly: mind maps, diagrams, charts, whatever you need.',
 			'cockpit.gallery.tasks.title' => 'Tasks',
-			'cockpit.gallery.tasks.description' => 'Commands to run from the Tasks panel (dev server, tests, build). Lives in .cockpit/tasks.json.',
+			'cockpit.gallery.tasks.description' => 'Commands to run from the Tasks panel, such as the dev server, tests and build. Stored in .cockpit/tasks.json.',
 			'cockpit.gallery.notebook.title' => 'Notebook',
-			'cockpit.gallery.notebook.description' => 'A folder of short notes with tags. Agents write, you read and edit. Opens in Obsidian too.',
+			'cockpit.gallery.notebook.description' => 'A folder of short notes with tags. The agent writes, you read and edit. Also opens in Obsidian.',
 			'cockpit.notebook.notes' => 'Notes',
 			'cockpit.notebook.newNote' => 'New note',
 			'cockpit.notebook.searchPlaceholder' => 'Search notes',

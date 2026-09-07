@@ -1470,7 +1470,7 @@ class _Translations$cockpit$gallery$dbQuery$pt_BR extends Translations$cockpit$g
 
 	// Translations
 	@override String get title => 'Consulta de banco';
-	@override String get description => 'Editor SQL com grid de resultado, ligado a uma conexão registrada.';
+	@override String get description => 'Editor SQL com grid de resultado, usando uma das conexões registradas.';
 }
 
 // Path: cockpit.gallery.kanban
@@ -1481,7 +1481,7 @@ class _Translations$cockpit$gallery$kanban$pt_BR extends Translations$cockpit$ga
 
 	// Translations
 	@override String get title => 'Quadro kanban';
-	@override String get description => 'Colunas e cards sobre markdown puro — arraste, edite, comente.';
+	@override String get description => 'Colunas e cards gravados como markdown puro. Arraste, edite e comente.';
 }
 
 // Path: cockpit.gallery.layout
@@ -1492,7 +1492,7 @@ class _Translations$cockpit$gallery$layout$pt_BR extends Translations$cockpit$ga
 
 	// Translations
 	@override String get title => 'Layout de panes';
-	@override String get description => 'Terminais e splits pra abrir de uma vez, estilo tmuxinator. Pode rodar sozinho em worktrees novas.';
+	@override String get description => 'Terminais e splits para abrir de uma vez, estilo tmuxinator. Pode rodar sozinho em worktrees novas.';
 }
 
 // Path: cockpit.gallery.httpRequest
@@ -1514,7 +1514,7 @@ class _Translations$cockpit$gallery$html$pt_BR extends Translations$cockpit$gall
 
 	// Translations
 	@override String get title => 'Visual HTML';
-	@override String get description => 'Uma página que o agente escreve e o Cockpit renderiza direto — mapa mental, diagrama, gráfico, o que for.';
+	@override String get description => 'Uma página que o agente escreve e o Cockpit renderiza direto: mapa mental, diagrama, gráfico, o que precisar.';
 }
 
 // Path: cockpit.gallery.tasks
@@ -1525,7 +1525,7 @@ class _Translations$cockpit$gallery$tasks$pt_BR extends Translations$cockpit$gal
 
 	// Translations
 	@override String get title => 'Tarefas';
-	@override String get description => 'Comandos pra rodar pelo painel de Tasks (dev server, testes, build). Mora em .cockpit/tasks.json.';
+	@override String get description => 'Comandos para rodar pelo painel de Tasks, como dev server, testes e build. Fica em .cockpit/tasks.json.';
 }
 
 // Path: cockpit.gallery.notebook
@@ -2625,17 +2625,17 @@ extension on TranslationsPtBr {
 			'cockpit.gallery.intro' => 'Documentos especiais do Cockpit para que você tenha o visual do que o agente de IA esteja fazendo.',
 			'cockpit.gallery.createErrorTitle' => 'Não foi possível criar o arquivo',
 			'cockpit.gallery.dbQuery.title' => 'Consulta de banco',
-			'cockpit.gallery.dbQuery.description' => 'Editor SQL com grid de resultado, ligado a uma conexão registrada.',
+			'cockpit.gallery.dbQuery.description' => 'Editor SQL com grid de resultado, usando uma das conexões registradas.',
 			'cockpit.gallery.kanban.title' => 'Quadro kanban',
-			'cockpit.gallery.kanban.description' => 'Colunas e cards sobre markdown puro — arraste, edite, comente.',
+			'cockpit.gallery.kanban.description' => 'Colunas e cards gravados como markdown puro. Arraste, edite e comente.',
 			'cockpit.gallery.layout.title' => 'Layout de panes',
-			'cockpit.gallery.layout.description' => 'Terminais e splits pra abrir de uma vez, estilo tmuxinator. Pode rodar sozinho em worktrees novas.',
+			'cockpit.gallery.layout.description' => 'Terminais e splits para abrir de uma vez, estilo tmuxinator. Pode rodar sozinho em worktrees novas.',
 			'cockpit.gallery.httpRequest.title' => 'Requests HTTP',
 			'cockpit.gallery.httpRequest.description' => 'Escreva requests num arquivo e execute com a resposta ao lado.',
 			'cockpit.gallery.html.title' => 'Visual HTML',
-			'cockpit.gallery.html.description' => 'Uma página que o agente escreve e o Cockpit renderiza direto — mapa mental, diagrama, gráfico, o que for.',
+			'cockpit.gallery.html.description' => 'Uma página que o agente escreve e o Cockpit renderiza direto: mapa mental, diagrama, gráfico, o que precisar.',
 			'cockpit.gallery.tasks.title' => 'Tarefas',
-			'cockpit.gallery.tasks.description' => 'Comandos pra rodar pelo painel de Tasks (dev server, testes, build). Mora em .cockpit/tasks.json.',
+			'cockpit.gallery.tasks.description' => 'Comandos para rodar pelo painel de Tasks, como dev server, testes e build. Fica em .cockpit/tasks.json.',
 			'cockpit.gallery.notebook.title' => 'Caderno',
 			'cockpit.gallery.notebook.description' => 'Uma pasta de notas curtas com tags. O agente escreve, você lê e edita. Abre no Obsidian também.',
 			'cockpit.notebook.notes' => 'Notas',
