@@ -167,11 +167,13 @@ class MarkdownEditingController extends TextEditingController {
         // Cada WidgetSpan substitui exatamente UM caractere → os offsets
         // do texto batem e o cursor segue certo.
         spans.add(TextSpan(text: mk.substring(0, 3), style: hidden));
+        final innerOffset = offset + m.group(1)!.length + 3;
         spans.add(
           _glyph(
             done ? Icons.check_box : Icons.check_box_outline_blank,
             base,
             done ? colors.online : colors.accent,
+            onTap: () => toggleTaskAt(innerOffset),
           ),
         );
         spans.add(TextSpan(text: mk.substring(4, 5), style: hidden));
@@ -235,17 +237,40 @@ class MarkdownEditingController extends TextEditingController {
     TextStyle base,
     Color color, {
     double scale = 1.0,
+    VoidCallback? onTap,
   }) {
     final size = (base.fontSize ?? 14) * 1.1;
-    return WidgetSpan(
-      alignment: PlaceholderAlignment.middle,
-      child: SizedBox(
-        width: size,
-        height: size,
-        child: Center(
-          child: Icon(icon, size: size * scale, color: color),
-        ),
+    Widget child = SizedBox(
+      width: size,
+      height: size,
+      child: Center(
+        child: Icon(icon, size: size * scale, color: color),
       ),
+    );
+    if (onTap != null) {
+      child = MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+          child: child,
+        ),
+      );
+    }
+    return WidgetSpan(alignment: PlaceholderAlignment.middle, child: child);
+  }
+
+  /// Inverte a caixa de um item de checklist: [innerOffset] é o offset do
+  /// caractere entre `[` e `]`. Mantém a seleção onde estava.
+  void toggleTaskAt(int innerOffset) {
+    final t = text;
+    if (innerOffset < 0 || innerOffset >= t.length) return;
+    final ch = t[innerOffset];
+    final next = (ch == 'x' || ch == 'X') ? ' ' : 'x';
+    final sel = selection;
+    value = TextEditingValue(
+      text: t.replaceRange(innerOffset, innerOffset + 1, next),
+      selection: sel.isValid ? sel : TextSelection.collapsed(offset: 0),
     );
   }
 

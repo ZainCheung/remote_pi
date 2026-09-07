@@ -100,4 +100,23 @@ void main() {
     await tester.pump();
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('tapping the checkbox glyph toggles the item', (tester) async {
+    final c = MarkdownEditingController(text: 'a\n- [ ] dois');
+    await tester.pumpWidget(
+      ShadcnApp(
+        theme: buildTheme(brightness: Brightness.dark),
+        home: material.Material(
+          child: material.TextField(controller: c, maxLines: null),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.tap(find.byIcon(material.Icons.check_box_outline_blank));
+    await tester.pump();
+    expect(c.text, 'a\n- [x] dois');
+    await tester.tap(find.byIcon(material.Icons.check_box));
+    await tester.pump();
+    expect(c.text, 'a\n- [ ] dois');
+  });
 }
