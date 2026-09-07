@@ -1,8 +1,8 @@
 # 62 — Cockpit: aba Gallery (documentos especiais)
 
 > **Status**: PARCIAL. Passos 1 e 2 implementados (2026-09-07). Mermaid
-> cortado. Caderno (passo 4) com **design aprovado** e protótipo funcional na
-> main; faltam as sub-waves 4a–4d + CLI.
+> cortado. Caderno (passo 4) com **design aprovado**; 4a e CLI feitos, faltam 4b
+> (imagens), 4c (edição rica) e 4d (links).
 
 ## Contexto
 
@@ -105,10 +105,9 @@ Gallery (`notes.notebook/welcome.md`), persistência da tab, local e remoto via
 
 Falta, em ordem:
 
-- **4a — Robustez do protótipo**: watcher da pasta (nota criada pelo agente
-  aparece sem "recarregar"); apagar nota (botão direito na lista, vai pra
-  lixeira); Cmd+S no editor; aviso de alteração não salva ao trocar de nota;
-  rename opcional do arquivo quando o título muda (decidir — hoje N10 diz não).
+- ~~**4a — Robustez do protótipo**~~ FEITO: watcher da pasta, apagar nota
+  (lixeira), ⌘S, aviso de alteração não salva. Rename do arquivo pelo título
+  segue **não** (N10).
 - **4b — Imagens** (N3): colar/arrastar imagem grava em `_assets/` e insere o
   markdown; preview resolve o caminho relativo à pasta; "assets órfãos" limpa.
 - **4c — Edição rica** (WYSIWYG sem alternar modo). Avaliar pacote de editor
@@ -116,9 +115,9 @@ Falta, em ordem:
   texto. Só depois de 4a estável.
 - **4d — Links `[[titulo]]`** entre notas + backlinks. Base do mapa mental
   futuro, se um dia voltar.
-- **CLI**: `cockpit note add <notebook> --tag <t> --title <t> < corpo` para o
-  agente criar notas sem escrever frontmatter na mão. Documentar o formato em
-  `docs/notebook.md` para o agente e para a skill `cockpit-cli`.
+- ~~**CLI**~~ FEITO: `cockpit note add|list`, `cockpit open x.notebook`,
+  `docs/notebook.md`, seção Notebooks na skill (`cockpit install-skill --force`
+  atualiza a cópia local) e no `--help`.
 
 Aceite (wave inteira): card cria o caderno; nota escrita à mão pelo agente (ou
 pelo Obsidian) aparece sozinha; colar imagem grava em `_assets/`; edição rica
