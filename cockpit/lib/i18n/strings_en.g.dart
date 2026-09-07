@@ -3134,9 +3134,6 @@ class Translations$cockpit$notebook$format$en {
 
 	/// en: 'Divider'
 	String get rule => 'Divider';
-
-	/// en: 'Paste or drop an image → _assets/'
-	String get imageHint => 'Paste or drop an image → _assets/';
 }
 
 // Path: settings.page.header
@@ -4785,7 +4782,6 @@ extension on Translations {
 			'cockpit.notebook.format.codeBlock' => 'Code block',
 			'cockpit.notebook.format.link' => 'Link (⌘K)',
 			'cockpit.notebook.format.rule' => 'Divider',
-			'cockpit.notebook.format.imageHint' => 'Paste or drop an image → _assets/',
 			'settings.language.title' => 'Language',
 			'settings.language.system' => 'System',
 			'settings.language.english' => 'English',
@@ -5114,9 +5110,9 @@ extension on Translations {
 			'automation.error.noFileChanges' => 'There are no changes to describe for this file.',
 			'automation.error.noStagedChanges' => 'There are no staged changes to describe.',
 			'automation.error.multipleRepositories' => 'Staged changes belong to multiple repositories. Generate them separately.',
+			'automation.error.diffUnavailable' => 'Could not read the diff.',
 			_ => null,
 		} ?? switch (path) {
-			'automation.error.diffUnavailable' => 'Could not read the diff.',
 			'automation.error.notConfigured' => 'Configure a commit message harness in Settings.',
 			'fileOperation.error.alreadyExists' => ({required Object name}) => 'Already exists: “${name}”.',
 			'fileOperation.error.notFound' => ({required Object name}) => 'Not found: “${name}”.',

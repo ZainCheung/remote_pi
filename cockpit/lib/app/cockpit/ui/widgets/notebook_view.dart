@@ -1325,14 +1325,6 @@ class _FormatBar extends StatelessWidget {
             tooltip: tr.rule,
             onTap: () => onInsert('---\n'),
           ),
-          const Spacer(),
-          Text(
-            tr.imageHint,
-            style: context.typo.label.copyWith(
-              fontSize: 10.5,
-              color: colors.text3,
-            ),
-          ),
         ],
       ),
     );

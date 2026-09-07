@@ -1561,7 +1561,6 @@ class _Translations$cockpit$notebook$format$pt_BR extends Translations$cockpit$n
 	@override String get codeBlock => 'Bloco de código';
 	@override String get link => 'Link (⌘K)';
 	@override String get rule => 'Divisor';
-	@override String get imageHint => 'Cole ou arraste uma imagem → _assets/';
 }
 
 // Path: settings.page.header
@@ -2673,7 +2672,6 @@ extension on TranslationsPtBr {
 			'cockpit.notebook.format.codeBlock' => 'Bloco de código',
 			'cockpit.notebook.format.link' => 'Link (⌘K)',
 			'cockpit.notebook.format.rule' => 'Divisor',
-			'cockpit.notebook.format.imageHint' => 'Cole ou arraste uma imagem → _assets/',
 			'settings.language.title' => 'Idioma',
 			'settings.language.system' => 'Sistema',
 			'settings.language.english' => 'Inglês',
@@ -3002,9 +3000,9 @@ extension on TranslationsPtBr {
 			'automation.error.noFileChanges' => 'Não há mudanças a descrever neste arquivo.',
 			'automation.error.noStagedChanges' => 'Não há mudanças no stage a descrever.',
 			'automation.error.multipleRepositories' => 'As mudanças no stage pertencem a repositórios diferentes. Gere uma de cada vez.',
+			'automation.error.diffUnavailable' => 'Não foi possível ler o diff.',
 			_ => null,
 		} ?? switch (path) {
-			'automation.error.diffUnavailable' => 'Não foi possível ler o diff.',
 			'automation.error.notConfigured' => 'Configure um harness de mensagem de commit em Configurações.',
 			'fileOperation.error.alreadyExists' => ({required Object name}) => 'Já existe: “${name}”.',
 			'fileOperation.error.notFound' => ({required Object name}) => 'Não encontrado: “${name}”.',

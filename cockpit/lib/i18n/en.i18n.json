@@ -830,8 +830,7 @@
         "code": "Inline code (⌘E)",
         "codeBlock": "Code block",
         "link": "Link (⌘K)",
-        "rule": "Divider",
-        "imageHint": "Paste or drop an image → _assets/"
+        "rule": "Divider"
       }
     }
   },
