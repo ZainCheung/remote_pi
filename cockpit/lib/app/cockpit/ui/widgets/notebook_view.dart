@@ -1319,13 +1319,17 @@ class _NoteColumn extends StatelessWidget {
               },
               // Material sem decoração (mesma razão do título). O controller
               // pinta o markdown ao vivo — um só modo, sem preview separado.
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+              // O campo cresce com o conteúdo e quem rola é o scroll view de
+              // fora: com `expands: true` o scroll interno do EditableText
+              // não contava a altura dos WidgetSpans altos (imagem) e a
+              // primeira linha ficava fora da tela sem ter como rolar.
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 40),
                 child: material.TextField(
                   controller: editor,
                   focusNode: editorFocus,
                   maxLines: null,
-                  expands: true,
+                  minLines: 8,
                   textAlignVertical: TextAlignVertical.top,
                   keyboardType: TextInputType.multiline,
                   cursorColor: colors.text,
