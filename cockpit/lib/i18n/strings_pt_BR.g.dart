@@ -140,6 +140,7 @@ class _Translations$cockpit$pt_BR extends Translations$cockpit$en {
 	@override late final _Translations$cockpit$remoteHost$pt_BR remoteHost = _Translations$cockpit$remoteHost$pt_BR._(_root);
 	@override late final _Translations$cockpit$browserPane$pt_BR browserPane = _Translations$cockpit$browserPane$pt_BR._(_root);
 	@override late final _Translations$cockpit$gallery$pt_BR gallery = _Translations$cockpit$gallery$pt_BR._(_root);
+	@override late final _Translations$cockpit$notebook$pt_BR notebook = _Translations$cockpit$notebook$pt_BR._(_root);
 }
 
 // Path: settings
@@ -1219,6 +1220,35 @@ class _Translations$cockpit$gallery$pt_BR extends Translations$cockpit$gallery$e
 	@override late final _Translations$cockpit$gallery$httpRequest$pt_BR httpRequest = _Translations$cockpit$gallery$httpRequest$pt_BR._(_root);
 	@override late final _Translations$cockpit$gallery$html$pt_BR html = _Translations$cockpit$gallery$html$pt_BR._(_root);
 	@override late final _Translations$cockpit$gallery$tasks$pt_BR tasks = _Translations$cockpit$gallery$tasks$pt_BR._(_root);
+	@override late final _Translations$cockpit$gallery$notebook$pt_BR notebook = _Translations$cockpit$gallery$notebook$pt_BR._(_root);
+}
+
+// Path: cockpit.notebook
+class _Translations$cockpit$notebook$pt_BR extends Translations$cockpit$notebook$en {
+	_Translations$cockpit$notebook$pt_BR._(TranslationsPtBr root) : this._root = root, super.internal(root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get notes => 'Notas';
+	@override String get tags => 'Tags';
+	@override String get allTags => 'Todas';
+	@override String get newNote => 'Nova nota';
+	@override String get newNoteTitle => 'Nova nota';
+	@override String get titlePlaceholder => 'Título';
+	@override String get searchPlaceholder => 'Buscar notas';
+	@override String get empty => 'Nenhuma nota ainda. Crie uma, ou peça pro agente escrever aqui.';
+	@override String get noMatch => 'Nenhuma nota bate com o filtro.';
+	@override String get selectNote => 'Selecione uma nota';
+	@override String get edit => 'Editar';
+	@override String get preview => 'Preview';
+	@override String get save => 'Salvar';
+	@override String get reload => 'Recarregar do disco';
+	@override String get fromAgent => 'agente';
+	@override String get untagged => 'sem tag';
+	@override String noteCount({required Object count}) => '${count} notas';
+	@override String get saveFailed => 'Não foi possível salvar a nota';
+	@override String get createFailed => 'Não foi possível criar a nota';
 }
 
 // Path: settings.language
@@ -1493,6 +1523,17 @@ class _Translations$cockpit$gallery$tasks$pt_BR extends Translations$cockpit$gal
 	// Translations
 	@override String get title => 'Tarefas';
 	@override String get description => 'Comandos pra rodar pelo painel de Tasks (dev server, testes, build). Mora em .cockpit/tasks.json.';
+}
+
+// Path: cockpit.gallery.notebook
+class _Translations$cockpit$gallery$notebook$pt_BR extends Translations$cockpit$gallery$notebook$en {
+	_Translations$cockpit$gallery$notebook$pt_BR._(TranslationsPtBr root) : this._root = root, super.internal(root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Caderno';
+	@override String get description => 'Uma pasta de notas curtas com tags. O agente escreve, você lê e edita. Abre no Obsidian também.';
 }
 
 // Path: settings.page.header
@@ -2566,6 +2607,27 @@ extension on TranslationsPtBr {
 			'cockpit.gallery.html.description' => 'Uma página que o agente escreve e o Cockpit renderiza direto — mapa mental, diagrama, gráfico, o que for.',
 			'cockpit.gallery.tasks.title' => 'Tarefas',
 			'cockpit.gallery.tasks.description' => 'Comandos pra rodar pelo painel de Tasks (dev server, testes, build). Mora em .cockpit/tasks.json.',
+			'cockpit.gallery.notebook.title' => 'Caderno',
+			'cockpit.gallery.notebook.description' => 'Uma pasta de notas curtas com tags. O agente escreve, você lê e edita. Abre no Obsidian também.',
+			'cockpit.notebook.notes' => 'Notas',
+			'cockpit.notebook.tags' => 'Tags',
+			'cockpit.notebook.allTags' => 'Todas',
+			'cockpit.notebook.newNote' => 'Nova nota',
+			'cockpit.notebook.newNoteTitle' => 'Nova nota',
+			'cockpit.notebook.titlePlaceholder' => 'Título',
+			'cockpit.notebook.searchPlaceholder' => 'Buscar notas',
+			'cockpit.notebook.empty' => 'Nenhuma nota ainda. Crie uma, ou peça pro agente escrever aqui.',
+			'cockpit.notebook.noMatch' => 'Nenhuma nota bate com o filtro.',
+			'cockpit.notebook.selectNote' => 'Selecione uma nota',
+			'cockpit.notebook.edit' => 'Editar',
+			'cockpit.notebook.preview' => 'Preview',
+			'cockpit.notebook.save' => 'Salvar',
+			'cockpit.notebook.reload' => 'Recarregar do disco',
+			'cockpit.notebook.fromAgent' => 'agente',
+			'cockpit.notebook.untagged' => 'sem tag',
+			'cockpit.notebook.noteCount' => ({required Object count}) => '${count} notas',
+			'cockpit.notebook.saveFailed' => 'Não foi possível salvar a nota',
+			'cockpit.notebook.createFailed' => 'Não foi possível criar a nota',
 			'settings.language.title' => 'Idioma',
 			'settings.language.system' => 'Sistema',
 			'settings.language.english' => 'Inglês',
@@ -2912,6 +2974,8 @@ extension on TranslationsPtBr {
 			'fileOperation.error.formatterFailed' => 'Não foi possível executar o formatador.',
 			'fileOperation.error.osFailure' => ({required Object detail}) => '${detail}',
 			'fileOperation.error.nameHasSlash' => 'O nome não pode conter “/”.',
+			_ => null,
+		} ?? switch (path) {
 			'fileOperation.error.invalidName' => 'Nome inválido.',
 			'theme.error.io' => 'Não foi possível ler ou gravar o arquivo do tema.',
 			'theme.error.ioDetail' => ({required Object detail}) => 'Não foi possível ler ou gravar o arquivo do tema: ${detail}',

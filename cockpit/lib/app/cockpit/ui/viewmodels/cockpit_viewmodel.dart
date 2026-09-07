@@ -43,6 +43,7 @@ import 'package:cockpit/app/cockpit/domain/entities/content_search.dart';
 import 'package:cockpit/app/cockpit/domain/entities/file_diff.dart';
 import 'package:cockpit/app/cockpit/domain/entities/file_node.dart';
 import 'package:cockpit/app/cockpit/domain/entities/gallery_template.dart';
+import 'package:cockpit/app/cockpit/domain/entities/notebook_document.dart';
 import 'package:cockpit/app/cockpit/domain/entities/file_view.dart';
 import 'package:cockpit/app/cockpit/domain/entities/kanban_document.dart';
 import 'package:cockpit/app/cockpit/domain/services/kanban_editor.dart';
@@ -75,6 +76,7 @@ import 'package:cockpit/app/cockpit/ui/session/agent_session.dart';
 import 'package:cockpit/app/cockpit/ui/session/diff_viewer_session.dart';
 import 'package:cockpit/app/cockpit/ui/session/file_viewer_session.dart';
 import 'package:cockpit/app/cockpit/ui/session/mongo_browser_session.dart';
+import 'package:cockpit/app/cockpit/ui/session/notebook_session.dart';
 import 'package:cockpit/app/cockpit/ui/session/pane_item.dart';
 import 'package:cockpit/app/cockpit/domain/entities/browser_capability.dart';
 import 'package:cockpit/app/cockpit/ui/session/browser_session.dart';
@@ -1090,6 +1092,11 @@ class CockpitViewModel extends ChangeNotifier {
     bool isPreview = true,
     int? revealLine,
   }) async {
+    // Pasta `.notebook` é um documento (caderno), não uma pasta a expandir.
+    if (isNotebookFolder(path.split('/').last)) {
+      openNotebook(path);
+      return;
+    }
     final projectId = _selectedProjectId;
     final tree = _activeTree;
     final paneId = inPane ?? (projectId == null ? null : _focused[projectId]);
@@ -1511,6 +1518,47 @@ class CockpitViewModel extends ChangeNotifier {
     );
     if (session == null) return false;
     if (filter != null) (session as MongoBrowserSession).requestFilter(filter);
+    return true;
+  }
+
+  /// Abre (ou foca) a aba do caderno em [folderPath] (plano 62, passo 4). Uma
+  /// tab por pasta+projeto.
+  NotebookSession? openNotebook(String folderPath, {String? projectId}) {
+    final session = _openBrowserTab(
+      projectId,
+      matches: (s) => s is NotebookSession && s.path == folderPath,
+      make: (id, pid, _) =>
+          NotebookSession(id: id, projectId: pid, path: folderPath),
+    );
+    return session as NotebookSession?;
+  }
+
+  /// Texto de um arquivo (local ou host remoto) pra widgets que leem vários
+  /// arquivos de uma pasta (caderno). `null` = binário/ilegível.
+  Future<String?> readTextAt(String path) async {
+    final view = await _readFile(path);
+    return switch (view) {
+      FileViewMarkdown(:final text) => text,
+      FileViewText(:final text) => text,
+      _ => null,
+    };
+  }
+
+  /// Grava [content] em [path] (local ou host remoto) e bumpa a árvore.
+  /// Contraparte de [readTextAt] pra abas que não são `FileViewerSession`.
+  Future<bool> writeTextAt(String path, String content) async {
+    final host = _activeRemoteHost();
+    if (host != null) {
+      try {
+        final service = await _remoteHosts.fileServiceFor(host);
+        await service.write(path, utf8.encode(content));
+      } catch (_) {
+        return false;
+      }
+    } else if (!await _fileReader.write(path, content)) {
+      return false;
+    }
+    _bumpFileTree();
     return true;
   }
 
@@ -2273,7 +2321,11 @@ class CockpitViewModel extends ChangeNotifier {
     if (template.fixedName &&
         lowerTaken.contains(template.fileName.toLowerCase())) {
       final existing = joinPath(dir, template.fileName);
-      await openFile(existing, isPreview: false);
+      if (template.opensParent) {
+        openNotebook(dir);
+      } else {
+        await openFile(existing, isPreview: false);
+      }
       return Success(existing);
     }
     final name = template.fixedName
@@ -2298,7 +2350,11 @@ class CockpitViewModel extends ChangeNotifier {
       );
     }
     _bumpFileTree();
-    await openFile(path, isPreview: false);
+    if (template.opensParent) {
+      openNotebook(dir)?.requestReload();
+    } else {
+      await openFile(path, isPreview: false);
+    }
     return Success(path);
   }
 
@@ -5482,6 +5538,15 @@ class CockpitViewModel extends ChangeNotifier {
           workingDirectory: project.path,
         );
         return true;
+      case 'notebook':
+        final nbPath = desc['path'] as String?;
+        if (nbPath == null || nbPath.isEmpty) return false;
+        _sessions[id] = NotebookSession(
+          id: id,
+          projectId: project.id,
+          path: nbPath,
+        );
+        return true;
       case 'browser':
         _sessions[id] = BrowserSession(
           id: id,
@@ -5761,6 +5826,9 @@ class CockpitViewModel extends ChangeNotifier {
     }
     if (s is BrowserSession) {
       return <String, dynamic>{'type': 'browser', 'url': s.url};
+    }
+    if (s is NotebookSession) {
+      return <String, dynamic>{'type': 'notebook', 'path': s.path};
     }
     if (s is MongoBrowserSession) {
       return <String, dynamic>{

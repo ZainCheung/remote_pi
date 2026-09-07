@@ -6,6 +6,7 @@ import 'package:cockpit/app/cockpit/domain/entities/git_commit.dart';
 import 'package:cockpit/app/cockpit/domain/entities/git_history_commit.dart';
 import 'package:cockpit/app/cockpit/domain/entities/git_history_file_change.dart';
 import 'package:cockpit/app/cockpit/domain/entities/git_file_status.dart';
+import 'package:cockpit/app/cockpit/domain/entities/notebook_document.dart';
 import 'package:cockpit/app/cockpit/domain/entities/git_info.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/commit_message_dialog.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/confirm_dialog.dart';
@@ -1715,7 +1716,10 @@ class _DirViewState extends State<_DirView> {
             onCancel: edit.onCancelCreate,
           ),
         for (final node in children)
-          if (node.isDirectory)
+          // Pasta `.notebook` é um documento (caderno): vira linha de arquivo,
+          // sem expandir — duplo clique abre a tab. Mesmo espírito do `.app`
+          // do Finder (plano 62, passo 4).
+          if (node.isDirectory && !isNotebookFolder(node.name))
             // Arrastável (mover pra outra pasta / citar no composer) e também
             // alvo de drop (o DragTarget fica dentro do _Folder, na linha).
             _NodeDraggable(

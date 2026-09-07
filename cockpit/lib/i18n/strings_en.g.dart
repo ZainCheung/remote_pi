@@ -187,6 +187,7 @@ class Translations$cockpit$en {
 	late final Translations$cockpit$remoteHost$en remoteHost = Translations$cockpit$remoteHost$en.internal(_root);
 	late final Translations$cockpit$browserPane$en browserPane = Translations$cockpit$browserPane$en.internal(_root);
 	late final Translations$cockpit$gallery$en gallery = Translations$cockpit$gallery$en.internal(_root);
+	late final Translations$cockpit$notebook$en notebook = Translations$cockpit$notebook$en.internal(_root);
 }
 
 // Path: settings
@@ -2483,6 +2484,73 @@ class Translations$cockpit$gallery$en {
 	late final Translations$cockpit$gallery$httpRequest$en httpRequest = Translations$cockpit$gallery$httpRequest$en.internal(_root);
 	late final Translations$cockpit$gallery$html$en html = Translations$cockpit$gallery$html$en.internal(_root);
 	late final Translations$cockpit$gallery$tasks$en tasks = Translations$cockpit$gallery$tasks$en.internal(_root);
+	late final Translations$cockpit$gallery$notebook$en notebook = Translations$cockpit$gallery$notebook$en.internal(_root);
+}
+
+// Path: cockpit.notebook
+class Translations$cockpit$notebook$en {
+	Translations$cockpit$notebook$en.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Notes'
+	String get notes => 'Notes';
+
+	/// en: 'Tags'
+	String get tags => 'Tags';
+
+	/// en: 'All'
+	String get allTags => 'All';
+
+	/// en: 'New note'
+	String get newNote => 'New note';
+
+	/// en: 'New note'
+	String get newNoteTitle => 'New note';
+
+	/// en: 'Title'
+	String get titlePlaceholder => 'Title';
+
+	/// en: 'Search notes'
+	String get searchPlaceholder => 'Search notes';
+
+	/// en: 'No notes yet. Create one, or ask the agent to write here.'
+	String get empty => 'No notes yet. Create one, or ask the agent to write here.';
+
+	/// en: 'No note matches.'
+	String get noMatch => 'No note matches.';
+
+	/// en: 'Select a note'
+	String get selectNote => 'Select a note';
+
+	/// en: 'Edit'
+	String get edit => 'Edit';
+
+	/// en: 'Preview'
+	String get preview => 'Preview';
+
+	/// en: 'Save'
+	String get save => 'Save';
+
+	/// en: 'Reload from disk'
+	String get reload => 'Reload from disk';
+
+	/// en: 'agent'
+	String get fromAgent => 'agent';
+
+	/// en: 'untagged'
+	String get untagged => 'untagged';
+
+	/// en: '${count} notes'
+	String noteCount({required Object count}) => '${count} notes';
+
+	/// en: 'Could not save the note'
+	String get saveFailed => 'Could not save the note';
+
+	/// en: 'Could not create the note'
+	String get createFailed => 'Could not create the note';
 }
 
 // Path: settings.language
@@ -2989,6 +3057,21 @@ class Translations$cockpit$gallery$tasks$en {
 
 	/// en: 'Commands to run from the Tasks panel (dev server, tests, build). Lives in .cockpit/tasks.json.'
 	String get description => 'Commands to run from the Tasks panel (dev server, tests, build). Lives in .cockpit/tasks.json.';
+}
+
+// Path: cockpit.gallery.notebook
+class Translations$cockpit$gallery$notebook$en {
+	Translations$cockpit$gallery$notebook$en.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Notebook'
+	String get title => 'Notebook';
+
+	/// en: 'A folder of short notes with tags. Agents write, you read and edit. Opens in Obsidian too.'
+	String get description => 'A folder of short notes with tags. Agents write, you read and edit. Opens in Obsidian too.';
 }
 
 // Path: settings.page.header
@@ -4599,6 +4682,27 @@ extension on Translations {
 			'cockpit.gallery.html.description' => 'A page the agent writes and Cockpit renders directly — mind maps, diagrams, charts, anything.',
 			'cockpit.gallery.tasks.title' => 'Tasks',
 			'cockpit.gallery.tasks.description' => 'Commands to run from the Tasks panel (dev server, tests, build). Lives in .cockpit/tasks.json.',
+			'cockpit.gallery.notebook.title' => 'Notebook',
+			'cockpit.gallery.notebook.description' => 'A folder of short notes with tags. Agents write, you read and edit. Opens in Obsidian too.',
+			'cockpit.notebook.notes' => 'Notes',
+			'cockpit.notebook.tags' => 'Tags',
+			'cockpit.notebook.allTags' => 'All',
+			'cockpit.notebook.newNote' => 'New note',
+			'cockpit.notebook.newNoteTitle' => 'New note',
+			'cockpit.notebook.titlePlaceholder' => 'Title',
+			'cockpit.notebook.searchPlaceholder' => 'Search notes',
+			'cockpit.notebook.empty' => 'No notes yet. Create one, or ask the agent to write here.',
+			'cockpit.notebook.noMatch' => 'No note matches.',
+			'cockpit.notebook.selectNote' => 'Select a note',
+			'cockpit.notebook.edit' => 'Edit',
+			'cockpit.notebook.preview' => 'Preview',
+			'cockpit.notebook.save' => 'Save',
+			'cockpit.notebook.reload' => 'Reload from disk',
+			'cockpit.notebook.fromAgent' => 'agent',
+			'cockpit.notebook.untagged' => 'untagged',
+			'cockpit.notebook.noteCount' => ({required Object count}) => '${count} notes',
+			'cockpit.notebook.saveFailed' => 'Could not save the note',
+			'cockpit.notebook.createFailed' => 'Could not create the note',
 			'settings.language.title' => 'Language',
 			'settings.language.system' => 'System',
 			'settings.language.english' => 'English',
@@ -4945,6 +5049,8 @@ extension on Translations {
 			'fileOperation.error.formatterFailed' => 'The formatter could not run.',
 			'fileOperation.error.osFailure' => ({required Object detail}) => '${detail}',
 			'fileOperation.error.nameHasSlash' => 'Name cannot contain “/”.',
+			_ => null,
+		} ?? switch (path) {
 			'fileOperation.error.invalidName' => 'Invalid name.',
 			'theme.error.io' => 'Could not read or write the theme file.',
 			'theme.error.ioDetail' => ({required Object detail}) => 'Could not read or write the theme file: ${detail}',

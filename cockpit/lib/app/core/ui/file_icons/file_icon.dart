@@ -18,6 +18,8 @@ const Map<String, String> _extensionOverrides = {
   'kanban': 'todo',
   'http': 'http',
   'rest': 'http',
+  // Pasta `.notebook` aparece como item único na árvore (caderno).
+  'notebook': 'folder-docs',
 };
 
 String fileIconName(String fileName) {

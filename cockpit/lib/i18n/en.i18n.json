@@ -787,7 +787,32 @@
       "tasks": {
         "title": "Tasks",
         "description": "Commands to run from the Tasks panel (dev server, tests, build). Lives in .cockpit/tasks.json."
+      },
+      "notebook": {
+        "title": "Notebook",
+        "description": "A folder of short notes with tags. Agents write, you read and edit. Opens in Obsidian too."
       }
+    },
+    "notebook": {
+      "notes": "Notes",
+      "tags": "Tags",
+      "allTags": "All",
+      "newNote": "New note",
+      "newNoteTitle": "New note",
+      "titlePlaceholder": "Title",
+      "searchPlaceholder": "Search notes",
+      "empty": "No notes yet. Create one, or ask the agent to write here.",
+      "noMatch": "No note matches.",
+      "selectNote": "Select a note",
+      "edit": "Edit",
+      "preview": "Preview",
+      "save": "Save",
+      "reload": "Reload from disk",
+      "fromAgent": "agent",
+      "untagged": "untagged",
+      "noteCount": "${count} notes",
+      "saveFailed": "Could not save the note",
+      "createFailed": "Could not create the note"
     }
   },
   "settings": {

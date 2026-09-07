@@ -50,6 +50,7 @@ class GalleryPanel extends StatelessWidget {
     GalleryTemplate.httpRequest => tr.httpRequest.title,
     GalleryTemplate.html => tr.html.title,
     GalleryTemplate.tasks => tr.tasks.title,
+    GalleryTemplate.notebook => tr.notebook.title,
   };
 
   static String _descriptionOf(
@@ -62,6 +63,7 @@ class GalleryPanel extends StatelessWidget {
     GalleryTemplate.httpRequest => tr.httpRequest.description,
     GalleryTemplate.html => tr.html.description,
     GalleryTemplate.tasks => tr.tasks.description,
+    GalleryTemplate.notebook => tr.notebook.description,
   };
 }
 
@@ -122,7 +124,9 @@ class _GalleryCard extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          template.relativeDir.isEmpty
+                          template.opensParent
+                              ? template.relativeDir
+                              : template.relativeDir.isEmpty
                               ? '.${template.extension}'
                               : template.relativePath,
                           style: context.typo.label.copyWith(

@@ -9,6 +9,7 @@ import 'package:cockpit/app/cockpit/ui/session/diff_viewer_session.dart';
 import 'package:cockpit/app/cockpit/ui/session/file_viewer_session.dart';
 import 'package:cockpit/app/cockpit/ui/session/pane_item.dart';
 import 'package:cockpit/app/cockpit/ui/session/mongo_browser_session.dart';
+import 'package:cockpit/app/cockpit/ui/session/notebook_session.dart';
 import 'package:cockpit/app/cockpit/ui/session/redis_browser_session.dart';
 import 'package:cockpit/app/cockpit/ui/session/task_output_session.dart';
 import 'package:cockpit/app/cockpit/ui/session/terminal_session.dart';
@@ -18,6 +19,7 @@ import 'package:cockpit/app/core/utils/platform_kind.dart';
 import 'package:cockpit/app/cockpit/ui/viewmodels/setup_viewmodel.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/http_request_view.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/kanban_board_view.dart';
+import 'package:cockpit/app/cockpit/ui/widgets/notebook_view.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/agent_composer.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/agent_setup_checklist.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/agent_transcript.dart';
@@ -179,6 +181,7 @@ IconData _tabIcon(PaneItem? item) {
   if (item is DiffViewerSession) return Icons.difference_outlined;
   if (item is RedisBrowserSession) return Icons.grid_on_outlined;
   if (item is MongoBrowserSession) return Icons.data_object_outlined;
+  if (item is NotebookSession) return Icons.menu_book_outlined;
   if (item is AgentSession && item.status == AgentStatus.empty) {
     return Icons.edit_outlined;
   }
@@ -1532,6 +1535,15 @@ class _PaneBodyState extends State<_PaneBody> {
     // Navegador embutido (plano 58): toolbar compacta + webview inline.
     if (item is BrowserSession) {
       return BrowserPane(session: item, active: widget.active);
+    }
+
+    // Caderno `.notebook` (plano 62, passo 4): lista de notas | nota | tags.
+    if (item is NotebookSession) {
+      return NotebookView(
+        session: item,
+        active: widget.active,
+        focused: widget.focused,
+      );
     }
 
     // Tab de request `.http`: editor + resposta. Reusa a FileViewerSession

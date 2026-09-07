@@ -787,7 +787,32 @@
       "tasks": {
         "title": "Tarefas",
         "description": "Comandos pra rodar pelo painel de Tasks (dev server, testes, build). Mora em .cockpit/tasks.json."
+      },
+      "notebook": {
+        "title": "Caderno",
+        "description": "Uma pasta de notas curtas com tags. O agente escreve, você lê e edita. Abre no Obsidian também."
       }
+    },
+    "notebook": {
+      "notes": "Notas",
+      "tags": "Tags",
+      "allTags": "Todas",
+      "newNote": "Nova nota",
+      "newNoteTitle": "Nova nota",
+      "titlePlaceholder": "Título",
+      "searchPlaceholder": "Buscar notas",
+      "empty": "Nenhuma nota ainda. Crie uma, ou peça pro agente escrever aqui.",
+      "noMatch": "Nenhuma nota bate com o filtro.",
+      "selectNote": "Selecione uma nota",
+      "edit": "Editar",
+      "preview": "Preview",
+      "save": "Salvar",
+      "reload": "Recarregar do disco",
+      "fromAgent": "agente",
+      "untagged": "sem tag",
+      "noteCount": "${count} notas",
+      "saveFailed": "Não foi possível salvar a nota",
+      "createFailed": "Não foi possível criar a nota"
     }
   },
   "settings": {

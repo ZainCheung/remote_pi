@@ -80,6 +80,25 @@ enum GalleryTemplate {
     fixedName: true,
     iconAsset: 'assets/file_icons/console.svg',
     content: _tasksExample,
+  ),
+  notebook(
+    baseName: 'welcome',
+    extension: 'md',
+    relativeDir: 'notes.notebook',
+    fixedName: true,
+    opensParent: true,
+    iconAsset: 'assets/file_icons/folder-docs.svg',
+    content:
+        '---\n'
+        'title: Welcome\n'
+        'tags: [agent]\n'
+        'created: 2026-01-01T00:00\n'
+        'updated: 2026-01-01T00:00\n'
+        '---\n'
+        '\n'
+        'This folder is a **notebook**: one markdown file per note, each with a\n'
+        '`tags:` list in its frontmatter. Agents write notes here while they work;\n'
+        'you read, tag and edit them. Obsidian opens the same folder as-is.\n',
   );
 
   const GalleryTemplate({
@@ -89,7 +108,12 @@ enum GalleryTemplate {
     required this.content,
     this.relativeDir = '',
     this.fixedName = false,
+    this.opensParent = false,
   });
+
+  /// `true` = o documento é a **pasta** (`relativeDir`), não o arquivo: após
+  /// criar, abre a tab da pasta (caderno `.notebook`).
+  final bool opensParent;
 
   /// Subpasta (relativa à raiz) onde o arquivo mora; vazio = raiz. A pasta é
   /// criada quando falta.
