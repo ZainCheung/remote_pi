@@ -329,10 +329,15 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
     }
   }
 
-  Future<void> _showColumnMenu(BuildContext context, int index) async {
+  Future<void> _showColumnMenu(
+    BuildContext context,
+    int index,
+    Offset at,
+  ) async {
     final tr = context.t.cockpit.kanbanView;
     final choice = await showAppMenu<String>(
       context,
+      globalPosition: at,
       items: [
         AppMenuItem(
           value: 'rename',
@@ -753,7 +758,7 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
               name: column.name,
               count: column.cards.length,
               index: index,
-              onMenu: () => _showColumnMenu(context, index),
+              onMenu: (at) => _showColumnMenu(context, index, at),
               onReorder: (from) => _reorderColumn(from, index),
             ),
             Expanded(
@@ -1034,7 +1039,7 @@ class _ColumnHeader extends StatelessWidget {
   final String name;
   final int count;
   final int index;
-  final VoidCallback onMenu;
+  final ValueChanged<Offset> onMenu;
   final void Function(int from) onReorder;
 
   @override
@@ -1104,11 +1109,22 @@ class _ColumnHeader extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 2),
-            HoverTap(
-              onTap: onMenu,
-              padding: const EdgeInsets.all(3),
-              borderRadius: BorderRadius.circular(4),
-              child: Icon(Icons.more_horiz, size: 13, color: colors.text4),
+            // O menu ancora no BOTÃO (posição global do canto inferior
+            // esquerdo), não no context do quadro — senão abria longe.
+            Builder(
+              builder: (btnCtx) => HoverTap(
+                onTap: () {
+                  final box = btnCtx.findRenderObject() as RenderBox?;
+                  onMenu(
+                    box == null
+                        ? Offset.zero
+                        : box.localToGlobal(Offset(0, box.size.height)),
+                  );
+                },
+                padding: const EdgeInsets.all(3),
+                borderRadius: BorderRadius.circular(4),
+                child: Icon(Icons.more_horiz, size: 13, color: colors.text4),
+              ),
             ),
           ],
         ),
