@@ -2498,12 +2498,6 @@ class Translations$cockpit$notebook$en {
 	/// en: 'Notes'
 	String get notes => 'Notes';
 
-	/// en: 'Tags'
-	String get tags => 'Tags';
-
-	/// en: 'All'
-	String get allTags => 'All';
-
 	/// en: 'New note'
 	String get newNote => 'New note';
 
@@ -2537,9 +2531,6 @@ class Translations$cockpit$notebook$en {
 	/// en: 'Reload from disk'
 	String get reload => 'Reload from disk';
 
-	/// en: 'agent'
-	String get fromAgent => 'agent';
-
 	/// en: 'untagged'
 	String get untagged => 'untagged';
 
@@ -2551,6 +2542,9 @@ class Translations$cockpit$notebook$en {
 
 	/// en: 'Could not create the note'
 	String get createFailed => 'Could not create the note';
+
+	/// en: 'add tag'
+	String get addTag => 'add tag';
 }
 
 // Path: settings.language
@@ -4685,8 +4679,6 @@ extension on Translations {
 			'cockpit.gallery.notebook.title' => 'Notebook',
 			'cockpit.gallery.notebook.description' => 'A folder of short notes with tags. Agents write, you read and edit. Opens in Obsidian too.',
 			'cockpit.notebook.notes' => 'Notes',
-			'cockpit.notebook.tags' => 'Tags',
-			'cockpit.notebook.allTags' => 'All',
 			'cockpit.notebook.newNote' => 'New note',
 			'cockpit.notebook.newNoteTitle' => 'New note',
 			'cockpit.notebook.titlePlaceholder' => 'Title',
@@ -4698,11 +4690,11 @@ extension on Translations {
 			'cockpit.notebook.preview' => 'Preview',
 			'cockpit.notebook.save' => 'Save',
 			'cockpit.notebook.reload' => 'Reload from disk',
-			'cockpit.notebook.fromAgent' => 'agent',
 			'cockpit.notebook.untagged' => 'untagged',
 			'cockpit.notebook.noteCount' => ({required Object count}) => '${count} notes',
 			'cockpit.notebook.saveFailed' => 'Could not save the note',
 			'cockpit.notebook.createFailed' => 'Could not create the note',
+			'cockpit.notebook.addTag' => 'add tag',
 			'settings.language.title' => 'Language',
 			'settings.language.system' => 'System',
 			'settings.language.english' => 'English',
@@ -5049,10 +5041,10 @@ extension on Translations {
 			'fileOperation.error.formatterFailed' => 'The formatter could not run.',
 			'fileOperation.error.osFailure' => ({required Object detail}) => '${detail}',
 			'fileOperation.error.nameHasSlash' => 'Name cannot contain “/”.',
-			_ => null,
-		} ?? switch (path) {
 			'fileOperation.error.invalidName' => 'Invalid name.',
 			'theme.error.io' => 'Could not read or write the theme file.',
+			_ => null,
+		} ?? switch (path) {
 			'theme.error.ioDetail' => ({required Object detail}) => 'Could not read or write the theme file: ${detail}',
 			'theme.error.malformedJson' => ({required Object detail}) => 'This file is not valid JSON: ${detail}',
 			'theme.error.invalidTheme' => 'This file is not a valid theme.',

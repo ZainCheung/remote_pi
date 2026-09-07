@@ -795,8 +795,6 @@
     },
     "notebook": {
       "notes": "Notes",
-      "tags": "Tags",
-      "allTags": "All",
       "newNote": "New note",
       "newNoteTitle": "New note",
       "titlePlaceholder": "Title",
@@ -808,11 +806,11 @@
       "preview": "Preview",
       "save": "Save",
       "reload": "Reload from disk",
-      "fromAgent": "agent",
       "untagged": "untagged",
       "noteCount": "${count} notes",
       "saveFailed": "Could not save the note",
-      "createFailed": "Could not create the note"
+      "createFailed": "Could not create the note",
+      "addTag": "add tag"
     }
   },
   "settings": {

@@ -1231,8 +1231,6 @@ class _Translations$cockpit$notebook$es extends Translations$cockpit$notebook$en
 
 	// Translations
 	@override String get notes => 'Notas';
-	@override String get tags => 'Tags';
-	@override String get allTags => 'Todas';
 	@override String get newNote => 'Nueva nota';
 	@override String get newNoteTitle => 'Nueva nota';
 	@override String get titlePlaceholder => 'Título';
@@ -1244,11 +1242,11 @@ class _Translations$cockpit$notebook$es extends Translations$cockpit$notebook$en
 	@override String get preview => 'Vista previa';
 	@override String get save => 'Guardar';
 	@override String get reload => 'Recargar del disco';
-	@override String get fromAgent => 'agente';
 	@override String get untagged => 'sin tag';
 	@override String noteCount({required Object count}) => '${count} notas';
 	@override String get saveFailed => 'No se pudo guardar la nota';
 	@override String get createFailed => 'No se pudo crear la nota';
+	@override String get addTag => 'añadir tag';
 }
 
 // Path: settings.language
@@ -2610,8 +2608,6 @@ extension on TranslationsEs {
 			'cockpit.gallery.notebook.title' => 'Cuaderno',
 			'cockpit.gallery.notebook.description' => 'Una carpeta de notas cortas con tags. El agente escribe, tú lees y editas. También abre en Obsidian.',
 			'cockpit.notebook.notes' => 'Notas',
-			'cockpit.notebook.tags' => 'Tags',
-			'cockpit.notebook.allTags' => 'Todas',
 			'cockpit.notebook.newNote' => 'Nueva nota',
 			'cockpit.notebook.newNoteTitle' => 'Nueva nota',
 			'cockpit.notebook.titlePlaceholder' => 'Título',
@@ -2623,11 +2619,11 @@ extension on TranslationsEs {
 			'cockpit.notebook.preview' => 'Vista previa',
 			'cockpit.notebook.save' => 'Guardar',
 			'cockpit.notebook.reload' => 'Recargar del disco',
-			'cockpit.notebook.fromAgent' => 'agente',
 			'cockpit.notebook.untagged' => 'sin tag',
 			'cockpit.notebook.noteCount' => ({required Object count}) => '${count} notas',
 			'cockpit.notebook.saveFailed' => 'No se pudo guardar la nota',
 			'cockpit.notebook.createFailed' => 'No se pudo crear la nota',
+			'cockpit.notebook.addTag' => 'añadir tag',
 			'settings.language.title' => 'Idioma',
 			'settings.language.system' => 'Sistema',
 			'settings.language.english' => 'Inglés',
@@ -2974,10 +2970,10 @@ extension on TranslationsEs {
 			'fileOperation.error.formatterFailed' => 'No se pudo ejecutar el formateador.',
 			'fileOperation.error.osFailure' => ({required Object detail}) => '${detail}',
 			'fileOperation.error.nameHasSlash' => 'El nombre no puede contener “/”.',
-			_ => null,
-		} ?? switch (path) {
 			'fileOperation.error.invalidName' => 'Nombre inválido.',
 			'theme.error.io' => 'No se pudo leer o escribir el archivo del tema.',
+			_ => null,
+		} ?? switch (path) {
 			'theme.error.ioDetail' => ({required Object detail}) => 'No se pudo leer o escribir el archivo del tema: ${detail}',
 			'theme.error.malformedJson' => ({required Object detail}) => 'Este archivo no es JSON válido: ${detail}',
 			'theme.error.invalidTheme' => 'Este archivo no es un tema válido.',

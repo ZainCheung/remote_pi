@@ -39,7 +39,8 @@ class _NotebookViewState extends State<NotebookView> {
   List<NotebookNote> _notes = const [];
   bool _loading = true;
   String? _selectedPath;
-  String? _tagFilter;
+  final Set<String> _collapsed = <String>{};
+  final TextEditingController _tagInput = TextEditingController();
   String _query = '';
   bool _editing = false;
   bool _dirty = false;
@@ -71,6 +72,7 @@ class _NotebookViewState extends State<NotebookView> {
       ..dispose();
     _editorFocus.dispose();
     _search.dispose();
+    _tagInput.dispose();
     super.dispose();
   }
 
@@ -140,7 +142,6 @@ class _NotebookViewState extends State<NotebookView> {
   List<NotebookNote> get _visible {
     final q = _query.trim().toLowerCase();
     return _notes.where((n) {
-      if (_tagFilter != null && !n.tags.contains(_tagFilter)) return false;
       if (q.isEmpty) return true;
       return n.title.toLowerCase().contains(q) ||
           n.body.toLowerCase().contains(q) ||
@@ -148,19 +149,63 @@ class _NotebookViewState extends State<NotebookView> {
     }).toList();
   }
 
-  Map<String, int> get _tagCounts {
-    final m = <String, int>{};
-    for (final n in _notes) {
+  /// Agrupa as notas visíveis por tag (uma nota com N tags aparece em N
+  /// grupos, como os smart folders do Apple Notes). Sem tag vem primeiro;
+  /// depois `agent`; o resto por ordem alfabética.
+  List<(String, List<NotebookNote>)> get _groups {
+    final m = <String, List<NotebookNote>>{};
+    for (final n in _visible) {
       for (final t in n.tags) {
-        m[t] = (m[t] ?? 0) + 1;
+        (m[t] ??= []).add(n);
       }
     }
-    final entries = m.entries.toList()
+    final keys = m.keys.toList()
       ..sort((a, b) {
-        final c = b.value.compareTo(a.value);
-        return c != 0 ? c : a.key.compareTo(b.key);
+        int rank(String t) => t == kUntagged ? 0 : (t == kAgentTag ? 1 : 2);
+        final r = rank(a).compareTo(rank(b));
+        return r != 0 ? r : a.compareTo(b);
       });
-    return {for (final e in entries) e.key: e.value};
+    return [for (final k in keys) (k, m[k]!)];
+  }
+
+  Future<void> _setTags(List<String> tags) async {
+    final sel = _selected;
+    if (sel == null || _saving) return;
+    final base = _editing ? _editor.text : sel.raw;
+    setState(() => _saving = true);
+    final content = NotebookNote.touchUpdated(
+      NotebookNote.setTags(base, tags),
+      DateTime.now(),
+    );
+    final ok = await _vm.writeTextAt(sel.path, content);
+    if (!mounted) return;
+    setState(() => _saving = false);
+    if (!ok) {
+      await showConfirmDialog(
+        context,
+        title: context.t.cockpit.notebook.saveFailed,
+        message: sel.fileName,
+        confirmLabel: context.t.common.ok,
+      );
+      return;
+    }
+    await _load();
+  }
+
+  void _addTag(String raw) {
+    final sel = _selected;
+    final t = raw.trim().toLowerCase().replaceAll(RegExp(r'\s+'), '-');
+    if (sel == null || t.isEmpty) return;
+    _tagInput.clear();
+    final tags = sel.tags.where((x) => x != kUntagged).toList();
+    if (tags.contains(t)) return;
+    _setTags([...tags, t]);
+  }
+
+  void _removeTag(String t) {
+    final sel = _selected;
+    if (sel == null) return;
+    _setTags(sel.tags.where((x) => x != t && x != kUntagged).toList());
   }
 
   Future<void> _save() async {
@@ -214,9 +259,7 @@ class _NotebookViewState extends State<NotebookView> {
     );
     if (!mounted || title == null || title.trim().isEmpty) return;
     final now = DateTime.now();
-    final tags = _tagFilter == null || _tagFilter == kUntagged
-        ? const <String>[]
-        : [_tagFilter!];
+    const tags = <String>[];
     final path = joinPath(
       widget.session.path,
       NotebookNote.fileNameFor(title.trim(), now),
@@ -244,7 +287,6 @@ class _NotebookViewState extends State<NotebookView> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final tr = context.t.cockpit.notebook;
     return Container(
       color: colors.bg,
       child: Column(
@@ -262,12 +304,16 @@ class _NotebookViewState extends State<NotebookView> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 SizedBox(
-                  width: 240,
+                  width: 210,
                   child: _NotesColumn(
-                    notes: _visible,
+                    groups: _groups,
                     loading: _loading,
                     hasAny: _notes.isNotEmpty,
                     selectedPath: _selectedPath,
+                    collapsed: _collapsed,
+                    onToggleGroup: (t) => setState(() {
+                      if (!_collapsed.remove(t)) _collapsed.add(t);
+                    }),
                     onSelect: _select,
                   ),
                 ),
@@ -280,23 +326,14 @@ class _NotebookViewState extends State<NotebookView> {
                     saving: _saving,
                     editor: _editor,
                     editorFocus: _editorFocus,
+                    tagInput: _tagInput,
                     onToggleEdit: () => setState(() {
                       _editing = !_editing;
                       if (_editing) _editorFocus.requestFocus();
                     }),
                     onSave: _save,
-                    onTagTap: (t) => setState(() => _tagFilter = t),
-                  ),
-                ),
-                VerticalDivider(width: 1, color: colors.border),
-                SizedBox(
-                  width: 180,
-                  child: _TagsColumn(
-                    counts: _tagCounts,
-                    total: _notes.length,
-                    selected: _tagFilter,
-                    onSelect: (t) => setState(() => _tagFilter = t),
-                    allLabel: tr.allTags,
+                    onAddTag: _addTag,
+                    onRemoveTag: _removeTag,
                   ),
                 ),
               ],
@@ -437,17 +474,21 @@ class _IconAction extends StatelessWidget {
 
 class _NotesColumn extends StatelessWidget {
   const _NotesColumn({
-    required this.notes,
+    required this.groups,
     required this.loading,
     required this.hasAny,
     required this.selectedPath,
+    required this.collapsed,
+    required this.onToggleGroup,
     required this.onSelect,
   });
 
-  final List<NotebookNote> notes;
+  final List<(String, List<NotebookNote>)> groups;
   final bool loading;
   final bool hasAny;
   final String? selectedPath;
+  final Set<String> collapsed;
+  final ValueChanged<String> onToggleGroup;
   final ValueChanged<NotebookNote> onSelect;
 
   @override
@@ -455,95 +496,160 @@ class _NotesColumn extends StatelessWidget {
     final colors = context.colors;
     final tr = context.t.cockpit.notebook;
     if (loading) return const Center(child: CircularProgressIndicator());
-    if (notes.isEmpty) {
+    if (groups.isEmpty) {
       return Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         child: Text(
           hasAny ? tr.noMatch : tr.empty,
           style: context.typo.label.copyWith(color: colors.text3),
         ),
       );
     }
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      itemCount: notes.length,
-      itemBuilder: (context, i) {
-        final n = notes[i];
-        final selected = n.path == selectedPath;
-        return HoverTap(
-          key: ValueKey('note-${n.path}'),
-          color: selected ? colors.panel2 : Colors.transparent,
-          onTap: () => onSelect(n),
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-            decoration: BoxDecoration(
-              border: Border(
-                left: BorderSide(
-                  width: 2,
-                  color: selected ? colors.accent : Colors.transparent,
-                ),
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    if (n.fromAgent) ...[
-                      Icon(Icons.auto_awesome, size: 11, color: colors.accent),
-                      const SizedBox(width: 5),
-                    ],
-                    Expanded(
-                      child: Text(
-                        n.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: context.typo.label.copyWith(
-                          color: colors.text,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  _excerpt(n.body),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: context.typo.label.copyWith(
-                    fontSize: 11,
+    return ListView(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      children: [
+        for (final (tag, notes) in groups) ...[
+          HoverTap(
+            key: ValueKey('group-$tag'),
+            onTap: () => onToggleGroup(tag),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(8, 8, 10, 4),
+              child: Row(
+                children: [
+                  Icon(
+                    collapsed.contains(tag)
+                        ? Icons.chevron_right
+                        : Icons.expand_more,
+                    size: 14,
                     color: colors.text3,
                   ),
-                ),
-                const SizedBox(height: 5),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Wrap(
-                        spacing: 4,
-                        runSpacing: 2,
-                        children: [
-                          for (final t in n.tags.take(3))
-                            _TagChip(t, small: true),
-                        ],
+                  const SizedBox(width: 2),
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _tagColor(tag, colors),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      tag == kUntagged ? tr.untagged : tag,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.typo.label.copyWith(
+                        fontSize: 10.5,
+                        letterSpacing: 0.6,
+                        fontWeight: FontWeight.w600,
+                        color: colors.text2,
                       ),
                     ),
-                    if (n.sortDate != null)
-                      Text(
-                        _shortDate(n.sortDate!),
-                        style: context.typo.label.copyWith(
-                          fontSize: 10,
-                          color: colors.text3,
-                        ),
-                      ),
-                  ],
+                  ),
+                  Text(
+                    '${notes.length}',
+                    style: context.typo.label.copyWith(
+                      fontSize: 10,
+                      color: colors.text3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (!collapsed.contains(tag))
+            for (final n in notes)
+              _NoteRow(
+                key: ValueKey('note-$tag-${n.path}'),
+                note: n,
+                selected: n.path == selectedPath,
+                onTap: () => onSelect(n),
+              ),
+        ],
+      ],
+    );
+  }
+}
+
+class _NoteRow extends StatelessWidget {
+  const _NoteRow({
+    super.key,
+    required this.note,
+    required this.selected,
+    required this.onTap,
+  });
+  final NotebookNote note;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final n = note;
+    return HoverTap(
+      color: selected ? colors.panel2 : Colors.transparent,
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(22, 5, 10, 5),
+        decoration: BoxDecoration(
+          border: Border(
+            left: BorderSide(
+              width: 2,
+              color: selected ? colors.accent : Colors.transparent,
+            ),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                if (n.fromAgent) ...[
+                  Icon(Icons.auto_awesome, size: 10, color: colors.accent),
+                  const SizedBox(width: 4),
+                ],
+                Expanded(
+                  child: Text(
+                    n.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: context.typo.label.copyWith(
+                      fontSize: 12,
+                      color: colors.text,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ],
             ),
-          ),
-        );
-      },
+            const SizedBox(height: 1),
+            Row(
+              children: [
+                if (n.sortDate != null) ...[
+                  Text(
+                    _shortDate(n.sortDate!),
+                    style: context.typo.label.copyWith(
+                      fontSize: 10,
+                      color: colors.text3,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                ],
+                Expanded(
+                  child: Text(
+                    _excerpt(n.body),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: context.typo.label.copyWith(
+                      fontSize: 10.5,
+                      color: colors.text3,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -579,9 +685,11 @@ class _NoteColumn extends StatelessWidget {
     required this.saving,
     required this.editor,
     required this.editorFocus,
+    required this.tagInput,
     required this.onToggleEdit,
     required this.onSave,
-    required this.onTagTap,
+    required this.onAddTag,
+    required this.onRemoveTag,
   });
 
   final NotebookNote? note;
@@ -590,9 +698,11 @@ class _NoteColumn extends StatelessWidget {
   final bool saving;
   final CodeEditingController editor;
   final FocusNode editorFocus;
+  final TextEditingController tagInput;
   final VoidCallback onToggleEdit;
   final VoidCallback onSave;
-  final ValueChanged<String> onTagTap;
+  final ValueChanged<String> onAddTag;
+  final ValueChanged<String> onRemoveTag;
 
   @override
   Widget build(BuildContext context) {
@@ -628,30 +738,16 @@ class _NoteColumn extends StatelessWidget {
                         color: colors.text,
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 4,
-                      children: [
-                        for (final t in n.tags)
-                          HoverTap(
-                            borderRadius: BorderRadius.circular(10),
-                            onTap: () => onTagTap(t),
-                            child: _TagChip(t),
-                          ),
-                        if (n.updated != null)
-                          Padding(
-                            padding: const EdgeInsets.only(left: 4, top: 2),
-                            child: Text(
-                              _fullDate(n.updated!),
-                              style: context.typo.label.copyWith(
-                                fontSize: 11,
-                                color: colors.text3,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
+                    if (n.updated != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        _fullDate(n.updated!),
+                        style: context.typo.label.copyWith(
+                          fontSize: 11,
+                          color: colors.text3,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -695,6 +791,48 @@ class _NoteColumn extends StatelessWidget {
                   child: AgentMarkdown(n.body),
                 ),
         ),
+        // Rodapé: tags da nota (múltiplas), com remover e adicionar inline.
+        Container(
+          padding: const EdgeInsets.fromLTRB(20, 8, 12, 8),
+          decoration: BoxDecoration(
+            border: Border(top: BorderSide(color: colors.border)),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.sell_outlined, size: 13, color: colors.text3),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Wrap(
+                  spacing: 6,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    for (final t in n.tags.where((t) => t != kUntagged))
+                      _TagChip(t, onRemove: () => onRemoveTag(t)),
+                    SizedBox(
+                      width: 140,
+                      height: 24,
+                      child: TextField(
+                        controller: tagInput,
+                        placeholder: Text(tr.addTag),
+                        style: context.typo.label.copyWith(
+                          fontSize: 11,
+                          color: colors.text,
+                        ),
+                        border: Border.all(color: Colors.transparent),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        onSubmitted: onAddTag,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -707,141 +845,34 @@ class _NoteColumn extends StatelessWidget {
 
 // ---------------------------------------------------------------------------
 
-class _TagsColumn extends StatelessWidget {
-  const _TagsColumn({
-    required this.counts,
-    required this.total,
-    required this.selected,
-    required this.onSelect,
-    required this.allLabel,
-  });
-
-  final Map<String, int> counts;
-  final int total;
-  final String? selected;
-  final ValueChanged<String?> onSelect;
-  final String allLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    final tr = context.t.cockpit.notebook;
-    return ListView(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(14, 4, 12, 6),
-          child: Text(
-            tr.tags.toUpperCase(),
-            style: context.typo.label.copyWith(
-              fontSize: 10,
-              letterSpacing: 1.1,
-              color: colors.text3,
-            ),
-          ),
-        ),
-        _TagRow(
-          label: allLabel,
-          count: total,
-          selected: selected == null,
-          onTap: () => onSelect(null),
-        ),
-        for (final e in counts.entries)
-          _TagRow(
-            key: ValueKey('tag-${e.key}'),
-            label: e.key,
-            count: e.value,
-            selected: selected == e.key,
-            color: _tagColor(e.key, colors),
-            onTap: () => onSelect(selected == e.key ? null : e.key),
-          ),
-      ],
-    );
-  }
-}
-
-class _TagRow extends StatelessWidget {
-  const _TagRow({
-    super.key,
-    required this.label,
-    required this.count,
-    required this.selected,
-    required this.onTap,
-    this.color,
-  });
-  final String label;
-  final int count;
-  final bool selected;
-  final VoidCallback onTap;
-  final Color? color;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    return HoverTap(
-      color: selected ? colors.panel2 : Colors.transparent,
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-        child: Row(
-          children: [
-            Container(
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: color ?? colors.text3,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                label,
-                overflow: TextOverflow.ellipsis,
-                style: context.typo.label.copyWith(
-                  color: selected ? colors.text : colors.text2,
-                ),
-              ),
-            ),
-            Text(
-              '$count',
-              style: context.typo.label.copyWith(
-                fontSize: 11,
-                color: colors.text3,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _TagChip extends StatelessWidget {
-  const _TagChip(this.tag, {this.small = false});
+  const _TagChip(this.tag, {this.onRemove});
   final String tag;
-  final bool small;
+  final VoidCallback? onRemove;
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.colors;
-    final c = _tagColor(tag, colors);
+    final c = _tagColor(tag, context.colors);
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: small ? 5 : 8,
-        vertical: small ? 1 : 2,
-      ),
+      padding: const EdgeInsets.fromLTRB(8, 2, 6, 2),
       decoration: BoxDecoration(
         color: c.withValues(alpha: 0.16),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: c.withValues(alpha: 0.4)),
       ),
-      child: Text(
-        tag,
-        style: context.typo.label.copyWith(
-          fontSize: small ? 9.5 : 11,
-          color: c,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(tag, style: context.typo.label.copyWith(fontSize: 11, color: c)),
+          if (onRemove != null) ...[
+            const SizedBox(width: 4),
+            HoverTap(
+              borderRadius: BorderRadius.circular(8),
+              onTap: onRemove!,
+              child: Icon(Icons.close, size: 11, color: c),
+            ),
+          ],
+        ],
       ),
     );
   }

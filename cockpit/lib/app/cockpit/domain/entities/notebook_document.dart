@@ -138,6 +138,29 @@ class NotebookNote {
     return '$date-${slug.isEmpty ? 'note' : slug}.md';
   }
 
+  /// Substitui (ou insere) a linha `tags:` do frontmatter de [raw]. Sem
+  /// frontmatter, cria um só com `tags:`. Lista vazia grava `[]` (a UI mostra
+  /// como sem tag).
+  static String setTags(String raw, List<String> tags) {
+    final line =
+        'tags: [${tags.map((t) => t.trim().toLowerCase()).where((t) => t.isNotEmpty).toSet().join(', ')}]';
+    final lines = raw.split('\n');
+    if (lines.isEmpty || !_fence.hasMatch(lines.first)) {
+      return '---\n$line\n---\n\n$raw';
+    }
+    for (var i = 1; i < lines.length; i++) {
+      if (_fence.hasMatch(lines[i])) {
+        lines.insert(i, line);
+        return lines.join('\n');
+      }
+      if (lines[i].toLowerCase().startsWith('tags:')) {
+        lines[i] = line;
+        return lines.join('\n');
+      }
+    }
+    return '---\n$line\n---\n\n$raw';
+  }
+
   /// Substitui (ou insere) `updated:` no frontmatter de [raw].
   static String touchUpdated(String raw, DateTime now) {
     final lines = raw.split('\n');

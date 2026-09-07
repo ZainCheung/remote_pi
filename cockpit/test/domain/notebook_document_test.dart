@@ -41,4 +41,17 @@ Corpo.
       DateTime(2026, 9, 8, 1, 2),
     );
   });
+
+  test('setTags rewrites or creates the tags line', () {
+    final a = NotebookNote.setTags('---\ntitle: x\ntags: [a]\n---\nb', [
+      'Relay',
+      'bug',
+    ]);
+    expect(NotebookNote.parse('/n.md', a).tags, ['relay', 'bug']);
+    final b = NotebookNote.setTags('# solto\n', ['z']);
+    expect(NotebookNote.parse('/n.md', b).tags, ['z']);
+    expect(NotebookNote.parse('/n.md', b).body, '# solto\n');
+    final c = NotebookNote.setTags(a, []);
+    expect(NotebookNote.parse('/n.md', c).tags, [kUntagged]);
+  });
 }
