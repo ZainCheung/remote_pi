@@ -24,6 +24,61 @@ As versões seguem o `version:` do `pubspec.yaml` (SSOT). O campo `notes` do
     linhas não-vazias — o começo da seção deve fazer sentido sozinho.
 -->
 
+## [1.28.24] - 2026-09-07
+
+**Still a beta for the upcoming 2.0.0.** Two new ways to see what the agent is
+doing: a **Gallery** tab that lists Cockpit's special documents, and a
+**Notebook** folder where notes, tags and images live as plain markdown.
+
+### Added
+
+- **Gallery tab** in the right panel, next to Database. One card per special
+  document: SQL query (`.dbq`), kanban board (`.kanban`), pane layout
+  (`.ckp`), HTTP requests (`.http`), HTML view, Tasks (`.cockpit/tasks.json`)
+  and the new Notebook. Click a card and the file is created at the workspace
+  root and opened; a second click creates `-2`, and fixed-name files like
+  `tasks.json` open the existing one instead. Works on remote workspaces too.
+
+- **Notebook (`.notebook` folder).** A folder whose name ends in `.notebook`
+  shows up as a single item in the file tree, sorted with the files, and opens
+  as a notes tab. Inside it is one markdown file per note with a small
+  frontmatter (`title`, `tags`), so git, Obsidian and the agent read the same
+  files. In the app:
+  - notes are grouped by tag on the left (untagged first, then `agent`, then
+    alphabetical); right-click or long-press a group to rename or delete the
+    tag across all its notes; search filters the list;
+  - the note is **always editable**, with markdown painted live as you type:
+    bold, italic, headings, lists with real bullets, checklists you can tick by
+    clicking, quotes, code, links. Markers stay hidden except on the line you
+    are editing. A formatting bar and `⌘B` / `⌘I` / `⌘E` / `⌘K` help;
+  - tags are edited at the bottom of the note; the title is a field that
+    grows with the text; everything saves by itself ~1.5 s after you stop;
+  - paste, drop or pick an **image** and it is copied to `_assets/` inside the
+    notebook and drawn inline in the editor;
+  - **`[[Note title]]` links** other notes: type `[[` for suggestions, click
+    the chip to open (or create) the note, and see "Linked from" on the target;
+  - notes written from outside (an agent, Obsidian, the terminal) appear on
+    their own; delete from the list goes to the Trash.
+
+- **`cockpit note` in the internal CLI.** `cockpit note add <dir.notebook>
+  --title … [--tag …] [--body … | --body -]` writes a note with the right
+  frontmatter (the `agent` tag is always added) and refreshes the open tab;
+  `cockpit note list` lists titles and tags; `cockpit open x.notebook` opens
+  the notebook. The Claude Code skill and `docs/notebook.md` explain the
+  format; run `cockpit install-skill --force` to refresh the local skill.
+
+- **Kanban list mode** now supports drag and drop: drop above a row to insert
+  at that position, or on a section header to send the card to the end of
+  that column.
+
+### Fixed
+
+- Column menu (rename/delete) on `.kanban` boards opened far from the `⋯`
+  button; it now anchors to it. The card detail panel no longer shows a
+  "move to next column" button, only the column name.
+- `.cockpit/` folder and `.ckp` files use the Cockpit logo in the file tree;
+  `.notebook` has its own icon.
+
 ## [1.28.23] - 2026-08-29
 
 **Still a beta for the upcoming 2.0.0.** Closing the app no longer crashes, and
