@@ -829,7 +829,10 @@
         "noteLinkSearch": "Buscar notas",
         "image": "Inserir imagem…"
       },
-      "backlinks": "Citada em"
+      "backlinks": "Citada em",
+      "renameTag": "Renomear tag",
+      "deleteTag": "Apagar tag",
+      "deleteTagConfirm": "Remover “${name}” de ${count} notas? As notas ficam."
     }
   },
   "settings": {

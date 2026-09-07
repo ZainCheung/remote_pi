@@ -1248,6 +1248,9 @@ class _Translations$cockpit$notebook$es extends Translations$cockpit$notebook$en
 	@override String get imageFailed => 'No se pudo guardar la imagen';
 	@override late final _Translations$cockpit$notebook$format$es format = _Translations$cockpit$notebook$format$es._(_root);
 	@override String get backlinks => 'Enlazada desde';
+	@override String get renameTag => 'Renombrar tag';
+	@override String get deleteTag => 'Eliminar tag';
+	@override String deleteTagConfirm({required Object name, required Object count}) => '¿Quitar “${name}” de ${count} notas? Las notas se conservan.';
 }
 
 // Path: settings.language
@@ -2668,6 +2671,9 @@ extension on TranslationsEs {
 			'cockpit.notebook.format.noteLinkSearch' => 'Buscar notas',
 			'cockpit.notebook.format.image' => 'Insertar imagen…',
 			'cockpit.notebook.backlinks' => 'Enlazada desde',
+			'cockpit.notebook.renameTag' => 'Renombrar tag',
+			'cockpit.notebook.deleteTag' => 'Eliminar tag',
+			'cockpit.notebook.deleteTagConfirm' => ({required Object name, required Object count}) => '¿Quitar “${name}” de ${count} notas? Las notas se conservan.',
 			'settings.language.title' => 'Idioma',
 			'settings.language.system' => 'Sistema',
 			'settings.language.english' => 'Inglés',
@@ -2996,11 +3002,11 @@ extension on TranslationsEs {
 			'automation.error.noFileChanges' => 'No hay cambios que describir en este archivo.',
 			'automation.error.noStagedChanges' => 'No hay cambios en stage que describir.',
 			'automation.error.multipleRepositories' => 'Los cambios en stage pertenecen a varios repositorios. Genéralos por separado.',
+			_ => null,
+		} ?? switch (path) {
 			'automation.error.diffUnavailable' => 'No se pudo leer el diff.',
 			'automation.error.notConfigured' => 'Configura un harness de mensajes de commit en Configuración.',
 			'fileOperation.error.alreadyExists' => ({required Object name}) => 'Ya existe: “${name}”.',
-			_ => null,
-		} ?? switch (path) {
 			'fileOperation.error.notFound' => ({required Object name}) => 'No se encontró: “${name}”.',
 			'fileOperation.error.invalidPath' => 'Ruta inválida.',
 			'fileOperation.error.emptyName' => 'El nombre no puede estar vacío.',

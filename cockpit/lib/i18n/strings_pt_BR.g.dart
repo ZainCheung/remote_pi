@@ -1248,6 +1248,9 @@ class _Translations$cockpit$notebook$pt_BR extends Translations$cockpit$notebook
 	@override String get imageFailed => 'Não foi possível salvar a imagem';
 	@override late final _Translations$cockpit$notebook$format$pt_BR format = _Translations$cockpit$notebook$format$pt_BR._(_root);
 	@override String get backlinks => 'Citada em';
+	@override String get renameTag => 'Renomear tag';
+	@override String get deleteTag => 'Apagar tag';
+	@override String deleteTagConfirm({required Object name, required Object count}) => 'Remover “${name}” de ${count} notas? As notas ficam.';
 }
 
 // Path: settings.language
@@ -2668,6 +2671,9 @@ extension on TranslationsPtBr {
 			'cockpit.notebook.format.noteLinkSearch' => 'Buscar notas',
 			'cockpit.notebook.format.image' => 'Inserir imagem…',
 			'cockpit.notebook.backlinks' => 'Citada em',
+			'cockpit.notebook.renameTag' => 'Renomear tag',
+			'cockpit.notebook.deleteTag' => 'Apagar tag',
+			'cockpit.notebook.deleteTagConfirm' => ({required Object name, required Object count}) => 'Remover “${name}” de ${count} notas? As notas ficam.',
 			'settings.language.title' => 'Idioma',
 			'settings.language.system' => 'Sistema',
 			'settings.language.english' => 'Inglês',
@@ -2996,11 +3002,11 @@ extension on TranslationsPtBr {
 			'automation.error.noFileChanges' => 'Não há mudanças a descrever neste arquivo.',
 			'automation.error.noStagedChanges' => 'Não há mudanças no stage a descrever.',
 			'automation.error.multipleRepositories' => 'As mudanças no stage pertencem a repositórios diferentes. Gere uma de cada vez.',
+			_ => null,
+		} ?? switch (path) {
 			'automation.error.diffUnavailable' => 'Não foi possível ler o diff.',
 			'automation.error.notConfigured' => 'Configure um harness de mensagem de commit em Configurações.',
 			'fileOperation.error.alreadyExists' => ({required Object name}) => 'Já existe: “${name}”.',
-			_ => null,
-		} ?? switch (path) {
 			'fileOperation.error.notFound' => ({required Object name}) => 'Não encontrado: “${name}”.',
 			'fileOperation.error.invalidPath' => 'Caminho inválido.',
 			'fileOperation.error.emptyName' => 'O nome não pode ficar vazio.',

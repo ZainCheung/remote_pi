@@ -412,6 +412,95 @@ class _NotebookViewState extends State<NotebookView> {
     await _load();
   }
 
+  /// Botão direito / toque longo no cabeçalho de um grupo: renomear ou
+  /// apagar a tag em **todas** as notas que a têm. "Sem tag" não tem menu.
+  Future<void> _tagMenu(String tag, Offset position) async {
+    if (tag == kUntagged) return;
+    final tr = context.t.cockpit.notebook;
+    final choice = await showAppMenu<String>(
+      context,
+      globalPosition: position,
+      items: [
+        AppMenuItem(
+          value: 'rename',
+          label: tr.renameTag,
+          icon: Icons.drive_file_rename_outline,
+        ),
+        AppMenuItem(
+          value: 'delete',
+          label: tr.deleteTag,
+          icon: Icons.delete_outline,
+          danger: true,
+        ),
+      ],
+    );
+    if (!mounted || choice == null) return;
+    if (choice == 'rename') {
+      final ctrl = TextEditingController(text: tag);
+      final next = await showDialog<String>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(tr.renameTag),
+          content: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 320),
+            child: TextField(
+              controller: ctrl,
+              autofocus: true,
+              onSubmitted: (v) => Navigator.of(ctx).pop(v),
+            ),
+          ),
+          actions: [
+            GhostButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(ctx.t.common.cancel),
+            ),
+            PrimaryButton(
+              onPressed: () => Navigator.of(ctx).pop(ctrl.text),
+              child: Text(ctx.t.common.save),
+            ),
+          ],
+        ),
+      );
+      if (!mounted || next == null) return;
+      final clean = next.trim().toLowerCase().replaceAll(RegExp(r'\s+'), '-');
+      if (clean.isEmpty || clean == tag) return;
+      await _retagAll(tag, clean);
+    } else {
+      final ok = await showConfirmDialog(
+        context,
+        title: tr.deleteTag,
+        message: tr.deleteTagConfirm(
+          name: tag,
+          count: _notes.where((n) => n.tags.contains(tag)).length,
+        ),
+        confirmLabel: context.t.common.delete,
+        danger: true,
+      );
+      if (!ok || !mounted) return;
+      await _retagAll(tag, null);
+    }
+  }
+
+  /// Troca [from] por [to] (ou remove, se `null`) em todas as notas.
+  Future<void> _retagAll(String from, String? to) async {
+    _flush();
+    for (final n in _notes) {
+      if (!n.tags.contains(from)) continue;
+      final tags = <String>[
+        for (final t in n.tags)
+          if (t == from) ?to else if (t != kUntagged) t,
+      ];
+      final content = NotebookNote.touchUpdated(
+        NotebookNote.setTags(n.raw, tags),
+        DateTime.now(),
+      );
+      await _vm.writeTextAt(n.path, content);
+      if (!mounted) return;
+    }
+    _collapsed.remove(from);
+    await _load();
+  }
+
   Future<void> _noteMenu(NotebookNote n, Offset position) async {
     final tr = context.t.cockpit.notebook;
     final choice = await showAppMenu<String>(
@@ -812,6 +901,7 @@ class _NotebookViewState extends State<NotebookView> {
                       }),
                       onSelect: _select,
                       onMenu: _noteMenu,
+                      onTagMenu: _tagMenu,
                     ),
                   ),
                   VerticalDivider(width: 1, color: colors.border),
@@ -1000,6 +1090,7 @@ class _NotesColumn extends StatelessWidget {
     required this.onToggleGroup,
     required this.onSelect,
     required this.onMenu,
+    required this.onTagMenu,
   });
 
   final List<(String, List<NotebookNote>)> groups;
@@ -1010,6 +1101,7 @@ class _NotesColumn extends StatelessWidget {
   final ValueChanged<String> onToggleGroup;
   final ValueChanged<NotebookNote> onSelect;
   final void Function(NotebookNote, Offset) onMenu;
+  final void Function(String, Offset) onTagMenu;
 
   @override
   Widget build(BuildContext context) {
@@ -1029,50 +1121,54 @@ class _NotesColumn extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4),
       children: [
         for (final (tag, notes) in groups) ...[
-          HoverTap(
+          GestureDetector(
             key: ValueKey('group-$tag'),
-            onTap: () => onToggleGroup(tag),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(8, 8, 10, 4),
-              child: Row(
-                children: [
-                  Icon(
-                    collapsed.contains(tag)
-                        ? Icons.chevron_right
-                        : Icons.expand_more,
-                    size: 14,
-                    color: colors.text3,
-                  ),
-                  const SizedBox(width: 2),
-                  Container(
-                    width: 7,
-                    height: 7,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: _tagColor(tag, colors),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      tag == kUntagged ? tr.untagged : tag,
-                      overflow: TextOverflow.ellipsis,
-                      style: context.typo.label.copyWith(
-                        fontSize: 10.5,
-                        letterSpacing: 0.6,
-                        fontWeight: FontWeight.w600,
-                        color: colors.text2,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    '${notes.length}',
-                    style: context.typo.label.copyWith(
-                      fontSize: 10,
+            onSecondaryTapUp: (d) => onTagMenu(tag, d.globalPosition),
+            onLongPressStart: (d) => onTagMenu(tag, d.globalPosition),
+            child: HoverTap(
+              onTap: () => onToggleGroup(tag),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 8, 10, 4),
+                child: Row(
+                  children: [
+                    Icon(
+                      collapsed.contains(tag)
+                          ? Icons.chevron_right
+                          : Icons.expand_more,
+                      size: 14,
                       color: colors.text3,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 2),
+                    Container(
+                      width: 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _tagColor(tag, colors),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        tag == kUntagged ? tr.untagged : tag,
+                        overflow: TextOverflow.ellipsis,
+                        style: context.typo.label.copyWith(
+                          fontSize: 10.5,
+                          letterSpacing: 0.6,
+                          fontWeight: FontWeight.w600,
+                          color: colors.text2,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '${notes.length}',
+                      style: context.typo.label.copyWith(
+                        fontSize: 10,
+                        color: colors.text3,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

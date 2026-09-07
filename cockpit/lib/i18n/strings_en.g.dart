@@ -2547,6 +2547,15 @@ class Translations$cockpit$notebook$en {
 
 	/// en: 'Linked from'
 	String get backlinks => 'Linked from';
+
+	/// en: 'Rename tag'
+	String get renameTag => 'Rename tag';
+
+	/// en: 'Delete tag'
+	String get deleteTag => 'Delete tag';
+
+	/// en: 'Remove “${name}” from ${count} notes? The notes stay.'
+	String deleteTagConfirm({required Object name, required Object count}) => 'Remove “${name}” from ${count} notes? The notes stay.';
 }
 
 // Path: settings.language
@@ -4774,6 +4783,9 @@ extension on Translations {
 			'cockpit.notebook.format.noteLinkSearch' => 'Search notes',
 			'cockpit.notebook.format.image' => 'Insert image…',
 			'cockpit.notebook.backlinks' => 'Linked from',
+			'cockpit.notebook.renameTag' => 'Rename tag',
+			'cockpit.notebook.deleteTag' => 'Delete tag',
+			'cockpit.notebook.deleteTagConfirm' => ({required Object name, required Object count}) => 'Remove “${name}” from ${count} notes? The notes stay.',
 			'settings.language.title' => 'Language',
 			'settings.language.system' => 'System',
 			'settings.language.english' => 'English',
@@ -5102,11 +5114,11 @@ extension on Translations {
 			'automation.error.noFileChanges' => 'There are no changes to describe for this file.',
 			'automation.error.noStagedChanges' => 'There are no staged changes to describe.',
 			'automation.error.multipleRepositories' => 'Staged changes belong to multiple repositories. Generate them separately.',
+			_ => null,
+		} ?? switch (path) {
 			'automation.error.diffUnavailable' => 'Could not read the diff.',
 			'automation.error.notConfigured' => 'Configure a commit message harness in Settings.',
 			'fileOperation.error.alreadyExists' => ({required Object name}) => 'Already exists: “${name}”.',
-			_ => null,
-		} ?? switch (path) {
 			'fileOperation.error.notFound' => ({required Object name}) => 'Not found: “${name}”.',
 			'fileOperation.error.invalidPath' => 'Invalid path.',
 			'fileOperation.error.emptyName' => 'The name cannot be empty.',
