@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:cockpit/app/cockpit/data/remote/pty_ack_batcher.dart';
 import 'package:cockpit/app/cockpit/data/remote/remote_host_connector.dart';
 import 'package:cockpit/app/core/data/diagnostics/diagnostics_log.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/terminal_gateway.dart';
@@ -31,6 +31,9 @@ class RemoteHostTerminalGateway implements TerminalGateway {
   // Flow control por contador acumulado (mesma razão do gateway do sidecar).
   int _bytesDelivered = 0;
   int _bytesAcked = 0;
+
+  /// Acks saem por volume, não por chunk: no remoto cada um é um pacote SSH.
+  late final PtyAckBatcher _acks = PtyAckBatcher(send: _sendAck);
 
   final StreamController<List<int>> _output = StreamController<List<int>>();
   final List<void Function()> _queued = [];
@@ -163,6 +166,9 @@ class RemoteHostTerminalGateway implements TerminalGateway {
       _closeOutput();
       return;
     }
+    // Crédito ainda não confirmado volta ao contador: será confirmado na
+    // conexão nova, em vez de sumir com o transporte.
+    _bytesAcked -= _acks.reset();
     _detached = true;
     _ready = false;
   }
@@ -271,6 +277,7 @@ class RemoteHostTerminalGateway implements TerminalGateway {
   }
 
   void _closeOutput() {
+    _acks.dispose();
     if (!_output.isClosed) _output.close();
   }
 
@@ -316,10 +323,15 @@ class RemoteHostTerminalGateway implements TerminalGateway {
 
   @override
   void acknowledgeOutput() {
-    final id = _sessionId;
     final credit = _bytesDelivered - _bytesAcked;
-    if (id == null || credit <= 0) return;
+    if (_sessionId == null || credit <= 0) return;
     _bytesAcked = _bytesDelivered;
+    _acks.add(credit);
+  }
+
+  void _sendAck(int credit) {
+    final id = _sessionId;
+    if (id == null || _killed || _exited) return;
     unawaited(_service?.ack(id, credit));
   }
 
@@ -327,6 +339,7 @@ class RemoteHostTerminalGateway implements TerminalGateway {
   Future<void> kill() async {
     _killed = true;
     _queued.clear();
+    _acks.dispose();
     await _reconnectSub?.cancel();
     await _attachment?.cancel();
     final id = _sessionId;

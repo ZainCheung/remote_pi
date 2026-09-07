@@ -4,7 +4,8 @@ import 'dart:io';
 import 'package:crypto/crypto.dart' show sha256;
 
 import 'package:cockpit/app/cockpit/data/remote/dartssh_host_connection.dart';
-import 'package:cockpit/app/cockpit/data/remote/ssh_channel_duplex.dart';
+import 'package:cockpit/app/cockpit/data/remote/mobile_ssh_key_store.dart';
+import 'package:cockpit/app/cockpit/data/remote/ssh_worker_connection.dart';
 import 'package:cockpit/app/cockpit/data/remote/host_shell/host_shell.dart';
 import 'package:cockpit/app/cockpit/data/remote/host_shell/posix_host_shell.dart';
 import 'package:cockpit/app/cockpit/data/remote/host_shell/windows_host_shell.dart';
@@ -110,7 +111,10 @@ class RemoteHostConnector {
   final SshKnownHosts knownHosts;
 
   SshTunnel? _tunnel;
-  DartSshHostConnection? _dartConn;
+
+  /// Transporte do mobile: `dartssh2` numa isolate própria (a cripto em Dart
+  /// puro travava a view quando rodava na principal).
+  SshWorkerConnection? _dartConn;
 
   /// Status de turno (spinner/chime) vindo do host pelo protocolo (Wave G).
   /// Reassina a cada (re)conexão; broadcast pra o controller repassar à VM.
@@ -386,7 +390,18 @@ class RemoteHostConnector {
       );
     }
     final endpoint = SshEndpoint(host.user, host.host, host.port);
-    final conn = DartSshHostConnection(endpoint, password: _password);
+    // Chave privada e host key ficam na isolate principal (Keychain é plugin
+    // Flutter): a chave vai em PEM pro worker; a host key volta como pergunta.
+    final hostKeys = MobileSshHostKeyStore();
+    final conn = SshWorkerConnection(
+      endpoint,
+      password: _password,
+      identityPems: _password != null
+          ? const []
+          : [await MobileSshKeyStore().privateKeyPem()],
+      verifyHostKey: (fingerprint) =>
+          hostKeys.verify(endpoint.endpoint, fingerprint),
+    );
     try {
       await conn.connect();
     } on DartSshException catch (e) {
@@ -435,7 +450,7 @@ class RemoteHostConnector {
       // servidor (decisão D do plano 58), então aqui a única saída é dizer com
       // todas as letras que não há ninguém atendendo, em vez de deixar vazar um
       // `SSHChannelOpenError(2: open failed)` cru, que não diz nada a quem lê.
-      final channel =
+      final duplex =
           await switch (remote) {
             UnixSocketEndpoint(:final path) => conn.forwardUnix(path),
             TcpEndpoint(:final port) => conn.forwardTcp(port),
@@ -446,7 +461,7 @@ class RemoteHostConnector {
             );
           });
       final connection = await RemoteConnection.connectOn(
-        SshChannelDuplex(channel),
+        duplex,
         clientName: 'cockpit-ipad',
         token: remote.token,
       );
