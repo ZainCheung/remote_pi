@@ -566,7 +566,6 @@ class _KanbanBoardViewState extends State<KanbanBoardView> {
                       }),
                       onCommitTitle: _flushDetail,
                       onClose: () => _selectDetail(null),
-                      onAdvance: () => _advance(selected),
                       onToggleLabel: (label) => _apply(
                         KanbanEditor.toggleLabel(_doc, selected, label),
                       ),
@@ -1475,7 +1474,6 @@ class _DetailPanel extends StatelessWidget {
     required this.onStartTitleEdit,
     required this.onCommitTitle,
     required this.onClose,
-    required this.onAdvance,
     required this.onToggleLabel,
     required this.onManageLabels,
     required this.commentController,
@@ -1496,7 +1494,6 @@ class _DetailPanel extends StatelessWidget {
   final VoidCallback onStartTitleEdit;
   final VoidCallback onCommitTitle;
   final VoidCallback onClose;
-  final VoidCallback onAdvance;
   final void Function(String label) onToggleLabel;
   final VoidCallback onManageLabels;
   final TextEditingController commentController;
@@ -1608,25 +1605,20 @@ class _DetailPanel extends StatelessWidget {
                 const SizedBox(height: 11),
                 Row(
                   children: [
+                    // Só o nome da coluna; mover é pelo card/arrastar, não
+                    // pelo painel de detalhe.
                     Container(
-                      padding: const EdgeInsets.fromLTRB(9, 3, 4, 3),
+                      padding: const EdgeInsets.fromLTRB(9, 3, 9, 3),
                       decoration: BoxDecoration(
                         border: Border.all(color: colors.border2),
                         borderRadius: BorderRadius.circular(5),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            column >= 0 ? doc.columns[column].name : '',
-                            style: typo.mono.copyWith(
-                              fontSize: 11,
-                              color: colors.text,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          _AdvanceButton(done: isLast, onTap: onAdvance),
-                        ],
+                      child: Text(
+                        column >= 0 ? doc.columns[column].name : '',
+                        style: typo.mono.copyWith(
+                          fontSize: 11,
+                          color: colors.text,
+                        ),
                       ),
                     ),
                     const Spacer(),
