@@ -43,4 +43,32 @@ void main() {
     });
     expect(hiddenStars, 2);
   });
+
+  test('Enter continues lists, numbering increments, empty item exits', () {
+    final c = MarkdownEditingController(text: '- a');
+    c.value = const TextEditingValue(
+      text: '- a\n',
+      selection: TextSelection.collapsed(offset: 4),
+    );
+    expect(c.text, '- a\n- ');
+    expect(c.selection.baseOffset, 6);
+    // item vazio + Enter → encerra
+    c.value = const TextEditingValue(
+      text: '- a\n- \n',
+      selection: TextSelection.collapsed(offset: 7),
+    );
+    expect(c.text, '- a\n\n');
+    final n = MarkdownEditingController(text: '1. x\n- [x] y');
+    n.value = const TextEditingValue(
+      text: '1. x\n\n- [x] y',
+      selection: TextSelection.collapsed(offset: 5),
+    );
+    expect(n.text, '1. x\n2. \n- [x] y');
+    final t = MarkdownEditingController(text: '- [x] y');
+    t.value = const TextEditingValue(
+      text: '- [x] y\n',
+      selection: TextSelection.collapsed(offset: 8),
+    );
+    expect(t.text, '- [x] y\n- [ ] ');
+  });
 }

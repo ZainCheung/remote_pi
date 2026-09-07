@@ -478,12 +478,18 @@ class _NotebookViewState extends State<NotebookView> {
       }
     }
     final replaced = out.join('\n');
+    // Uma linha só (caso comum: começar uma lista numa linha vazia) → cursor
+    // no fim dela, pronto pra digitar. Bloco de várias linhas → fica
+    // selecionado pra encadear outra ação.
+    final selection = lines.length == 1
+        ? TextSelection.collapsed(offset: start + replaced.length)
+        : TextSelection(
+            baseOffset: start,
+            extentOffset: start + replaced.length,
+          );
     _editor.value = TextEditingValue(
       text: t.substring(0, start) + replaced + t.substring(end),
-      selection: TextSelection(
-        baseOffset: start,
-        extentOffset: start + replaced.length,
-      ),
+      selection: selection,
     );
     _editorFocus.requestFocus();
   }

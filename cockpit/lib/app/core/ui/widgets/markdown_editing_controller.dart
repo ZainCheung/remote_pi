@@ -39,6 +39,58 @@ class MarkdownEditingController extends TextEditingController {
     r'|(\[[^\]\n]+\]\([^)\n]*\))',
   );
 
+  static final _listPrefix = RegExp(
+    r'^(\s*)([-*+] \[[ xX]\] |[-*+] |\d+[.)] |> )',
+  );
+
+  /// Enter numa linha de lista continua a lista (`- `, `1. ` → `2. `,
+  /// `- [ ] `, `> `); Enter numa linha de lista **vazia** encerra a lista
+  /// (apaga o marcador). Só age quando a edição foi exatamente "um \n
+  /// digitado no cursor" — colar, undo e edições programáticas passam direto.
+  @override
+  set value(TextEditingValue newValue) {
+    final old = super.value;
+    final sel = newValue.selection;
+    if (sel.isCollapsed &&
+        newValue.text.length == old.text.length + 1 &&
+        sel.baseOffset > 0 &&
+        newValue.text[sel.baseOffset - 1] == '\n' &&
+        newValue.text.substring(0, sel.baseOffset - 1) ==
+            old.text.substring(0, sel.baseOffset - 1)) {
+      final caret = sel.baseOffset;
+      final prevStart = newValue.text.lastIndexOf('\n', caret - 2) + 1;
+      final prevLine = newValue.text.substring(prevStart, caret - 1);
+      final m = _listPrefix.firstMatch(prevLine);
+      if (m != null) {
+        final prefix = m.group(0)!;
+        if (prevLine.length == prefix.length) {
+          // Item vazio + Enter → sai da lista: remove o marcador da linha.
+          final text = newValue.text.replaceRange(prevStart, caret, '\n');
+          super.value = TextEditingValue(
+            text: text,
+            selection: TextSelection.collapsed(offset: prevStart + 1),
+          );
+          return;
+        }
+        var next = prefix;
+        final num = RegExp(r'^(\s*)(\d+)([.)] )$').firstMatch(prefix);
+        if (num != null) {
+          next =
+              '${num.group(1)}${int.parse(num.group(2)!) + 1}${num.group(3)}';
+        } else {
+          next = prefix.replaceFirst(RegExp(r'\[[xX]\]'), '[ ]');
+        }
+        final text = newValue.text.replaceRange(caret, caret, next);
+        super.value = TextEditingValue(
+          text: text,
+          selection: TextSelection.collapsed(offset: caret + next.length),
+        );
+        return;
+      }
+    }
+    super.value = newValue;
+  }
+
   @override
   TextSpan buildTextSpan({
     required BuildContext context,
