@@ -3,10 +3,13 @@ import 'package:flutter/widgets.dart';
 
 /// `TextEditingController` que pinta markdown **ao vivo** enquanto se digita:
 /// `**negrito**` sai em negrito, `# título` grande, `- [ ]` com marcador em
-/// destaque, `` `código` `` mono com fundo. Os marcadores continuam no texto
-/// (esmaecidos) — o arquivo no disco é markdown puro e o cursor anda caractere
-/// a caractere, sem mágica de posição. É o "WYSIWYG possível" sobre um
-/// TextField: um só modo, sem alternar fonte ↔ preview.
+/// destaque, `` `código` `` mono com fundo. Os marcadores (`**`, `#`, `` ` ``…)
+/// ficam **escondidos** (fonte ~0, transparentes) em todas as linhas menos na
+/// linha do cursor, onde aparecem esmaecidos pra poder editar a sintaxe —
+/// mesmo comportamento do live preview do Obsidian. O texto no disco é
+/// markdown puro e o cursor anda caractere a caractere (os escondidos ainda
+/// existem, só não ocupam espaço). É o "WYSIWYG possível" sobre um TextField:
+/// um só modo, sem alternar fonte ↔ preview.
 ///
 /// Mesma técnica do [CodeEditingController]: sobrescrever [buildTextSpan]. O
 /// parser é por linha (blocos) + regex inline, tolerante — nunca lança e nunca
@@ -45,7 +48,15 @@ class MarkdownEditingController extends TextEditingController {
     final colors = context.colors;
     final typo = context.typo;
     final base = style ?? typo.body;
-    final marker = base.copyWith(color: colors.text3);
+    final dim = base.copyWith(color: colors.text3);
+    // Escondido: fonte quase zero e transparente — ocupa ~0px mas segue no
+    // texto, então seleção/cursor continuam válidos.
+    final hidden = base.copyWith(
+      fontSize: 0.1,
+      color: const Color(0x00000000),
+      letterSpacing: 0,
+    );
+    final cursor = selection.isValid ? selection.extentOffset : -1;
     final mono = typo.mono.copyWith(
       fontSize: (base.fontSize ?? 14) - 1,
       color: colors.text,
@@ -61,6 +72,9 @@ class MarkdownEditingController extends TextEditingController {
       final line = lines[i];
       final isLast = i == lines.length - 1;
       final nl = isLast ? '' : '\n';
+      // Linha do cursor revela os marcadores; as outras escondem.
+      final onCursor = cursor >= offset && cursor <= offset + line.length;
+      final marker = onCursor ? dim : hidden;
 
       if (_fence.hasMatch(line)) {
         inFence = !inFence;
@@ -87,17 +101,20 @@ class MarkdownEditingController extends TextEditingController {
         spans.add(
           TextSpan(
             text: '${m.group(1)}${m.group(2)}',
-            style: hStyle.copyWith(color: colors.text3),
+            style: onCursor ? hStyle.copyWith(color: colors.text3) : hidden,
           ),
         );
         spans.addAll(_inlineSpans(m.group(3)!, hStyle, colors, marker, mono));
         spans.add(TextSpan(text: nl, style: base));
       } else if (_task.firstMatch(line) case final m?) {
         final done = m.group(2)!.contains(RegExp(r'\[[xX]\]'));
+        final mk = m.group(2)!; // "- [ ] "
         spans.add(TextSpan(text: m.group(1), style: base));
+        // "- " some fora da linha do cursor; a caixa "[ ]"/"[x]" fica sempre.
+        spans.add(TextSpan(text: mk.substring(0, 2), style: marker));
         spans.add(
           TextSpan(
-            text: m.group(2),
+            text: mk.substring(2),
             style: base.copyWith(
               color: done ? colors.online : colors.accent,
               fontWeight: FontWeight.w600,
@@ -130,7 +147,7 @@ class MarkdownEditingController extends TextEditingController {
         spans.add(
           TextSpan(
             text: m.group(1),
-            style: base.copyWith(color: colors.accent),
+            style: onCursor ? base.copyWith(color: colors.accent) : hidden,
           ),
         );
         final q = base.copyWith(
@@ -164,7 +181,9 @@ class MarkdownEditingController extends TextEditingController {
         out.add(TextSpan(text: s.substring(last, m.start), style: base));
       }
       final tok = m.group(0)!;
-      final mk = marker.copyWith(fontSize: base.fontSize);
+      final mk = marker.fontSize == 0.1
+          ? marker
+          : marker.copyWith(fontSize: base.fontSize);
       if (m.group(1) != null) {
         // `código`
         out.add(TextSpan(text: '`', style: mk));
@@ -202,8 +221,14 @@ class MarkdownEditingController extends TextEditingController {
           ),
         );
       } else if (m.group(6) != null) {
-        // ![alt](src) — imagem: tudo esmaecido (o preview mostra a figura).
-        out.add(TextSpan(text: tok, style: mk));
+        // ![alt](src) — imagem: sempre esmaecida (nunca escondida, senão a
+        // linha sumiria; a figura em si aparece na leitura).
+        out.add(
+          TextSpan(
+            text: tok,
+            style: base.copyWith(color: colors.text3),
+          ),
+        );
       } else {
         // [texto](url) — texto como link, url esmaecida.
         final close = tok.indexOf('](');

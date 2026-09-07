@@ -33,5 +33,14 @@ void main() {
       return true;
     });
     expect(boldSeen, isTrue);
+    // Cursor no início (linha 1) → os `**` da linha 3 ficam escondidos.
+    var hiddenStars = 0;
+    span.visitChildren((s) {
+      if (s is TextSpan && s.text == '**' && s.style?.fontSize == 0.1) {
+        hiddenStars++;
+      }
+      return true;
+    });
+    expect(hiddenStars, 2);
   });
 }
