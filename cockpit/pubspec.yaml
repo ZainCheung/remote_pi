@@ -185,10 +185,10 @@ dependencies:
   url_launcher: ^6.3.0
 
   # Plano 58 — navegador embutido + preview de markdown/HTML via webview.
-  # WKWebView (macOS) / WebView2 (Windows) inline na árvore de widgets. Sem
-  # implementação Linux: lá o BrowserCapability degrada pra url_launcher
-  # (browser do SO) e o preview de .md segue no gpt_markdown.
-  flutter_inappwebview: ^6.1.5
+  # WKWebView (macOS) / WebView2 (Windows) / WPE WebKit (Linux, 6.2.0-beta,
+  # spike 2026-09-07) inline na árvore de widgets. Se o Linux falhar, o
+  # BrowserCapability volta a degradar pra url_launcher (browser do SO).
+  flutter_inappwebview: ^6.2.0-beta.3
 
   # Plano 47 — self-update nativo: Sparkle (macOS) + WinSparkle (Windows) via o
   # plugin federado auto_updater. No Linux é no-op (NoopSelfUpdater) e o caminho
@@ -379,3 +379,14 @@ dependency_overrides:
       url: https://github.com/jacobaraujo7/libghostty.git
       ref: 3dc78a42b016ba90ef36f50f16f3c28e4a706f50
       path: packages/libghostty
+  # flutter_inappwebview_linux 0.1.0-beta.1 chama webkit_web_view_get_theme_color
+  # (WebKit >= 2.50) sem guard; Debian 13 embarca WPE 2.48 e o build nativo
+  # quebra (upstream #2780, parado desde fev/2026). Fork nosso com o guard na
+  # branch `linux-webkit-pre-2.50`, pinado no SHA do fix. Só o subpacote Linux
+  # é sobrescrito — macOS/Windows seguem no pub.dev. Remover quando o upstream
+  # publicar release com o fix.
+  flutter_inappwebview_linux:
+    git:
+      url: https://github.com/jacobaraujo7/flutter_inappwebview.git
+      ref: 702c97942d9f7a964167fc310df058c3cf8f4c1f
+      path: flutter_inappwebview_linux
