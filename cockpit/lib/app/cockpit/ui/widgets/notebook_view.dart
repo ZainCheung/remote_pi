@@ -227,11 +227,12 @@ class _NotebookViewState extends State<NotebookView> {
   }
 
   /// Botão "link pra nota" da barra: menu com busca; insere `[[Título]]`.
-  Future<void> _pickNoteLink() async {
+  Future<void> _pickNoteLink(Offset at) async {
     final others = _notes.where((n) => n.path != _selectedPath).toList();
     if (others.isEmpty) return;
     final choice = await showAppMenu<String>(
       context,
+      globalPosition: at,
       searchHint: context.t.cockpit.notebook.format.noteLinkSearch,
       searchThreshold: 6,
       items: [
@@ -948,11 +949,16 @@ class _IconAction extends StatelessWidget {
   const _IconAction({
     required this.icon,
     required this.tooltip,
-    required this.onTap,
-  });
+    this.onTap,
+    this.onTapAt,
+  }) : assert(onTap != null || onTapAt != null);
   final IconData icon;
   final String tooltip;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
+
+  /// Variante que recebe a posição global do canto inferior-esquerdo do
+  /// botão — pra ancorar um menu nele.
+  final ValueChanged<Offset>? onTapAt;
 
   @override
   Widget build(BuildContext context) {
@@ -961,7 +967,17 @@ class _IconAction extends StatelessWidget {
       message: tooltip,
       child: HoverTap(
         borderRadius: BorderRadius.circular(5),
-        onTap: onTap,
+        onTap: () {
+          if (onTapAt != null) {
+            final box = context.findRenderObject() as RenderBox?;
+            final pos = box == null
+                ? Offset.zero
+                : box.localToGlobal(Offset(0, box.size.height));
+            onTapAt!(pos);
+          } else {
+            onTap!();
+          }
+        },
         child: SizedBox(
           width: 28,
           height: 28,
@@ -1213,7 +1229,7 @@ class _NoteColumn extends StatelessWidget {
   final void Function(String prefix, {bool numbered}) onPrefix;
   final ValueChanged<String> onInsert;
   final VoidCallback onLink;
-  final VoidCallback onNoteLink;
+  final ValueChanged<Offset> onNoteLink;
   final VoidCallback onPickImage;
   final List<NotebookNote> linkSuggestions;
   final ValueChanged<String> onCompleteLink;
@@ -1452,7 +1468,7 @@ class _FormatBar extends StatelessWidget {
   final void Function(String prefix, {bool numbered}) onPrefix;
   final ValueChanged<String> onInsert;
   final VoidCallback onLink;
-  final VoidCallback onNoteLink;
+  final ValueChanged<Offset> onNoteLink;
   final VoidCallback onPickImage;
 
   @override
@@ -1546,7 +1562,7 @@ class _FormatBar extends StatelessWidget {
           _IconAction(
             icon: Icons.description_outlined,
             tooltip: tr.noteLink,
-            onTap: onNoteLink,
+            onTapAt: onNoteLink,
           ),
           _IconAction(
             icon: Icons.image_outlined,
