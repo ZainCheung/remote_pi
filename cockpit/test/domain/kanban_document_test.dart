@@ -418,6 +418,53 @@ um parágrafo solto
     });
   });
 
+  group('fim de linha (Windows)', () {
+    const crlf = '## A\r\n\r\n- [ ] um card <!-- id: k1 -->\r\n\r\n## B\r\n';
+
+    test('arquivo CRLF continua CRLF depois de editar', () {
+      final doc = KanbanDocument.parse(crlf);
+      expect(doc.eol, '\r\n');
+      expect(doc.columns.map((c) => c.name), ['A', 'B']);
+
+      // Sem preservar o terminador, mover UM card reescreveria todas as linhas
+      // do arquivo — o oposto da emenda de três linhas que o formato promete.
+      final after = KanbanEditor.advanceCard(doc, doc.columns[0].cards.single);
+      expect(after.contains('\r\n'), isTrue);
+      expect(after.contains(RegExp('(?<!\r)\n')), isFalse);
+      expect(
+        KanbanDocument.parse(after).columns[1].cards.single.title,
+        'um card',
+      );
+    });
+
+    test('arquivo LF continua LF', () {
+      final doc = KanbanDocument.parse(_board);
+      expect(doc.eol, '\n');
+      final after = KanbanEditor.addCard(doc, 0, 'novo');
+      expect(after.contains('\r'), isFalse);
+    });
+
+    test('CRLF sobrevive a nota, comentário e frontmatter', () {
+      var doc = KanbanDocument.parse(crlf);
+      final card = doc.columns[0].cards.single;
+
+      for (final content in [
+        KanbanEditor.setCardNotes(doc, card, 'linha 1\nlinha 2'),
+        KanbanEditor.addComment(doc, card, 'oi', now: DateTime(2026, 1, 1)),
+        KanbanEditor.setBoardTitle(doc, 'Quadro'),
+        KanbanEditor.upsertLabel(doc, 'bug', KanbanLabelColor.red),
+      ]) {
+        expect(content.contains(RegExp('(?<!\r)\n')), isFalse, reason: content);
+      }
+
+      // E o conteúdo continua íntegro depois de reparsear.
+      doc = KanbanDocument.parse(
+        KanbanEditor.setCardNotes(doc, card, 'linha 1\nlinha 2'),
+      );
+      expect(doc.columns[0].cards.single.notes, 'linha 1\nlinha 2');
+    });
+  });
+
   group('título do quadro', () {
     test('lê do frontmatter, com ou sem aspas', () {
       expect(

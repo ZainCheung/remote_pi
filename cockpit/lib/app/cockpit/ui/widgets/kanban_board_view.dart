@@ -5,6 +5,7 @@ import 'package:cockpit/app/cockpit/ui/session/file_viewer_session.dart';
 import 'package:cockpit/app/core/ui/themes/themes.dart';
 import 'package:cockpit/app/core/ui/widgets/app_menu.dart';
 import 'package:cockpit/app/core/ui/widgets/hover_tap.dart';
+import 'package:cockpit/app/core/utils/path_utils.dart';
 import 'package:cockpit/app/core/utils/user_home.dart';
 import 'package:cockpit/i18n/strings.g.dart';
 import 'package:flutter/gestures.dart'
@@ -2123,21 +2124,19 @@ Color kanbanLabelColor(BuildContext context, KanbanLabelColor color) {
 /// workspace, e a partir de `~` quando está fora dele mas dentro da pasta do
 /// usuário. Só cai no caminho absoluto cru quando não é nenhum dos dois.
 ///
-/// A comparação normaliza `\` para `/` por causa do Windows, mas o corte é
-/// feito na string original — o separador exibido continua o do sistema.
+/// Usa o [relativeUnder] do core em vez de comparar strings aqui: é ele que
+/// normaliza `\` para `/`, e foi criado justamente porque no Windows o
+/// `dart:io` devolve caminho nativo e as comparações davam falso.
 String kanbanDisplayPath(String path, String workspaceRoot) {
-  String norm(String p) => p.replaceAll(r'\', '/');
-  final target = norm(path);
-
-  final root = norm(workspaceRoot);
-  if (root.isNotEmpty && target.startsWith('$root/')) {
-    return path.substring(workspaceRoot.length + 1);
+  if (workspaceRoot.isNotEmpty) {
+    final relative = relativeUnder(path, workspaceRoot);
+    if (relative.isNotEmpty) return relative;
   }
 
   final home = userHome();
   if (home != null && home.isNotEmpty) {
-    final h = norm(home);
-    if (target.startsWith('$h/')) return '~/${path.substring(home.length + 1)}';
+    final relative = relativeUnder(path, home);
+    if (relative.isNotEmpty) return '~/$relative';
   }
   return path;
 }

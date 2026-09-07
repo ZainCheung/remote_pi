@@ -522,6 +522,20 @@ void main() {
       expect(kanbanDisplayPath('/fora/a.kanban', ''), '/fora/a.kanban');
     });
 
+    test('caminho do Windows com barra invertida', () {
+      // No Windows o `dart:io` devolve caminho nativo; o `relativeUnder`
+      // normaliza os dois lados, então o relativo sai certo mesmo assim.
+      expect(
+        kanbanDisplayPath(r'C:\proj\docs\a.kanban', r'C:\proj'),
+        'docs/a.kanban',
+      );
+      expect(kanbanDisplayPath(r'C:\proj\a.kanban', 'C:/proj'), 'a.kanban');
+      expect(
+        kanbanDisplayPath(r'D:\fora\a.kanban', r'C:\proj'),
+        r'D:\fora\a.kanban',
+      );
+    });
+
     test('prefixo parecido não conta como dentro', () {
       // `/repo-outro` não está sob `/repo`.
       expect(

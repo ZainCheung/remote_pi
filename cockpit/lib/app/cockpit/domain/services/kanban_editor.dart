@@ -51,7 +51,7 @@ abstract final class KanbanEditor {
     if (insertAt > card.startLine) insertAt -= (end - card.startLine);
     insertAt = insertAt.clamp(0, lines.length);
     lines.insertAll(insertAt, block);
-    return lines.join('\n');
+    return lines.join(doc.eol);
   }
 
   /// Empurra o card uma coluna adiante. Na última, volta uma — o mesmo botão
@@ -75,7 +75,7 @@ abstract final class KanbanEditor {
         '<!-- id: ${_newId(doc)} -->';
     final at = _appendPoint(doc, doc.columns[column]).clamp(0, lines.length);
     lines.insertAll(at, [line, '']);
-    return lines.join('\n');
+    return lines.join(doc.eol);
   }
 
   static String deleteCard(KanbanDocument doc, KanbanCard card) {
@@ -83,7 +83,7 @@ abstract final class KanbanEditor {
     var end = card.endLine;
     if (end < lines.length && lines[end].trim().isEmpty) end++;
     lines.removeRange(card.startLine, end);
-    return lines.join('\n');
+    return lines.join(doc.eol);
   }
 
   static String duplicateCard(KanbanDocument doc, KanbanCard card) {
@@ -93,7 +93,7 @@ abstract final class KanbanEditor {
       block[0] = _headerLine(card, checked: card.checked, id: _newId(doc));
     }
     lines.insertAll(card.endLine, [...block, '']);
-    return lines.join('\n');
+    return lines.join(doc.eol);
   }
 
   static String setCardTitle(
@@ -111,7 +111,7 @@ abstract final class KanbanEditor {
       id: card.id ?? _newId(doc),
       title: trimmed,
     );
-    return lines.join('\n');
+    return lines.join(doc.eol);
   }
 
   /// Reescreve a nota do card, indentada em 6 espaços (alinhada sob o título).
@@ -128,7 +128,7 @@ abstract final class KanbanEditor {
         : body.split('\n').map((l) => l.isEmpty ? '' : '      $l').toList();
     // Só o intervalo da NOTA: os comentários vivem depois dela, no mesmo card.
     lines.replaceRange(card.startLine + 1, card.notesEndLine, replacement);
-    return lines.join('\n');
+    return lines.join(doc.eol);
   }
 
   /// Liga/desliga [label] no card.
@@ -143,7 +143,7 @@ abstract final class KanbanEditor {
       id: card.id ?? _newId(doc),
       labels: labels,
     );
-    return lines.join('\n');
+    return lines.join(doc.eol);
   }
 
   // ----------------------------------------------------------- colunas -----
@@ -154,7 +154,7 @@ abstract final class KanbanEditor {
       lines.removeLast();
     }
     lines.addAll(['', '## ${name.trim()}', '']);
-    return lines.join('\n');
+    return lines.join(doc.eol);
   }
 
   static String renameColumn(KanbanDocument doc, int index, String name) {
@@ -163,7 +163,7 @@ abstract final class KanbanEditor {
     if (trimmed.isEmpty) return doc.content;
     final lines = [...doc.lines];
     lines[doc.columns[index].headingLine] = '## $trimmed';
-    return lines.join('\n');
+    return lines.join(doc.eol);
   }
 
   /// Troca a coluna [index] de lugar com a vizinha em [delta] (-1 / +1).
@@ -182,7 +182,7 @@ abstract final class KanbanEditor {
       ...secondBlock,
       ...firstBlock,
     ]);
-    return lines.join('\n');
+    return lines.join(doc.eol);
   }
 
   /// Apaga a coluna [index]. Com [moveCardsToPrevious], os cards vão para a
@@ -214,7 +214,7 @@ abstract final class KanbanEditor {
     final column = doc.columns[index];
     final lines = [...doc.lines];
     lines.removeRange(column.headingLine, column.endLine);
-    return lines.join('\n');
+    return lines.join(doc.eol);
   }
 
   /// Acrescenta um comentário ao card. Entra no TOPO da conversa (logo após a
@@ -239,7 +239,7 @@ abstract final class KanbanEditor {
 
     final lines = [...doc.lines];
     lines.insertAll(card.notesEndLine, block);
-    return lines.join('\n');
+    return lines.join(doc.eol);
   }
 
   /// Remove um comentário do card.
@@ -250,7 +250,7 @@ abstract final class KanbanEditor {
   ) {
     final lines = [...doc.lines];
     lines.removeRange(comment.startLine, comment.endLine);
-    return lines.join('\n');
+    return lines.join(doc.eol);
   }
 
   // ------------------------------------------------------------ quadro -----
@@ -330,12 +330,12 @@ abstract final class KanbanEditor {
       } else if (line != null) {
         lines.insert(doc.frontmatterEnd - 1, line);
       }
-      return lines.join('\n');
+      return lines.join(doc.eol);
     }
 
     if (line == null) return doc.content;
     lines.insertAll(0, ['---', line, '---', '']);
-    return lines.join('\n');
+    return lines.join(doc.eol);
   }
 
   // ---------------------------------------------------------- internos -----

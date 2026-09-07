@@ -138,6 +138,7 @@ class KanbanDocument {
     required this.labelColors,
     required this.frontmatterEnd,
     this.title,
+    this.eol = '\n',
   });
 
   /// O arquivo inteiro, linha a linha — a fonte de verdade das emendas.
@@ -152,6 +153,13 @@ class KanbanDocument {
   /// Linha logo após o `---` de fechamento; 0 quando não há frontmatter.
   final int frontmatterEnd;
 
+  /// Terminador de linha do arquivo original (`\n` ou `\r\n`).
+  ///
+  /// Preservá-lo é o que mantém a promessa do formato no Windows: sem isto, um
+  /// arquivo CRLF virava LF na PRIMEIRA edição e mover um card produzia um diff
+  /// tocando todas as linhas — exatamente o oposto da emenda de três linhas.
+  final String eol;
+
   /// Nome do quadro (`title:` no frontmatter), quando houver. É o rótulo que a
   /// aba mostra — mora no arquivo, e não só no layout, pra viajar com ele no
   /// git e reaparecer em qualquer máquina que o abra.
@@ -159,7 +167,7 @@ class KanbanDocument {
 
   bool get isBoard => columns.isNotEmpty;
 
-  String get content => lines.join('\n');
+  String get content => lines.join(eol);
 
   /// Todos os marcadores em uso, na ordem em que aparecem no frontmatter e
   /// depois os que só existem nos cards.
@@ -195,6 +203,12 @@ class KanbanDocument {
   static final _commentMark = RegExp(r'^\s*<!--\s*comment:\s*(.*?)\s*-->\s*$');
 
   static KanbanDocument parse(String content) {
+    // O terminador do arquivo é o do PRIMEIRO fim de linha — o que ele usa de
+    // fato. Depois disso trabalhamos só com `\n` internamente.
+    final firstBreak = content.indexOf('\n');
+    final eol = (firstBreak > 0 && content[firstBreak - 1] == '\r')
+        ? '\r\n'
+        : '\n';
     final lines = content.replaceAll('\r\n', '\n').split('\n');
     final frontmatterEnd = _frontmatterEnd(lines);
     final labelColors = _parseLabelColors(lines, frontmatterEnd);
@@ -231,6 +245,7 @@ class KanbanDocument {
       labelColors: labelColors,
       frontmatterEnd: frontmatterEnd,
       title: title,
+      eol: eol,
     );
   }
 
