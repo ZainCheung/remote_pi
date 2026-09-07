@@ -98,6 +98,8 @@ class _NotebookViewState extends State<NotebookView> {
       ..addListener(_onEdited)
       ..onWikiLink = _openLinkedNote;
     _titleCtrl.addListener(_onTitleEdited);
+    // Filtro segue o controller (o botão limpar zera o texto sem onChanged).
+    _search.addListener(_onSearchChanged);
     _load();
     // Nota escrita pelo agente (ou pelo Obsidian) aparece sozinha.
     _watch = _vm.watchFolder(widget.session.path).listen((_) {
@@ -116,7 +118,9 @@ class _NotebookViewState extends State<NotebookView> {
       ..removeListener(_onEdited)
       ..dispose();
     _editorFocus.dispose();
-    _search.dispose();
+    _search
+      ..removeListener(_onSearchChanged)
+      ..dispose();
     _tagInput.dispose();
     _titleAutosave?.cancel();
     _titleCtrl
@@ -283,6 +287,10 @@ class _NotebookViewState extends State<NotebookView> {
       final path = f.path;
       if (path != null) await _addImageFile(path);
     }
+  }
+
+  void _onSearchChanged() {
+    if (_search.text != _query) setState(() => _query = _search.text);
   }
 
   /// Título: mesmo debounce do corpo; grava quando parar de digitar.
@@ -917,7 +925,6 @@ class _NotebookViewState extends State<NotebookView> {
                         onMenu: _noteMenu,
                         onTagMenu: _tagMenu,
                         search: _search,
-                        onQuery: (q) => setState(() => _query = q),
                       ),
                     ),
                   if (!_listCollapsed)
@@ -1097,7 +1104,6 @@ class _NotesColumn extends StatelessWidget {
     required this.onMenu,
     required this.onTagMenu,
     required this.search,
-    required this.onQuery,
   });
 
   final List<(String, List<NotebookNote>)> groups;
@@ -1110,7 +1116,6 @@ class _NotesColumn extends StatelessWidget {
   final void Function(NotebookNote, Offset) onMenu;
   final void Function(String, Offset) onTagMenu;
   final TextEditingController search;
-  final ValueChanged<String> onQuery;
 
   @override
   Widget build(BuildContext context) {
@@ -1126,11 +1131,12 @@ class _NotesColumn extends StatelessWidget {
             height: 28,
             child: TextField(
               controller: search,
-              onChanged: onQuery,
               placeholder: Text(tr.searchPlaceholder),
               features: const [
                 InputFeature.leading(Icon(Icons.search, size: 14)),
-                InputFeature.clear(),
+                InputFeature.clear(
+                  visibility: InputFeatureVisibility.textNotEmpty,
+                ),
               ],
               style: context.typo.label.copyWith(color: colors.text),
               border: Border.all(color: colors.border),
