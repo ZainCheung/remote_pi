@@ -2513,12 +2513,6 @@ class Translations$cockpit$notebook$en {
 	/// en: 'Select a note'
 	String get selectNote => 'Select a note';
 
-	/// en: 'Edit'
-	String get edit => 'Edit';
-
-	/// en: 'Preview'
-	String get preview => 'Preview';
-
 	/// en: 'Reload from disk'
 	String get reload => 'Reload from disk';
 
@@ -4740,8 +4734,6 @@ extension on Translations {
 			'cockpit.notebook.empty' => 'No notes yet. Create one, or ask the agent to write here.',
 			'cockpit.notebook.noMatch' => 'No note matches.',
 			'cockpit.notebook.selectNote' => 'Select a note',
-			'cockpit.notebook.edit' => 'Edit',
-			'cockpit.notebook.preview' => 'Preview',
 			'cockpit.notebook.reload' => 'Reload from disk',
 			'cockpit.notebook.untagged' => 'untagged',
 			'cockpit.notebook.noteCount' => ({required Object count}) => '${count} notes',
@@ -5099,10 +5091,10 @@ extension on Translations {
 			'fileOperation.error.alreadyExists' => ({required Object name}) => 'Already exists: “${name}”.',
 			'fileOperation.error.notFound' => ({required Object name}) => 'Not found: “${name}”.',
 			'fileOperation.error.invalidPath' => 'Invalid path.',
-			_ => null,
-		} ?? switch (path) {
 			'fileOperation.error.emptyName' => 'The name cannot be empty.',
 			'fileOperation.error.noWorkspace' => 'No workspace selected.',
+			_ => null,
+		} ?? switch (path) {
 			'fileOperation.error.cannotMoveIntoItself' => 'Cannot move a folder into itself.',
 			'fileOperation.error.clipboardEmpty' => 'Clipboard is empty.',
 			'fileOperation.error.notScratchTab' => 'This tab is not a scratch file.',

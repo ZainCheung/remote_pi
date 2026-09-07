@@ -1236,8 +1236,6 @@ class _Translations$cockpit$notebook$pt_BR extends Translations$cockpit$notebook
 	@override String get empty => 'Nenhuma nota ainda. Crie uma, ou peça pro agente escrever aqui.';
 	@override String get noMatch => 'Nenhuma nota bate com o filtro.';
 	@override String get selectNote => 'Selecione uma nota';
-	@override String get edit => 'Editar';
-	@override String get preview => 'Preview';
 	@override String get reload => 'Recarregar do disco';
 	@override String get untagged => 'sem tag';
 	@override String noteCount({required Object count}) => '${count} notas';
@@ -2638,8 +2636,6 @@ extension on TranslationsPtBr {
 			'cockpit.notebook.empty' => 'Nenhuma nota ainda. Crie uma, ou peça pro agente escrever aqui.',
 			'cockpit.notebook.noMatch' => 'Nenhuma nota bate com o filtro.',
 			'cockpit.notebook.selectNote' => 'Selecione uma nota',
-			'cockpit.notebook.edit' => 'Editar',
-			'cockpit.notebook.preview' => 'Preview',
 			'cockpit.notebook.reload' => 'Recarregar do disco',
 			'cockpit.notebook.untagged' => 'sem tag',
 			'cockpit.notebook.noteCount' => ({required Object count}) => '${count} notas',
@@ -2997,10 +2993,10 @@ extension on TranslationsPtBr {
 			'fileOperation.error.alreadyExists' => ({required Object name}) => 'Já existe: “${name}”.',
 			'fileOperation.error.notFound' => ({required Object name}) => 'Não encontrado: “${name}”.',
 			'fileOperation.error.invalidPath' => 'Caminho inválido.',
-			_ => null,
-		} ?? switch (path) {
 			'fileOperation.error.emptyName' => 'O nome não pode ficar vazio.',
 			'fileOperation.error.noWorkspace' => 'Nenhum workspace selecionado.',
+			_ => null,
+		} ?? switch (path) {
 			'fileOperation.error.cannotMoveIntoItself' => 'Não é possível mover uma pasta para dentro dela mesma.',
 			'fileOperation.error.clipboardEmpty' => 'A área de transferência está vazia.',
 			'fileOperation.error.notScratchTab' => 'Esta aba não é um arquivo temporário.',

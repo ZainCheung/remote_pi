@@ -800,8 +800,6 @@
       "empty": "Nenhuma nota ainda. Crie uma, ou peça pro agente escrever aqui.",
       "noMatch": "Nenhuma nota bate com o filtro.",
       "selectNote": "Selecione uma nota",
-      "edit": "Editar",
-      "preview": "Preview",
       "reload": "Recarregar do disco",
       "untagged": "sem tag",
       "noteCount": "${count} notas",

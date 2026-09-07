@@ -800,8 +800,6 @@
       "empty": "No notes yet. Create one, or ask the agent to write here.",
       "noMatch": "No note matches.",
       "selectNote": "Select a note",
-      "edit": "Edit",
-      "preview": "Preview",
       "reload": "Reload from disk",
       "untagged": "untagged",
       "noteCount": "${count} notes",

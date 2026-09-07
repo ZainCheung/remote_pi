@@ -5,7 +5,6 @@ import 'dart:typed_data';
 import 'package:cockpit/app/cockpit/domain/entities/notebook_document.dart';
 import 'package:cockpit/app/cockpit/ui/session/notebook_session.dart';
 import 'package:cockpit/app/cockpit/ui/viewmodels/cockpit_viewmodel.dart';
-import 'package:cockpit/app/cockpit/ui/widgets/agent_markdown.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/confirm_dialog.dart';
 import 'package:cockpit/app/core/domain/result.dart';
 import 'package:cockpit/app/core/ui/file_operation_error_message.dart';
@@ -57,9 +56,6 @@ class _NotebookViewState extends State<NotebookView> {
   final FocusNode _titleFocus = FocusNode(debugLabel: 'notebookTitle');
   String _query = '';
 
-  /// `true` (padrão) = editor markdown ao vivo; `false` = leitura renderizada
-  /// (imagens visíveis). Um só modo de escrita — não há "entrar em edição".
-  bool _editing = true;
   bool _dirty = false;
   bool _saving = false;
   final MarkdownEditingController _editor = MarkdownEditingController();
@@ -159,7 +155,7 @@ class _NotebookViewState extends State<NotebookView> {
         _selectedPath = notes.first.path;
       }
       // Edição em curso não é sobrescrita por um reload do disco.
-      if (!(_editing && _dirty)) _syncEditor();
+      if (!_dirty) _syncEditor();
     });
   }
 
@@ -219,9 +215,7 @@ class _NotebookViewState extends State<NotebookView> {
   Future<void> _setTags(List<String> tags) async {
     final sel = _selected;
     if (sel == null || _saving) return;
-    final base = _editing
-        ? NotebookNote.replaceBody(sel.raw, _editor.text)
-        : sel.raw;
+    final base = NotebookNote.replaceBody(sel.raw, _editor.text);
     setState(() => _saving = true);
     final content = NotebookNote.touchUpdated(
       NotebookNote.setTags(base, tags),
@@ -302,9 +296,7 @@ class _NotebookViewState extends State<NotebookView> {
       _titleCtrl.text = sel.title;
       return;
     }
-    final base = _editing
-        ? NotebookNote.replaceBody(sel.raw, _editor.text)
-        : sel.raw;
+    final base = NotebookNote.replaceBody(sel.raw, _editor.text);
     setState(() => _saving = true);
     final content = NotebookNote.touchUpdated(
       NotebookNote.setTitle(base, title),
@@ -389,7 +381,6 @@ class _NotebookViewState extends State<NotebookView> {
       return;
     }
     _selectedPath = path;
-    _editing = true;
     await _load();
     if (mounted) _focusTitle();
   }
@@ -400,7 +391,6 @@ class _NotebookViewState extends State<NotebookView> {
   /// no meio). Já envolvida → remove (toggle).
   void _wrap(String left, [String? right]) {
     right ??= left;
-    if (!_editing) setState(() => _editing = true);
     final t = _editor.text;
     var sel = _editor.selection;
     if (!sel.isValid) sel = TextSelection.collapsed(offset: t.length);
@@ -447,7 +437,6 @@ class _NotebookViewState extends State<NotebookView> {
   /// Prefixa cada linha da seleção com [prefix] (títulos, listas, citação).
   /// Linhas já prefixadas perdem o prefixo (toggle). [numbered] gera `1. 2.`.
   void _prefixLines(String prefix, {bool numbered = false}) {
-    if (!_editing) setState(() => _editing = true);
     final t = _editor.text;
     var sel = _editor.selection;
     if (!sel.isValid) sel = TextSelection.collapsed(offset: t.length);
@@ -495,7 +484,6 @@ class _NotebookViewState extends State<NotebookView> {
   }
 
   void _insertAtCursor(String snippet) {
-    if (!_editing) setState(() => _editing = true);
     final t = _editor.text;
     var sel = _editor.selection;
     if (!sel.isValid) sel = TextSelection.collapsed(offset: t.length);
@@ -652,7 +640,6 @@ class _NotebookViewState extends State<NotebookView> {
                   Expanded(
                     child: _NoteColumn(
                       note: _selected,
-                      editing: _editing,
                       dirty: _dirty,
                       saving: _saving,
                       editor: _editor,
@@ -661,14 +648,9 @@ class _NotebookViewState extends State<NotebookView> {
                       titleCtrl: _titleCtrl,
                       titleFocus: _titleFocus,
                       onCommitTitle: _commitTitle,
-                      onToggleEdit: () => setState(() {
-                        _editing = !_editing;
-                        if (_editing) _editorFocus.requestFocus();
-                      }),
                       onSave: _save,
                       onAddTag: _addTag,
                       onRemoveTag: _removeTag,
-                      imageBaseDir: widget.session.path,
                       onDrop: _onDropFiles,
                       onPaste: _pasteIntoEditor,
                       onWrap: _wrap,
@@ -782,12 +764,10 @@ class _IconAction extends StatelessWidget {
     required this.icon,
     required this.tooltip,
     required this.onTap,
-    this.selected = false,
   });
   final IconData icon;
   final String tooltip;
   final VoidCallback onTap;
-  final bool selected;
 
   @override
   Widget build(BuildContext context) {
@@ -795,17 +775,12 @@ class _IconAction extends StatelessWidget {
     return AppTooltip(
       message: tooltip,
       child: HoverTap(
-        color: selected ? colors.panel2 : Colors.transparent,
         borderRadius: BorderRadius.circular(5),
         onTap: onTap,
         child: SizedBox(
           width: 28,
           height: 28,
-          child: Icon(
-            icon,
-            size: 15,
-            color: selected ? colors.text : colors.text3,
-          ),
+          child: Icon(icon, size: 15, color: colors.text3),
         ),
       ),
     );
@@ -1010,7 +985,6 @@ class _NoteRow extends StatelessWidget {
 class _NoteColumn extends StatelessWidget {
   const _NoteColumn({
     required this.note,
-    required this.editing,
     required this.dirty,
     required this.saving,
     required this.editor,
@@ -1019,11 +993,9 @@ class _NoteColumn extends StatelessWidget {
     required this.titleCtrl,
     required this.titleFocus,
     required this.onCommitTitle,
-    required this.onToggleEdit,
     required this.onSave,
     required this.onAddTag,
     required this.onRemoveTag,
-    required this.imageBaseDir,
     required this.onDrop,
     required this.onPaste,
     required this.onWrap,
@@ -1033,7 +1005,6 @@ class _NoteColumn extends StatelessWidget {
   });
 
   final NotebookNote? note;
-  final bool editing;
   final bool dirty;
   final bool saving;
   final MarkdownEditingController editor;
@@ -1042,11 +1013,9 @@ class _NoteColumn extends StatelessWidget {
   final TextEditingController titleCtrl;
   final FocusNode titleFocus;
   final VoidCallback onCommitTitle;
-  final VoidCallback onToggleEdit;
   final VoidCallback onSave;
   final ValueChanged<String> onAddTag;
   final ValueChanged<String> onRemoveTag;
-  final String imageBaseDir;
   final ValueChanged<List<DropItem>> onDrop;
   final VoidCallback onPaste;
   final void Function(String left, [String? right]) onWrap;
@@ -1109,67 +1078,50 @@ class _NoteColumn extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 4),
-              _IconAction(
-                icon: editing ? Icons.visibility_outlined : Icons.edit_outlined,
-                tooltip: editing ? tr.preview : tr.edit,
-                selected: editing,
-                onTap: onToggleEdit,
-              ),
             ],
           ),
         ),
         Divider(height: 1, color: colors.border),
-        if (editing)
-          _FormatBar(
-            onWrap: onWrap,
-            onPrefix: onPrefix,
-            onInsert: onInsert,
-            onLink: onLink,
-          ),
+        _FormatBar(
+          onWrap: onWrap,
+          onPrefix: onPrefix,
+          onInsert: onInsert,
+          onLink: onLink,
+        ),
         Expanded(
           child: DropTarget(
             onDragDone: (d) => onDrop(d.files),
-            child: editing
-                ? CallbackShortcuts(
-                    bindings: {
-                      const SingleActivator(
-                        LogicalKeyboardKey.keyV,
-                        meta: true,
-                      ): onPaste,
-                      const SingleActivator(
-                        LogicalKeyboardKey.keyV,
-                        control: true,
-                      ): onPaste,
-                    },
-                    // Material sem decoração (mesma razão do título). O
-                    // controller pinta o markdown ao vivo.
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-                      child: material.TextField(
-                        controller: editor,
-                        focusNode: editorFocus,
-                        maxLines: null,
-                        expands: true,
-                        textAlignVertical: TextAlignVertical.top,
-                        keyboardType: TextInputType.multiline,
-                        cursorColor: colors.text,
-                        style: context.typo.body.copyWith(
-                          color: colors.text,
-                          height: 1.55,
-                        ),
-                        decoration: const material.InputDecoration(
-                          isCollapsed: true,
-                          border: material.InputBorder.none,
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                      ),
-                    ),
-                  )
-                : SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-                    child: AgentMarkdown(n.body, imageBaseDir: imageBaseDir),
+            child: CallbackShortcuts(
+              bindings: {
+                const SingleActivator(LogicalKeyboardKey.keyV, meta: true):
+                    onPaste,
+                const SingleActivator(LogicalKeyboardKey.keyV, control: true):
+                    onPaste,
+              },
+              // Material sem decoração (mesma razão do título). O controller
+              // pinta o markdown ao vivo — um só modo, sem preview separado.
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                child: material.TextField(
+                  controller: editor,
+                  focusNode: editorFocus,
+                  maxLines: null,
+                  expands: true,
+                  textAlignVertical: TextAlignVertical.top,
+                  keyboardType: TextInputType.multiline,
+                  cursorColor: colors.text,
+                  style: context.typo.body.copyWith(
+                    color: colors.text,
+                    height: 1.55,
                   ),
+                  decoration: const material.InputDecoration(
+                    isCollapsed: true,
+                    border: material.InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
         // Rodapé: tags da nota (múltiplas), com remover e adicionar inline.
