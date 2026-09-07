@@ -52,7 +52,6 @@ class _NotebookViewState extends State<NotebookView> {
   final TextEditingController _tagInput = TextEditingController();
   final TextEditingController _titleCtrl = TextEditingController();
   final FocusNode _titleFocus = FocusNode(debugLabel: 'notebookTitle');
-  bool _editingTitle = false;
   String _query = '';
   bool _editing = false;
   bool _dirty = false;
@@ -152,6 +151,9 @@ class _NotebookViewState extends State<NotebookView> {
     final sel = _selected;
     _editor.text = sel?.raw ?? '';
     _dirty = false;
+    // O título é sempre um campo; só realinha com o disco quando o usuário
+    // não está digitando nele.
+    if (!_titleFocus.hasFocus) _titleCtrl.text = sel?.title ?? '';
   }
 
   Future<void> _select(NotebookNote n) async {
@@ -170,7 +172,6 @@ class _NotebookViewState extends State<NotebookView> {
     setState(() {
       _selectedPath = n.path;
       _editing = false;
-      _editingTitle = false;
       _syncEditor();
     });
   }
@@ -269,7 +270,9 @@ class _NotebookViewState extends State<NotebookView> {
     await _load();
   }
 
-  void _startTitleEdit() {
+  /// Foca o título com tudo selecionado (nota nova: digita por cima de
+  /// "Untitled").
+  void _focusTitle() {
     final sel = _selected;
     if (sel == null) return;
     _titleCtrl.text = sel.title;
@@ -277,16 +280,18 @@ class _NotebookViewState extends State<NotebookView> {
       baseOffset: 0,
       extentOffset: _titleCtrl.text.length,
     );
-    setState(() => _editingTitle = true);
     _titleFocus.requestFocus();
   }
 
+  /// Enter ou perder o foco grava o título (uma linha; Enter não quebra).
   Future<void> _commitTitle() async {
     final sel = _selected;
-    if (!_editingTitle) return;
-    setState(() => _editingTitle = false);
     final title = _titleCtrl.text.trim();
-    if (sel == null || title.isEmpty || title == sel.title || _saving) return;
+    if (sel == null || _saving) return;
+    if (title.isEmpty || title == sel.title) {
+      _titleCtrl.text = sel.title;
+      return;
+    }
     final base = _editing ? _editor.text : sel.raw;
     setState(() => _saving = true);
     final content = NotebookNote.touchUpdated(
@@ -371,7 +376,7 @@ class _NotebookViewState extends State<NotebookView> {
     _selectedPath = path;
     _editing = false;
     await _load();
-    if (mounted) _startTitleEdit();
+    if (mounted) _focusTitle();
   }
 
   @override
@@ -425,8 +430,6 @@ class _NotebookViewState extends State<NotebookView> {
                       tagInput: _tagInput,
                       titleCtrl: _titleCtrl,
                       titleFocus: _titleFocus,
-                      editingTitle: _editingTitle,
-                      onStartTitleEdit: _startTitleEdit,
                       onCommitTitle: _commitTitle,
                       onToggleEdit: () => setState(() {
                         _editing = !_editing;
@@ -778,8 +781,6 @@ class _NoteColumn extends StatelessWidget {
     required this.tagInput,
     required this.titleCtrl,
     required this.titleFocus,
-    required this.editingTitle,
-    required this.onStartTitleEdit,
     required this.onCommitTitle,
     required this.onToggleEdit,
     required this.onSave,
@@ -796,8 +797,6 @@ class _NoteColumn extends StatelessWidget {
   final TextEditingController tagInput;
   final TextEditingController titleCtrl;
   final FocusNode titleFocus;
-  final bool editingTitle;
-  final VoidCallback onStartTitleEdit;
   final VoidCallback onCommitTitle;
   final VoidCallback onToggleEdit;
   final VoidCallback onSave;
@@ -830,44 +829,32 @@ class _NoteColumn extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (editingTitle)
-                      Focus(
-                        onFocusChange: (has) {
-                          if (!has) onCommitTitle();
-                        },
-                        // Material sem decoração: o TextField do shadcn
-                        // sempre desenha anel de foco + fundo, e aqui o
-                        // título tem que parecer texto puro em edição.
-                        child: material.TextField(
-                          controller: titleCtrl,
-                          focusNode: titleFocus,
-                          maxLines: 1,
-                          cursorColor: colors.text,
-                          style: context.typo.label.copyWith(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: colors.text,
-                          ),
-                          decoration: const material.InputDecoration(
-                            isCollapsed: true,
-                            border: material.InputBorder.none,
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                          onSubmitted: (_) => onCommitTitle(),
+                    Focus(
+                      onFocusChange: (has) {
+                        if (!has) onCommitTitle();
+                      },
+                      // Sempre um campo (sem alternar texto ↔ campo). Material
+                      // sem decoração: o TextField do shadcn sempre desenha
+                      // anel de foco + fundo. Uma linha: Enter grava, não
+                      // quebra; título longo rola horizontalmente.
+                      child: material.TextField(
+                        controller: titleCtrl,
+                        focusNode: titleFocus,
+                        maxLines: 1,
+                        cursorColor: colors.text,
+                        style: context.typo.label.copyWith(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: colors.text,
                         ),
-                      )
-                    else
-                      HoverTap(
-                        onTap: onStartTitleEdit,
-                        child: Text(
-                          n.title,
-                          style: context.typo.label.copyWith(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: colors.text,
-                          ),
+                        decoration: const material.InputDecoration(
+                          isCollapsed: true,
+                          border: material.InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
                         ),
+                        onSubmitted: (_) => onCommitTitle(),
                       ),
+                    ),
                   ],
                 ),
               ),
