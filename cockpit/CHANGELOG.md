@@ -24,6 +24,24 @@ As versões seguem o `version:` do `pubspec.yaml` (SSOT). O campo `notes` do
     linhas não-vazias — o começo da seção deve fazer sentido sozinho.
 -->
 
+## [1.28.25] - 2026-09-09
+
+**Still a beta for the upcoming 2.0.0.** Switching tabs is instant again.
+
+### Fixed
+
+- **Tab switching no longer lags.** Clicking a tab took about 300 ms to take
+  effect because the tab waited to rule out a double-click first. Double-click
+  still pins a preview, renames a tab on desktop and opens the tab menu on
+  mobile, but a single click selects the tab right away.
+
+### Changed
+
+- **Terminal tabs keep their view alive while hidden.** Going back to a
+  terminal tab no longer rebuilds its renderer from scratch, and all terminals
+  share one glyph atlas, so the switch is lighter and the terminal is ready
+  the moment it appears.
+
 ## [1.28.24] - 2026-09-07
 
 **Still a beta for the upcoming 2.0.0.** Two new ways to see what the agent is
