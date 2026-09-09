@@ -580,10 +580,15 @@ class _TabState extends State<_Tab> {
   }
 
   /// Tap na aba: **seleciona na hora** e detecta duplo-clique manualmente pra
-  /// renomear (agentes) ou fixar (preview). Um `DoubleTapGestureRecognizer`
-  /// seguraria a arena de gestos por `kDoubleTapTimeout` (~300ms) antes de cada
-  /// `onTapUp`, atrasando a seleção.
-  void _handleTap() {
+  /// renomear (desktop), fixar (preview) ou abrir o menu (mobile).
+  ///
+  /// NUNCA registre `onDoubleTap` no `GestureDetector` da aba: um
+  /// `DoubleTapGestureRecognizer` na arena faz o tap simples esperar
+  /// `kDoubleTapTimeout` (~300ms) antes de `onTapUp` disparar — a aba só
+  /// "ia" depois desse intervalo, em todo tipo de aba (era o delay percebido
+  /// na troca). Por isso o duplo-clique é resolvido AQUI, por timestamp, sem
+  /// segurar o primeiro clique.
+  void _handleTap(BuildContext menuCtx) {
     final s = widget.item;
     final agent = s is AgentSession ? s : null;
     final viewer = s is FileViewerSession ? s : null;
@@ -598,12 +603,19 @@ class _TabState extends State<_Tab> {
     final last = _lastTapAt;
     _lastTapAt = now;
 
-    // Duplo-clique: renomear agente OU fixar preview.
+    // Duplo-clique: fixar preview, abrir menu (mobile) ou renomear (desktop).
     if (last != null &&
         now.difference(last) < const Duration(milliseconds: 300)) {
       _lastTapAt = null; // consumiu o segundo clique
       if (canPin) {
         viewer.pin();
+        return;
+      }
+      // Mobile: não existe clique direito, então o duplo-toque é o único
+      // caminho até o menu da aba. Desktop: o menu já está a um clique
+      // direito e duplo-clique num rótulo renomeia, como se espera.
+      if (s != null && isMobilePlatform) {
+        _showTabMenu(menuCtx);
         return;
       }
       if (canRename) {
@@ -900,20 +912,11 @@ class _TabState extends State<_Tab> {
         // Builder garante um BuildContext com RenderBox para showAppMenu.
         final interactive = Builder(
           builder: (menuCtx) => GestureDetector(
-            onTapUp: (_) => _handleTap(),
+            onTapUp: (_) => _handleTap(menuCtx),
             onSecondaryTapUp: isEmpty ? null : (_) => _showTabMenu(menuCtx),
             onTertiaryTapUp: (_) => _requestClose(),
-            // Desktop: duplo-clique renomeia a aba direto — o menu já está a
-            // um clique-direito de distância, e renomear é o que se espera de
-            // um duplo-clique num rótulo.
-            //
-            // Mobile mantém o menu: lá não existe clique direito, e o
-            // duplo-toque é o único caminho até ele.
-            onDoubleTap: isEmpty
-                ? null
-                : (isMobilePlatform
-                      ? () => _showTabMenu(menuCtx)
-                      : _startEditing),
+            // Sem `onDoubleTap` aqui — ver [_handleTap]: o reconhecedor de
+            // duplo-clique atrasaria o tap simples em ~300ms.
             child: tabBody,
           ),
         );

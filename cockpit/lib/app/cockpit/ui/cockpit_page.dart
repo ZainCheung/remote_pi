@@ -35,6 +35,7 @@ import 'package:cockpit/app/core/utils/platform_kind.dart';
 import 'package:cockpit/app/cockpit/data/remote/remote_db_writer_impl.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/remote_db_writer.dart';
 import 'package:cockpit/i18n/strings.g.dart';
+import 'package:flterm/flterm.dart' show TerminalScope;
 import 'package:flutter/gestures.dart' show PointerDownEvent, kBackMouseButton;
 import 'package:flutter/services.dart'
     show
@@ -859,26 +860,34 @@ class _CenterPanel extends StatelessWidget {
                 arguments: SettingsTab.remoteHosts,
               ),
             )
-          : IndexedStack(
-              index: _activeIndex(vm),
-              sizing: StackFit.expand,
-              children: [
-                // Um multiplexador por projeto — todos montados, só
-                // o ativo pintado → estado preservado ao trocar.
-                for (final project in vm.projects)
-                  KeyedSubtree(
-                    key: ValueKey(project.id),
-                    child: ColoredBox(
-                      color: colors.border,
-                      child: _multiplexer(
-                        context,
-                        vm,
-                        project.id,
-                        active: project.id == vm.selectedProjectId,
+          // `TerminalScope` na raiz dos workspaces: TODAS as TerminalViews do
+          // flterm compartilham o mesmo pool de atlas de glifos (chave =
+          // tema/fonte/DPR). Sem o scope cada view cria um pool isolado e o
+          // atlas morre junto com ela — trocar de aba pagava o `_preseed`
+          // (rasterizar o ASCII + compor a textura) a cada remount. Aqui o
+          // atlas sobrevive à troca e é reaproveitado por todos os terminais.
+          : TerminalScope(
+              child: IndexedStack(
+                index: _activeIndex(vm),
+                sizing: StackFit.expand,
+                children: [
+                  // Um multiplexador por projeto — todos montados, só
+                  // o ativo pintado → estado preservado ao trocar.
+                  for (final project in vm.projects)
+                    KeyedSubtree(
+                      key: ValueKey(project.id),
+                      child: ColoredBox(
+                        color: colors.border,
+                        child: _multiplexer(
+                          context,
+                          vm,
+                          project.id,
+                          active: project.id == vm.selectedProjectId,
+                        ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
     );
   }
