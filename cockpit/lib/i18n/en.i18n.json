@@ -326,6 +326,7 @@
       "newFile": "New file",
       "newFolder": "New folder",
       "refreshTooltip": "Refresh",
+      "collapseAll": "Collapse all folders",
       "sectionSourceControl": "SOURCE CONTROL",
       "viewAsList": "View as List",
       "viewAsTree": "View as Tree",

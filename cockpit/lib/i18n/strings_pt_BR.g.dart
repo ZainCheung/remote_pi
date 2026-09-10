@@ -632,6 +632,7 @@ class _Translations$cockpit$fileTreePanel$pt_BR extends Translations$cockpit$fil
 	@override String get newFile => 'Novo arquivo';
 	@override String get newFolder => 'Nova pasta';
 	@override String get refreshTooltip => 'Atualizar';
+	@override String get collapseAll => 'Recolher todas as pastas';
 	@override String get sectionSourceControl => 'CONTROLE DE VERSÃO';
 	@override String get viewAsList => 'Ver como lista';
 	@override String get viewAsTree => 'Ver como árvore';
@@ -2259,6 +2260,7 @@ extension on TranslationsPtBr {
 			'cockpit.fileTreePanel.newFile' => 'Novo arquivo',
 			'cockpit.fileTreePanel.newFolder' => 'Nova pasta',
 			'cockpit.fileTreePanel.refreshTooltip' => 'Atualizar',
+			'cockpit.fileTreePanel.collapseAll' => 'Recolher todas as pastas',
 			'cockpit.fileTreePanel.sectionSourceControl' => 'CONTROLE DE VERSÃO',
 			'cockpit.fileTreePanel.viewAsList' => 'Ver como lista',
 			'cockpit.fileTreePanel.viewAsTree' => 'Ver como árvore',
@@ -2489,9 +2491,9 @@ extension on TranslationsPtBr {
 			'cockpit.dbConnectionDialog.connectionString' => 'Connection string',
 			'cockpit.dbConnectionDialog.invalidUrl' => 'URL de conexão inválida.',
 			'cockpit.dbConnectionDialog.sshTunnel' => 'Túnel SSH',
-			'cockpit.dbConnectionDialog.sshHost' => 'Host SSH',
 			_ => null,
 		} ?? switch (path) {
+			'cockpit.dbConnectionDialog.sshHost' => 'Host SSH',
 			'cockpit.dbConnectionDialog.sshPort' => 'Porta SSH',
 			'cockpit.dbConnectionDialog.sshUser' => 'Usuário SSH',
 			'cockpit.dbConnectionDialog.privateKey' => 'Chave privada',
@@ -3003,9 +3005,9 @@ extension on TranslationsPtBr {
 			'automation.error.fileOutsideWorkspace' => 'O arquivo está fora das raízes do workspace.',
 			'automation.error.fileUnreadable' => ({required Object detail}) => 'Não foi possível ler o arquivo: ${detail}',
 			'automation.error.binaryFile' => 'Não é possível gerar mensagem de commit para um arquivo binário.',
-			'automation.error.noFileChanges' => 'Não há mudanças a descrever neste arquivo.',
 			_ => null,
 		} ?? switch (path) {
+			'automation.error.noFileChanges' => 'Não há mudanças a descrever neste arquivo.',
 			'automation.error.noStagedChanges' => 'Não há mudanças no stage a descrever.',
 			'automation.error.multipleRepositories' => 'As mudanças no stage pertencem a repositórios diferentes. Gere uma de cada vez.',
 			'automation.error.diffUnavailable' => 'Não foi possível ler o diff.',

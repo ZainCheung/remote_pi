@@ -337,6 +337,11 @@ class _PendingCreate {
 
 class _FileTreePanelState extends State<FileTreePanel> {
   int _localRefresh = 0;
+
+  /// Geração do "Collapse all" (botão do cabeçalho, como no VS Code). Cada
+  /// [_Folder] fecha ao ver uma geração nova — o estado de expansão é local a
+  /// cada pasta, então o colapso viaja por contador, não por lista de paths.
+  int _collapseGen = 0;
   String? _selectedPath;
 
   /// `true` quando o item selecionado é uma **pasta** (senão é arquivo). Guia o
@@ -982,6 +987,7 @@ class _FileTreePanelState extends State<FileTreePanel> {
       selectedPath: effectiveSelected,
       revealExpand: _revealExpand,
       revealGen: _revealGen,
+      collapseGen: _collapseGen,
       onSelect: _select,
       onOpenFile: widget.onOpenFile,
       onTapFile: widget.onTapFile,
@@ -1108,6 +1114,11 @@ class _FileTreePanelState extends State<FileTreePanel> {
                     onTap: () => _headerCreate(true),
                   ),
                 ],
+                _PanelHeaderAction(
+                  icon: Icons.unfold_less,
+                  tooltip: context.t.cockpit.fileTreePanel.collapseAll,
+                  onTap: () => setState(() => _collapseGen++),
+                ),
                 _PanelHeaderAction(
                   icon: Icons.refresh,
                   tooltip: context.t.cockpit.fileTreePanel.refreshTooltip,
@@ -1579,6 +1590,7 @@ class _TreeEdit {
     required this.selectedPath,
     required this.revealExpand,
     required this.revealGen,
+    required this.collapseGen,
     required this.onSelect,
     required this.onOpenFile,
     required this.onTapFile,
@@ -1612,6 +1624,9 @@ class _TreeEdit {
   /// [_Folder]). Ver [FileTreePanel.revealPath].
   final Set<String> revealExpand;
   final int revealGen;
+
+  /// Geração do "Collapse all": [_Folder] fecha quando ela avança.
+  final int collapseGen;
 
   final void Function(String path, bool isFolder) onSelect;
   final ValueChanged<String> onOpenFile;
@@ -1804,6 +1819,9 @@ class _FolderState extends State<_Folder> {
   /// tick novo se for ancestral do alvo, depois deixa o usuário colapsar).
   int _revealGen = -1;
 
+  /// Última geração de "Collapse all" aplicada por esta pasta.
+  int _collapseGen = -1;
+
   /// Força abrir quando há criação pendente nesta pasta ou em algo abaixo dela
   /// (pra revelar o input inline alvo).
   bool get _forceExpand {
@@ -1816,6 +1834,14 @@ class _FolderState extends State<_Folder> {
   @override
   Widget build(BuildContext context) {
     final edit = widget.edit;
+    // "Collapse all": geração nova fecha esta pasta. Aplicado ANTES do reveal
+    // pra um reveal disparado no mesmo frame ainda vencer (abrir o caminho do
+    // arquivo). Só muda campo local, sem setState — estamos no build.
+    if (edit.collapseGen != _collapseGen) {
+      final first = _collapseGen == -1;
+      _collapseGen = edit.collapseGen;
+      if (!first) _expanded = false;
+    }
     // Reveal one-shot: numa geração nova, se esta pasta é ancestral do arquivo
     // revelado, expande (pós-frame — não dá pra setState no build). Cascateia:
     // ao expandir, o _DirView filho monta, seus _Folder buildam com gen novo e

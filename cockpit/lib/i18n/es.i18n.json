@@ -326,6 +326,7 @@
       "newFile": "Nuevo archivo",
       "newFolder": "Nueva carpeta",
       "refreshTooltip": "Actualizar",
+      "collapseAll": "Contraer todas las carpetas",
       "sectionSourceControl": "CONTROL DE VERSIONES",
       "viewAsList": "Ver como lista",
       "viewAsTree": "Ver como árbol",

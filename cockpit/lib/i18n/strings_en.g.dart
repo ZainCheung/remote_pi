@@ -1197,6 +1197,9 @@ class Translations$cockpit$fileTreePanel$en {
 	/// en: 'Refresh'
 	String get refreshTooltip => 'Refresh';
 
+	/// en: 'Collapse all folders'
+	String get collapseAll => 'Collapse all folders';
+
 	/// en: 'SOURCE CONTROL'
 	String get sectionSourceControl => 'SOURCE CONTROL';
 
@@ -4376,6 +4379,7 @@ extension on Translations {
 			'cockpit.fileTreePanel.newFile' => 'New file',
 			'cockpit.fileTreePanel.newFolder' => 'New folder',
 			'cockpit.fileTreePanel.refreshTooltip' => 'Refresh',
+			'cockpit.fileTreePanel.collapseAll' => 'Collapse all folders',
 			'cockpit.fileTreePanel.sectionSourceControl' => 'SOURCE CONTROL',
 			'cockpit.fileTreePanel.viewAsList' => 'View as List',
 			'cockpit.fileTreePanel.viewAsTree' => 'View as Tree',
@@ -4606,9 +4610,9 @@ extension on Translations {
 			'cockpit.dbConnectionDialog.connectionString' => 'Connection string',
 			'cockpit.dbConnectionDialog.invalidUrl' => 'Not a valid connection URL.',
 			'cockpit.dbConnectionDialog.sshTunnel' => 'SSH Tunnel',
-			'cockpit.dbConnectionDialog.sshHost' => 'SSH Host',
 			_ => null,
 		} ?? switch (path) {
+			'cockpit.dbConnectionDialog.sshHost' => 'SSH Host',
 			'cockpit.dbConnectionDialog.sshPort' => 'SSH Port',
 			'cockpit.dbConnectionDialog.sshUser' => 'SSH User',
 			'cockpit.dbConnectionDialog.privateKey' => 'Private key',
@@ -5120,9 +5124,9 @@ extension on Translations {
 			'automation.error.fileOutsideWorkspace' => 'File is outside the workspace roots.',
 			'automation.error.fileUnreadable' => ({required Object detail}) => 'Could not read the file: ${detail}',
 			'automation.error.binaryFile' => 'A commit message cannot be generated for a binary file.',
-			'automation.error.noFileChanges' => 'There are no changes to describe for this file.',
 			_ => null,
 		} ?? switch (path) {
+			'automation.error.noFileChanges' => 'There are no changes to describe for this file.',
 			'automation.error.noStagedChanges' => 'There are no staged changes to describe.',
 			'automation.error.multipleRepositories' => 'Staged changes belong to multiple repositories. Generate them separately.',
 			'automation.error.diffUnavailable' => 'Could not read the diff.',

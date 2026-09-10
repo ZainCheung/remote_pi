@@ -326,6 +326,7 @@
       "newFile": "Novo arquivo",
       "newFolder": "Nova pasta",
       "refreshTooltip": "Atualizar",
+      "collapseAll": "Recolher todas as pastas",
       "sectionSourceControl": "CONTROLE DE VERSÃO",
       "viewAsList": "Ver como lista",
       "viewAsTree": "Ver como árvore",
