@@ -16,22 +16,22 @@ class TranslationsEs extends Translations with BaseTranslations<AppLocale, Trans
 	/// Constructing via the enum [AppLocale.build] is preferred.
 	TranslationsEs({Map<String, Node>? overrides, PluralResolver? cardinalResolver, PluralResolver? ordinalResolver, TranslationMetadata<AppLocale, Translations>? meta})
 		: assert(overrides == null, 'Set "translation_overrides: true" in order to enable this feature.'),
-		  $meta = meta ?? TranslationMetadata(
+		  _meta = meta ?? TranslationMetadata(
 		    locale: AppLocale.es,
 		    overrides: overrides ?? {},
 		    cardinalResolver: cardinalResolver,
 		    ordinalResolver: ordinalResolver,
 		  ),
 		  super(cardinalResolver: cardinalResolver, ordinalResolver: ordinalResolver) {
-		super.$meta.setFlatMapFunction($meta.getTranslation); // copy base translations to super.$meta
-		$meta.setFlatMapFunction(_flatMapFunction);
+		_meta.setFlatMapFunction(_flatMapFunction);
 	}
 
 	/// Metadata for the translations of <es>.
-	@override final TranslationMetadata<AppLocale, Translations> $meta;
+	final TranslationMetadata<AppLocale, Translations> _meta;
+	@override TranslationMetadata<AppLocale, Translations> get $meta => _meta;
 
 	/// Access flat map
-	@override dynamic operator[](String key) => $meta.getTranslation(key) ?? super.$meta.getTranslation(key);
+	@override dynamic operator[](String key) => _meta.getTranslation(key) ?? super[key];
 
 	late final TranslationsEs _root = this; // ignore: unused_field
 
@@ -692,6 +692,7 @@ class _Translations$cockpit$fileTreePanel$es extends Translations$cockpit$fileTr
 	@override String get diffWorkingTree => 'Directorio de trabajo';
 	@override String get diffBinaryFile => 'Archivo binario - sin diff de texto.';
 	@override String get diffNoChanges => 'Sin cambios.';
+	@override String diffError({required Object detail}) => 'No se pudo leer el diff: ${detail}';
 	@override String get galleryTooltip => 'Galería';
 	@override String get sectionGallery => 'GALERÍA';
 }
@@ -2318,6 +2319,7 @@ extension on TranslationsEs {
 			'cockpit.fileTreePanel.diffWorkingTree' => 'Directorio de trabajo',
 			'cockpit.fileTreePanel.diffBinaryFile' => 'Archivo binario - sin diff de texto.',
 			'cockpit.fileTreePanel.diffNoChanges' => 'Sin cambios.',
+			'cockpit.fileTreePanel.diffError' => ({required Object detail}) => 'No se pudo leer el diff: ${detail}',
 			'cockpit.fileTreePanel.galleryTooltip' => 'Galería',
 			'cockpit.fileTreePanel.sectionGallery' => 'GALERÍA',
 			'cockpit.fileViewer.cantOpen' => 'No se puede abrir este archivo.',
@@ -2488,9 +2490,9 @@ extension on TranslationsEs {
 			'cockpit.dbConnectionDialog.invalidUrl' => 'URL de conexión no válida.',
 			'cockpit.dbConnectionDialog.sshTunnel' => 'Túnel SSH',
 			'cockpit.dbConnectionDialog.sshHost' => 'Host SSH',
-			'cockpit.dbConnectionDialog.sshPort' => 'Puerto SSH',
 			_ => null,
 		} ?? switch (path) {
+			'cockpit.dbConnectionDialog.sshPort' => 'Puerto SSH',
 			'cockpit.dbConnectionDialog.sshUser' => 'Usuario SSH',
 			'cockpit.dbConnectionDialog.privateKey' => 'Clave privada',
 			'cockpit.dbConnectionDialog.choosePrivateKeyPlaceholder' => 'Elige una clave privada…',
@@ -3002,9 +3004,9 @@ extension on TranslationsEs {
 			'automation.error.fileUnreadable' => ({required Object detail}) => 'No se pudo leer el archivo: ${detail}',
 			'automation.error.binaryFile' => 'No se puede generar un mensaje de commit para un archivo binario.',
 			'automation.error.noFileChanges' => 'No hay cambios que describir en este archivo.',
-			'automation.error.noStagedChanges' => 'No hay cambios en stage que describir.',
 			_ => null,
 		} ?? switch (path) {
+			'automation.error.noStagedChanges' => 'No hay cambios en stage que describir.',
 			'automation.error.multipleRepositories' => 'Los cambios en stage pertenecen a varios repositorios. Genéralos por separado.',
 			'automation.error.diffUnavailable' => 'No se pudo leer el diff.',
 			'automation.error.notConfigured' => 'Configura un harness de mensajes de commit en Configuración.',

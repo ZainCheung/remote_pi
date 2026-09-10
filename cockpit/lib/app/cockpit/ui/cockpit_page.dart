@@ -1149,8 +1149,14 @@ class _TreePanel extends StatelessWidget {
           onClearSelection: vm.clearFileSelection,
           revealPath: vm.treeRevealPath,
           revealGen: vm.treeRevealGen,
-          onOpenDiff: (path) => vm.openDiff(path, isPreview: false),
-          onTapDiff: vm.openDiff, // clique único = preview
+          onOpenDiff: (path) {
+            vm.openDiff(path, isPreview: false);
+            onDismiss(); // fecha o drawer no mobile, como o onOpenFile
+          },
+          onTapDiff: (path) {
+            vm.openDiff(path); // clique único = preview
+            onDismiss();
+          },
           isGitRepo:
               vm.selectedProject != null &&
               vm.isGitRepo(vm.selectedProject!.id),

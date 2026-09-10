@@ -20,20 +20,21 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	/// Constructing via the enum [AppLocale.build] is preferred.
 	Translations({Map<String, Node>? overrides, PluralResolver? cardinalResolver, PluralResolver? ordinalResolver, TranslationMetadata<AppLocale, Translations>? meta})
 		: assert(overrides == null, 'Set "translation_overrides: true" in order to enable this feature.'),
-		  $meta = meta ?? TranslationMetadata(
+		  _meta = meta ?? TranslationMetadata(
 		    locale: AppLocale.en,
 		    overrides: overrides ?? {},
 		    cardinalResolver: cardinalResolver,
 		    ordinalResolver: ordinalResolver,
 		  ) {
-		$meta.setFlatMapFunction(_flatMapFunction);
+		_meta.setFlatMapFunction(_flatMapFunction);
 	}
 
 	/// Metadata for the translations of <en>.
-	@override final TranslationMetadata<AppLocale, Translations> $meta;
+	final TranslationMetadata<AppLocale, Translations> _meta;
+	@override TranslationMetadata<AppLocale, Translations> get $meta => _meta;
 
 	/// Access flat map
-	dynamic operator[](String key) => $meta.getTranslation(key);
+	dynamic operator[](String key) => _meta.getTranslation(key);
 
 	late final Translations _root = this; // ignore: unused_field
 
@@ -1375,6 +1376,9 @@ class Translations$cockpit$fileTreePanel$en {
 
 	/// en: 'No changes.'
 	String get diffNoChanges => 'No changes.';
+
+	/// en: 'Could not read the diff: ${detail}'
+	String diffError({required Object detail}) => 'Could not read the diff: ${detail}';
 
 	/// en: 'Gallery'
 	String get galleryTooltip => 'Gallery';
@@ -4432,6 +4436,7 @@ extension on Translations {
 			'cockpit.fileTreePanel.diffWorkingTree' => 'Working tree',
 			'cockpit.fileTreePanel.diffBinaryFile' => 'Binary file - no text diff.',
 			'cockpit.fileTreePanel.diffNoChanges' => 'No changes.',
+			'cockpit.fileTreePanel.diffError' => ({required Object detail}) => 'Could not read the diff: ${detail}',
 			'cockpit.fileTreePanel.galleryTooltip' => 'Gallery',
 			'cockpit.fileTreePanel.sectionGallery' => 'GALLERY',
 			'cockpit.fileViewer.cantOpen' => 'Can\'t open this file.',
@@ -4602,9 +4607,9 @@ extension on Translations {
 			'cockpit.dbConnectionDialog.invalidUrl' => 'Not a valid connection URL.',
 			'cockpit.dbConnectionDialog.sshTunnel' => 'SSH Tunnel',
 			'cockpit.dbConnectionDialog.sshHost' => 'SSH Host',
-			'cockpit.dbConnectionDialog.sshPort' => 'SSH Port',
 			_ => null,
 		} ?? switch (path) {
+			'cockpit.dbConnectionDialog.sshPort' => 'SSH Port',
 			'cockpit.dbConnectionDialog.sshUser' => 'SSH User',
 			'cockpit.dbConnectionDialog.privateKey' => 'Private key',
 			'cockpit.dbConnectionDialog.choosePrivateKeyPlaceholder' => 'Choose a private key…',
@@ -5116,9 +5121,9 @@ extension on Translations {
 			'automation.error.fileUnreadable' => ({required Object detail}) => 'Could not read the file: ${detail}',
 			'automation.error.binaryFile' => 'A commit message cannot be generated for a binary file.',
 			'automation.error.noFileChanges' => 'There are no changes to describe for this file.',
-			'automation.error.noStagedChanges' => 'There are no staged changes to describe.',
 			_ => null,
 		} ?? switch (path) {
+			'automation.error.noStagedChanges' => 'There are no staged changes to describe.',
 			'automation.error.multipleRepositories' => 'Staged changes belong to multiple repositories. Generate them separately.',
 			'automation.error.diffUnavailable' => 'Could not read the diff.',
 			'automation.error.notConfigured' => 'Configure a commit message harness in Settings.',

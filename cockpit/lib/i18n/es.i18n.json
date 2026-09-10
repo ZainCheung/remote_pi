@@ -386,6 +386,7 @@
       "diffWorkingTree": "Directorio de trabajo",
       "diffBinaryFile": "Archivo binario - sin diff de texto.",
       "diffNoChanges": "Sin cambios.",
+      "diffError": "No se pudo leer el diff: ${detail}",
       "galleryTooltip": "Galería",
       "sectionGallery": "GALERÍA"
     },

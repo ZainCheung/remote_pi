@@ -386,6 +386,7 @@
       "diffWorkingTree": "Working tree",
       "diffBinaryFile": "Binary file - no text diff.",
       "diffNoChanges": "No changes.",
+      "diffError": "Could not read the diff: ${detail}",
       "galleryTooltip": "Gallery",
       "sectionGallery": "GALLERY"
     },

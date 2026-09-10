@@ -95,9 +95,9 @@ import 'package:cockpit_remote/cockpit_remote.dart' show RemoteCliCommand;
 import 'package:cockpit/app/cockpit/data/filesystem/unified_diff_parser.dart';
 import 'package:cockpit/app/cockpit/domain/entities/remote_host.dart';
 import 'package:cockpit/app/cockpit/domain/entities/remote_workspace_pin.dart';
-import 'package:cockpit_core/cockpit_core.dart' show GitRunResult;
+import 'package:cockpit_core/cockpit_core.dart' show GitException, GitRunResult;
 import 'package:cockpit_remote/cockpit_remote.dart'
-    show RemoteGitService, RemoteTurnStatus;
+    show RemoteGitService, RemoteRpcException, RemoteTurnStatus;
 import 'package:cockpit/app/cockpit/domain/contracts/terminal_gateway.dart';
 import 'package:cockpit/app/cockpit/ui/remote/remote_hosts_controller.dart';
 import 'package:cockpit/app/cockpit/ui/viewmodels/file_ops_controller.dart';
@@ -872,8 +872,15 @@ class CockpitViewModel extends ChangeNotifier {
       final (hunks, kind) = parseUnifiedDiff(raw);
       if (hunks.isEmpty) return FileDiff.unchanged(absPath);
       return FileDiff(path: absPath, kind: kind, hunks: hunks);
-    } catch (_) {
-      return FileDiff.unchanged(absPath);
+    } on GitException catch (e) {
+      // Erro vira estado tipado com o detalhe cru; a UI traduz a moldura.
+      // Antes caía em `unchanged` e o viewer dizia "No changes" pra qualquer
+      // falha (root errada, RPC caído), escondendo a causa.
+      return FileDiff.error(absPath, e.detail ?? e.kind.name);
+    } on RemoteRpcException catch (e) {
+      return FileDiff.error(absPath, '${e.code}: ${e.detail ?? ''}');
+    } on Object catch (e) {
+      return FileDiff.error(absPath, '$e');
     }
   }
 
@@ -1871,7 +1878,12 @@ class CockpitViewModel extends ChangeNotifier {
   }) async {
     final projectId = _selectedProjectId;
     final tree = _activeTree;
-    final paneId = projectId == null ? null : _focused[projectId];
+    // Mesmo fallback do [openFile]: sem pane focada (mobile, onde ninguém
+    // clica numa pane antes de tocar no Source Control) cai na primeira.
+    final paneId = projectId == null
+        ? null
+        : _focused[projectId] ??
+              (tree == null ? null : leaves(tree).firstOrNull?.id);
     if (projectId == null || tree == null || paneId == null) return;
     final leaf = findLeaf(tree, paneId);
     if (leaf == null) return;
