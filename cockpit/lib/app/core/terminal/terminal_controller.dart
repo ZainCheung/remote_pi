@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:cockpit/app/core/domain/entities/app_settings.dart';
 import 'package:cockpit/app/core/terminal/ghostty_sgr_weight_normalizer.dart';
 import 'package:cockpit/app/core/terminal/xterm/xterm.dart' as xterm;
-import 'package:cockpit/app/core/utils/platform_kind.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flterm/flterm.dart' as ghost;
@@ -270,11 +269,9 @@ bool get terminalEngineIsSelectable => true;
 /// libghostty 0.0.12 na mesma ref) o Ghostty voltou a rodar no iOS, então o
 /// gate saiu.
 ///
-/// 2026-09-09: gate REINTRODUZIDO de propósito, em fase de teste — iOS e
-/// Android usam xterm independente da preferência, pra comparar o
-/// comportamento dos dois motores no touch. Remover quando a avaliação fechar.
-TerminalEngine resolveTerminalEngine(TerminalEngine engine) =>
-    isMobilePlatform ? TerminalEngine.xterm : engine;
+/// 2026-09-09: o gate foi reintroduzido por um dia pra comparar os motores no
+/// touch e removido de novo — o xterm no mobile ficou pior que o Ghostty.
+TerminalEngine resolveTerminalEngine(TerminalEngine engine) => engine;
 
 CockpitTerminalController createTerminalController(
   TerminalEngine engine, {
