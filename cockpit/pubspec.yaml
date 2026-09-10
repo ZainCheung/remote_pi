@@ -209,9 +209,9 @@ dependencies:
   # `format!` (agora Pg/MySqlConnectOptions programático). A URL crua quebrava
   # com senha contendo `? / #` — o sqlx reportava "invalid port number" — e
   # corrompia senha com `%` (percent-decode silencioso).
-  anaki_postgres: ^0.1.5
+  anaki_postgres: ^0.1.6
   anaki_mysql: ^0.1.7
-  anaki_mssql: ^0.1.4
+  anaki_mssql: ^0.1.5
   # NoSQL/cache — acesso APENAS via CLI por enquanto (sem UI); ver plano 51.
   anaki_redis: ^0.1.4
   # 0.1.5: feature `socks5-proxy` do crate mongodb habilitada (plano 54) — é o
