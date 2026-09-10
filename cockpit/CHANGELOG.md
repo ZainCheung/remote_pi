@@ -24,6 +24,30 @@ As versões seguem o `version:` do `pubspec.yaml` (SSOT). O campo `notes` do
     linhas não-vazias — o começo da seção deve fazer sentido sozinho.
 -->
 
+## [1.28.26] - 2026-09-10
+
+**Still a beta for the upcoming 2.0.0.** Accented characters work in database
+queries again, the file tree gets a collapse-all button, and remote diffs show
+what went wrong instead of pretending nothing changed.
+
+### Added
+
+- **Collapse all folders** button in the Files header, next to Refresh. One
+  click closes every open folder in the tree, like VS Code. The selected file
+  stays selected.
+
+### Fixed
+
+- **Postgres and SQL Server queries with accents no longer fail.** Any SQL
+  containing a multibyte character such as `ç`, `ã` or an emoji crashed the
+  driver with "byte index N is not a char boundary". Fixed upstream in
+  `anaki_postgres` 0.1.6 and `anaki_mssql` 0.1.5; the Database panel, the
+  `cockpit db` CLI and `.dbq` files all benefit.
+- **Remote diff errors are visible.** On a remote workspace, a diff that could
+  not be read used to open as "No changes". The tab now shows the actual git
+  or connection error. Opening a diff also works without a focused pane and
+  closes the drawer on mobile.
+
 ## [1.28.25] - 2026-09-09
 
 **Still a beta for the upcoming 2.0.0.** Switching tabs is instant again.
