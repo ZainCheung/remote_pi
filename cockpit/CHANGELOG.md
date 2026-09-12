@@ -24,6 +24,42 @@ As versões seguem o `version:` do `pubspec.yaml` (SSOT). O campo `notes` do
     linhas não-vazias — o começo da seção deve fazer sentido sozinho.
 -->
 
+## [1.28.27] - 2026-09-11
+
+**Still a beta for the upcoming 2.0.0.** Workspace environment files for your
+terminals, a Restart action on terminal tabs, optional Neovim editing,
+workspace management from the CLI and Linux ARM64 remote hosts.
+
+### Added
+
+- **`.env.cockpit` per workspace.** A plain `KEY=VALUE` file at the workspace
+  root, injected into every terminal Cockpit opens there (all roots in a
+  multi-root workspace). Put API tokens or logins here instead of pasting them
+  into the agent's prompt. New tabs pick up changes. Create it from the Gallery
+  and Cockpit keeps it out of git via `.git/info/exclude`; it shows in Files
+  with the Cockpit icon.
+- **Restart a terminal tab.** Right-click a terminal tab and choose Restart:
+  the process is replaced in place, keeping the scrollback, the live working
+  directory, the tab name and resuming the agent that was running (`claude`,
+  `codex` or `pi`). Handy to reload `.env.cockpit` or unstick a shell.
+- **Optional Neovim editor.** Enable it in Settings → General and files open in
+  Neovim when it is found in PATH, with a guard for unsaved buffers and a
+  fallback to the Cockpit viewer when it is not available.
+- **Workspace management from the CLI.** `cockpit new-workspace`,
+  `new-remote-workspace`, `close-workspace` and `rename-workspace` create,
+  open, close and rename local and remote workspaces from a tab or a script,
+  with `--json` output. Remote paths accept `~`, expanded against the host's
+  HOME, and `~/.ssh/config` aliases resolve as hosts.
+- **Linux ARM64 remote hosts.** The macOS build bundles the ARM64 Linux server,
+  so Raspberry Pi and ARM VMs work as remote workspaces out of the box.
+- **Pi agent auto-resume.** A tab that was running `pi` is resumed on app
+  restore, like Claude Code and Codex already were.
+
+### Fixed
+
+- **Linux is more responsive under load.** Terminal activity monitoring was
+  reworked so busy TUIs no longer make the window stutter.
+
 ## [1.28.26] - 2026-09-10
 
 **Still a beta for the upcoming 2.0.0.** Accented characters work in database
