@@ -486,6 +486,11 @@ class TerminalSession extends PaneItem {
     onCwdChanged?.call();
   }
 
+  /// Scrollback gravado até agora (main-screen apenas), no mesmo formato que
+  /// vai pro store. O reinício da aba usa como `replay` da sessão nova sem
+  /// esperar o flush em disco.
+  String get scrollbackSnapshot => _record0.toString();
+
   Future<void> _flush() async {
     final store = _scrollback;
     if (store == null) return;

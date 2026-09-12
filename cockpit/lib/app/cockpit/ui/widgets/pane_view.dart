@@ -429,6 +429,10 @@ class _TabStripState extends State<_TabStrip> {
                                       pane.id,
                                       pane.tabs[i],
                                     ),
+                                    onRestart: () => widget.vm.restartTerminal(
+                                      pane.id,
+                                      pane.tabs[i],
+                                    ),
                                     onRename: (name) => widget.onRenameAgent(
                                       pane.tabs[i],
                                       name,
@@ -530,6 +534,7 @@ class _Tab extends StatefulWidget {
     required this.focused,
     required this.onSelect,
     required this.onClose,
+    required this.onRestart,
     required this.onRename,
     required this.onSetLabel,
     required this.onResetLabel,
@@ -544,6 +549,9 @@ class _Tab extends StatefulWidget {
   final bool focused;
   final VoidCallback onSelect;
   final VoidCallback onClose;
+
+  /// Reinicia uma aba de **terminal** no lugar (processo novo, mesma aba).
+  final VoidCallback onRestart;
 
   /// Renomeia um **agente** (muda a identidade enviada ao harness).
   final ValueChanged<String> onRename;
@@ -756,6 +764,13 @@ class _TabState extends State<_Tab> {
             label: tr.copyId,
             icon: Icons.content_copy,
           ),
+          // Processo novo na mesma aba (replay do scrollback, cwd vivo, resume
+          // do harness). Serve pra pegar `.env.cockpit` novo ou destravar shell.
+          AppMenuItem(
+            value: 'restart',
+            label: tr.restartTab,
+            icon: Icons.refresh,
+          ),
         ],
         if (agent != null && !isEmpty) ...[
           AppMenuItem(
@@ -788,6 +803,8 @@ class _TabState extends State<_Tab> {
         _startEditing();
       case 'reset-label':
         widget.onResetLabel();
+      case 'restart':
+        widget.onRestart();
       case 'relay':
         widget.onToggleRelay();
       case 'history':

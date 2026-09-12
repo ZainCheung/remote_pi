@@ -1072,6 +1072,9 @@ class Translations$cockpit$paneView$en {
 	/// en: 'Copy Id'
 	String get copyId => 'Copy Id';
 
+	/// en: 'Restart'
+	String get restartTab => 'Restart';
+
 	/// en: 'Auto-relay'
 	String get autoRelay => 'Auto-relay';
 
@@ -4399,6 +4402,7 @@ extension on Translations {
 			'cockpit.paneView.openAsBoard' => 'Open as board',
 			'cockpit.paneView.resetTitle' => 'Reset Title',
 			'cockpit.paneView.copyId' => 'Copy Id',
+			'cockpit.paneView.restartTab' => 'Restart',
 			'cockpit.paneView.autoRelay' => 'Auto-relay',
 			'cockpit.paneView.history' => 'History',
 			'cockpit.paneView.newTab' => 'New tab',
@@ -4671,9 +4675,9 @@ extension on Translations {
 			'cockpit.dbConnectionDialog.visibleToAgentsHint' => 'off = hidden from the CLI, GUI only',
 			'cockpit.dbConnectionDialog.testing' => 'Testing connection…',
 			'cockpit.dbConnectionDialog.connectionOk' => 'Connection OK',
-			'cockpit.dbConnectionDialog.connectionFailed' => 'Connection failed',
 			_ => null,
 		} ?? switch (path) {
+			'cockpit.dbConnectionDialog.connectionFailed' => 'Connection failed',
 			'cockpit.dbConnectionDialog.editTitle' => 'Edit connection',
 			'cockpit.dbConnectionDialog.newTitle' => 'New connection',
 			'cockpit.dbConnectionDialog.connectionString' => 'Connection string',
@@ -5185,9 +5189,9 @@ extension on Translations {
 			'settings.remoteHosts.statusOffline' => 'Offline',
 			'settings.remoteHosts.statusIdle' => 'Not connected',
 			'settings.remoteHosts.helpTitle' => 'How it works',
-			'settings.remoteHosts.helpBody' => 'Cockpit connects to your machine over SSH and talks to a small server that runs the terminals, files and git there. The host must have Cockpit (desktop) or the cockpit-server installed and running, and this device’s public key added to its ~/.ssh/authorized_keys.',
 			_ => null,
 		} ?? switch (path) {
+			'settings.remoteHosts.helpBody' => 'Cockpit connects to your machine over SSH and talks to a small server that runs the terminals, files and git there. The host must have Cockpit (desktop) or the cockpit-server installed and running, and this device’s public key added to its ~/.ssh/authorized_keys.',
 			'automation.error.unavailable' => ({required Object harness}) => '${harness} is not installed or is not on PATH.',
 			'automation.error.modelUnavailable' => ({required Object model, required Object harness}) => 'Model "${model}" is not available for ${harness}. Choose another model in Settings.',
 			'automation.error.authentication' => ({required Object harness, required Object detail}) => '${harness}: ${detail}',

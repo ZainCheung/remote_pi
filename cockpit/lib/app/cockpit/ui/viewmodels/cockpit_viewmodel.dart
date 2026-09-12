@@ -5174,6 +5174,64 @@ class CockpitViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Reinicia a aba de terminal [tabId] do pane [paneId]: mata o processo e
+  /// sobe outro **no mesmo lugar**, pelo mesmo caminho da restauração de boot
+  /// (scrollback como replay, cwd vivo do OSC 7, `--resume` do harness que
+  /// rodava, rótulo manual e perfil preservados). É o jeito de um shell pegar
+  /// um `.env.cockpit` novo, ou de destravar um processo preso, sem perder a
+  /// posição da aba.
+  ///
+  /// A sessão nova tem **id novo** (trocado na folha do pane): o corpo da aba é
+  /// keyed pelo id, então o State antigo (listeners do terminal velho) é
+  /// descartado em vez de apontar pra um controller já disposto. O id também é
+  /// o `COCKPIT_TAB_ID` do processo, que de fato é outro.
+  Future<void> restartTerminal(String paneId, String tabId) async {
+    final old = _sessions[tabId];
+    final tree = _activeTree;
+    if (old is! TerminalSession || tree == null) return;
+    final leaf = findLeaf(tree, paneId);
+    if (leaf == null || !leaf.tabs.contains(tabId)) return;
+
+    final projectId = old.projectId;
+    final cwd = old.currentDirectory ?? old.workingDirectory;
+    final snapshot = old.scrollbackSnapshot;
+    final sid = old.claudeSessionId;
+    final startup = sid == null || sid.isEmpty
+        ? null
+        : old.agentHarness.resumeCommand(sid);
+
+    final fresh = _buildTerminal(
+      _nid('t'),
+      projectId,
+      cwd,
+      title: old.title,
+      // Mesmo formato do restore: RIS antes (limpa alt-screen residual), pop do
+      // kitty depois (o push gravado no replay nunca teve o pop do processo
+      // morto), prompt novo em linha fresca.
+      replay: snapshot.isEmpty ? null : '\x1bc$snapshot\x1b[<9u\r\n',
+      startupCommand: startup,
+      manualLabel: old.manualLabel,
+      profile: old.profile,
+      engine: old.terminal.engine,
+    );
+
+    final tabs = leaf.tabs.map((t) => t == tabId ? fresh.id : t).toList();
+    _setActiveTree(
+      updateLeaf(
+        tree,
+        paneId,
+        (p) => p.copyWith(
+          tabs: tabs,
+          active: p.active == tabId ? fresh.id : p.active,
+        ),
+      ),
+    );
+    _disposeSession(tabId);
+    _ensureFocusValid();
+    _scheduleSave(projectId);
+    notifyListeners();
+  }
+
   void closePane(String paneId) {
     final projectId = _selectedProjectId;
     final tree = _activeTree;

@@ -591,6 +591,7 @@ class _Translations$cockpit$paneView$pt_BR extends Translations$cockpit$paneView
 	@override String get openAsBoard => 'Abrir como quadro';
 	@override String get resetTitle => 'Redefinir título';
 	@override String get copyId => 'Copiar Id';
+	@override String get restartTab => 'Reiniciar';
 	@override String get autoRelay => 'Auto-relay';
 	@override String get history => 'Histórico';
 	@override String get newTab => 'Nova aba';
@@ -2252,6 +2253,7 @@ extension on TranslationsPtBr {
 			'cockpit.paneView.openAsBoard' => 'Abrir como quadro',
 			'cockpit.paneView.resetTitle' => 'Redefinir título',
 			'cockpit.paneView.copyId' => 'Copiar Id',
+			'cockpit.paneView.restartTab' => 'Reiniciar',
 			'cockpit.paneView.autoRelay' => 'Auto-relay',
 			'cockpit.paneView.history' => 'Histórico',
 			'cockpit.paneView.newTab' => 'Nova aba',
@@ -2524,9 +2526,9 @@ extension on TranslationsPtBr {
 			'cockpit.dbConnectionDialog.visibleToAgentsHint' => 'desligado = oculto da CLI, só na GUI',
 			'cockpit.dbConnectionDialog.testing' => 'Testando conexão…',
 			'cockpit.dbConnectionDialog.connectionOk' => 'Conexão OK',
-			'cockpit.dbConnectionDialog.connectionFailed' => 'Falha na conexão',
 			_ => null,
 		} ?? switch (path) {
+			'cockpit.dbConnectionDialog.connectionFailed' => 'Falha na conexão',
 			'cockpit.dbConnectionDialog.editTitle' => 'Editar conexão',
 			'cockpit.dbConnectionDialog.newTitle' => 'Nova conexão',
 			'cockpit.dbConnectionDialog.connectionString' => 'Connection string',
@@ -3038,9 +3040,9 @@ extension on TranslationsPtBr {
 			'settings.remoteHosts.statusOffline' => 'Offline',
 			'settings.remoteHosts.statusIdle' => 'Não conectado',
 			'settings.remoteHosts.helpTitle' => 'Como funciona',
-			'settings.remoteHosts.helpBody' => 'O Cockpit conecta na sua máquina por SSH e fala com um servidor pequeno que roda os terminais, arquivos e git lá. O host precisa ter o Cockpit (desktop) ou o cockpit-server instalado e rodando, e a chave pública deste dispositivo adicionada no ~/.ssh/authorized_keys dele.',
 			_ => null,
 		} ?? switch (path) {
+			'settings.remoteHosts.helpBody' => 'O Cockpit conecta na sua máquina por SSH e fala com um servidor pequeno que roda os terminais, arquivos e git lá. O host precisa ter o Cockpit (desktop) ou o cockpit-server instalado e rodando, e a chave pública deste dispositivo adicionada no ~/.ssh/authorized_keys dele.',
 			'automation.error.unavailable' => ({required Object harness}) => '${harness} não está instalado ou não está no PATH.',
 			'automation.error.modelUnavailable' => ({required Object model, required Object harness}) => 'O modelo "${model}" não está disponível para ${harness}. Escolha outro modelo em Configurações.',
 			'automation.error.authentication' => ({required Object harness, required Object detail}) => '${harness}: ${detail}',
