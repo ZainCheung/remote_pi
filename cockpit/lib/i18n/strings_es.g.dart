@@ -104,6 +104,7 @@ class _Translations$cockpit$es extends Translations$cockpit$en {
 
 	// Translations
 	@override late final _Translations$cockpit$confirmDialog$es confirmDialog = _Translations$cockpit$confirmDialog$es._(_root);
+	@override late final _Translations$cockpit$neovim$es neovim = _Translations$cockpit$neovim$es._(_root);
 	@override late final _Translations$cockpit$historyDialog$es historyDialog = _Translations$cockpit$historyDialog$es._(_root);
 	@override late final _Translations$cockpit$worktreeCreateDialog$es worktreeCreateDialog = _Translations$cockpit$worktreeCreateDialog$es._(_root);
 	@override late final _Translations$cockpit$subfolderDialog$es subfolderDialog = _Translations$cockpit$subfolderDialog$es._(_root);
@@ -316,6 +317,20 @@ class _Translations$cockpit$confirmDialog$es extends Translations$cockpit$confir
 	@override String unsavedChangesMessage({required Object fileName}) => '“${fileName}” tiene cambios sin guardar. ¿Guardarlos antes de cerrar?';
 	@override String get dontSave => 'No guardar';
 	@override String get saveAndClose => 'Guardar y cerrar';
+}
+
+// Path: cockpit.neovim
+class _Translations$cockpit$neovim$es extends Translations$cockpit$neovim$en {
+	_Translations$cockpit$neovim$es._(TranslationsEs root) : this._root = root, super.internal(root);
+
+	final TranslationsEs _root; // ignore: unused_field
+
+	// Translations
+	@override String get unavailable => 'Neovim no está disponible. Abriendo en Cockpit.';
+	@override String get openFailed => 'No se pudo acceder a Neovim. Abriendo en Cockpit.';
+	@override String get unsavedTitle => 'Búferes de Neovim sin guardar';
+	@override String get unsavedMessage => 'Neovim tiene búferes modificados. ¿Cerrar la pestaña y descartar esos cambios?';
+	@override String get closeAnyway => 'Cerrar de todos modos';
 }
 
 // Path: cockpit.historyDialog
@@ -1606,6 +1621,13 @@ class _Translations$settings$page$general$es extends Translations$settings$page$
 
 	// Translations
 	@override String get sectionAgent => 'Agente';
+	@override String get sectionEditor => 'Editor';
+	@override String get editorEngineTitle => 'Motor';
+	@override String get editorEngineCockpit => 'Cockpit (predeterminado)';
+	@override String get editorEngineNeovim => 'Neovim';
+	@override String get neovimChecking => 'Buscando Neovim…';
+	@override String get neovimNotFound => 'Neovim no se encontró en la PATH de tu shell.';
+	@override String get neovimRefresh => 'Comprobar de nuevo';
 	@override String get enableAgentsTitle => 'Activar agentes';
 	@override String get enableAgentsDesc => 'Muestra la opción de abrir pestañas de agente (pi). Cuando está desactivado, Cockpit funciona solo como workspace de terminal.';
 	@override String get showCockpitTitle => 'Mostrar terminal de Cockpit';
@@ -2061,6 +2083,11 @@ extension on TranslationsEs {
 			'cockpit.confirmDialog.unsavedChangesMessage' => ({required Object fileName}) => '“${fileName}” tiene cambios sin guardar. ¿Guardarlos antes de cerrar?',
 			'cockpit.confirmDialog.dontSave' => 'No guardar',
 			'cockpit.confirmDialog.saveAndClose' => 'Guardar y cerrar',
+			'cockpit.neovim.unavailable' => 'Neovim no está disponible. Abriendo en Cockpit.',
+			'cockpit.neovim.openFailed' => 'No se pudo acceder a Neovim. Abriendo en Cockpit.',
+			'cockpit.neovim.unsavedTitle' => 'Búferes de Neovim sin guardar',
+			'cockpit.neovim.unsavedMessage' => 'Neovim tiene búferes modificados. ¿Cerrar la pestaña y descartar esos cambios?',
+			'cockpit.neovim.closeAnyway' => 'Cerrar de todos modos',
 			'cockpit.historyDialog.title' => 'Historial de sesiones',
 			'cockpit.historyDialog.subtitle' => 'Abrir una reemplaza la transcripción actual de este agente',
 			'cockpit.historyDialog.empty' => 'No hay sesiones guardadas en esta carpeta.',
@@ -2486,13 +2513,13 @@ extension on TranslationsEs {
 			'cockpit.dbConnectionDialog.testing' => 'Probando conexión…',
 			'cockpit.dbConnectionDialog.connectionOk' => 'Conexión OK',
 			'cockpit.dbConnectionDialog.connectionFailed' => 'Fallo en la conexión',
+			_ => null,
+		} ?? switch (path) {
 			'cockpit.dbConnectionDialog.editTitle' => 'Editar conexión',
 			'cockpit.dbConnectionDialog.newTitle' => 'Nueva conexión',
 			'cockpit.dbConnectionDialog.connectionString' => 'Connection string',
 			'cockpit.dbConnectionDialog.invalidUrl' => 'URL de conexión no válida.',
 			'cockpit.dbConnectionDialog.sshTunnel' => 'Túnel SSH',
-			_ => null,
-		} ?? switch (path) {
 			'cockpit.dbConnectionDialog.sshHost' => 'Host SSH',
 			'cockpit.dbConnectionDialog.sshPort' => 'Puerto SSH',
 			'cockpit.dbConnectionDialog.sshUser' => 'Usuario SSH',
@@ -2716,6 +2743,13 @@ extension on TranslationsEs {
 			'settings.page.nav.automations' => 'Automatizaciones',
 			'settings.page.nav.remoteHosts' => 'Hosts remotos',
 			'settings.page.general.sectionAgent' => 'Agente',
+			'settings.page.general.sectionEditor' => 'Editor',
+			'settings.page.general.editorEngineTitle' => 'Motor',
+			'settings.page.general.editorEngineCockpit' => 'Cockpit (predeterminado)',
+			'settings.page.general.editorEngineNeovim' => 'Neovim',
+			'settings.page.general.neovimChecking' => 'Buscando Neovim…',
+			'settings.page.general.neovimNotFound' => 'Neovim no se encontró en la PATH de tu shell.',
+			'settings.page.general.neovimRefresh' => 'Comprobar de nuevo',
 			'settings.page.general.enableAgentsTitle' => 'Activar agentes',
 			'settings.page.general.enableAgentsDesc' => 'Muestra la opción de abrir pestañas de agente (pi). Cuando está desactivado, Cockpit funciona solo como workspace de terminal.',
 			'settings.page.general.showCockpitTitle' => 'Mostrar terminal de Cockpit',
@@ -2993,6 +3027,8 @@ extension on TranslationsEs {
 			'settings.remoteHosts.helpBody' => 'Cockpit se conecta a tu máquina por SSH y habla con un pequeño servidor que ejecuta las terminales, archivos y git allí. El host debe tener Cockpit (escritorio) o el cockpit-server instalado y en ejecución, y la clave pública de este dispositivo añadida en su ~/.ssh/authorized_keys.',
 			'automation.error.unavailable' => ({required Object harness}) => '${harness} no está instalado o no está en el PATH.',
 			'automation.error.modelUnavailable' => ({required Object model, required Object harness}) => 'El modelo "${model}" no está disponible para ${harness}. Elige otro modelo en Configuración.',
+			_ => null,
+		} ?? switch (path) {
 			'automation.error.authentication' => ({required Object harness, required Object detail}) => '${harness}: ${detail}',
 			'automation.error.timeout' => ({required Object harness, required Object seconds}) => '${harness} no respondió en ${seconds} segundos.',
 			'automation.error.cancelled' => 'Se canceló la generación del mensaje de commit.',
@@ -3005,8 +3041,6 @@ extension on TranslationsEs {
 			'automation.error.fileOutsideWorkspace' => 'El archivo está fuera de las raíces del workspace.',
 			'automation.error.fileUnreadable' => ({required Object detail}) => 'No se pudo leer el archivo: ${detail}',
 			'automation.error.binaryFile' => 'No se puede generar un mensaje de commit para un archivo binario.',
-			_ => null,
-		} ?? switch (path) {
 			'automation.error.noFileChanges' => 'No hay cambios que describir en este archivo.',
 			'automation.error.noStagedChanges' => 'No hay cambios en stage que describir.',
 			'automation.error.multipleRepositories' => 'Los cambios en stage pertenecen a varios repositorios. Genéralos por separado.',
