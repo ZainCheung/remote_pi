@@ -28,7 +28,7 @@ concurrency:
 
 env:
   RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
-  FLUTTER_VERSION: "3.44.4"
+  FLUTTER_VERSION: "3.47.3"
 
 jobs:
   meta:
@@ -391,10 +391,6 @@ jobs:
 
       - name: Build + empacota
         run: |
-          g++ -std=c++14 linux/runner/gpu_environment.cc \
-            linux/runner/gpu_environment_test.cc \
-            -Ilinux/runner -o "$RUNNER_TEMP/gpu-environment-test"
-          "$RUNNER_TEMP/gpu-environment-test"
           flutter pub get
           flutter build windows --release
           # Gate do sidecar: sem o bundle do cockpit-server o app cai no
@@ -528,6 +524,12 @@ jobs:
         # infla isso legitimamente.
         timeout-minutes: 30
         run: |
+          # Teste unitário do runner GTK (gpu_environment usa setenv/unsetenv,
+          # POSIX): só compila aqui — no job Windows o MinGW não os tem.
+          g++ -std=c++14 linux/runner/gpu_environment.cc \
+            linux/runner/gpu_environment_test.cc \
+            -Ilinux/runner -o "$RUNNER_TEMP/gpu-environment-test"
+          "$RUNNER_TEMP/gpu-environment-test"
           flutter pub get
           flutter build linux --release
           # Gate do sidecar (mesma razão do Windows): sem o bundle do

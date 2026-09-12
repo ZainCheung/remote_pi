@@ -24,7 +24,7 @@ As versões seguem o `version:` do `pubspec.yaml` (SSOT). O campo `notes` do
     linhas não-vazias — o começo da seção deve fazer sentido sozinho.
 -->
 
-## [1.28.27] - 2026-09-11
+## [1.28.28] - 2026-09-11
 
 **Still a beta for the upcoming 2.0.0.** Workspace environment files for your
 terminals, a Restart action on terminal tabs, optional Neovim editing,
