@@ -62,9 +62,18 @@ mv "$DEST/bin/cockpit_server" "$DEST/bin/cockpit-server"
   -I"$ROOT/plugins/cockpit_pty/src" -lpthread
 
 # Cargo accepts a linker executable, not a command with arguments, so wrap Zig.
+# Rust >= 1.98 passes `-Wl,--fix-cortex-a53-843419` (a GNU ld/lld erratum
+# workaround) for aarch64-linux-gnu; Zig's cc driver rejects it as an
+# unsupported linker arg and the link fails with no other diagnostic. The
+# erratum only affects early Cortex-A53 silicon, so dropping the flag is safe.
 ZIG_LINKER="$TMP/zig-aarch64-linux-gnu-cc"
 cat >"$ZIG_LINKER" <<EOF
 #!/bin/sh
+for arg do
+  shift
+  [ "\$arg" = "-Wl,--fix-cortex-a53-843419" ] && continue
+  set -- "\$@" "\$arg"
+done
 exec "$ZIG" cc -target aarch64-linux-gnu "\$@"
 EOF
 chmod +x "$ZIG_LINKER"
