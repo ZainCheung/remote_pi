@@ -1,4 +1,5 @@
 import 'package:cockpit/app/core/ui/file_icons/file_icon_map.g.dart';
+import 'package:cockpit/app/core/utils/workspace_env.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -90,12 +91,15 @@ class FileTypeIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // `.ckp` (layout) e a pasta `.cockpit/` (config) usam o logo do próprio
+    // `.ckp` (layout), `.env.cockpit` (env do workspace) e a pasta `.cockpit/`
+    // (config) usam o logo do próprio
     // Cockpit — não são tipos que o material-icon-theme conheça. O `.notebook`
     // tem SVG próprio via `_extensionOverrides` (a árvore o renderiza como
     // arquivo, então cai em `fileIconName`).
     final lower = name.toLowerCase();
-    if (lower.endsWith('.ckp') || (_isFolder && lower == '.cockpit')) {
+    if (lower.endsWith('.ckp') ||
+        lower == kWorkspaceEnvFileName ||
+        (_isFolder && lower == '.cockpit')) {
       return Image.asset(
         'assets/branding/cockpit_logo.png',
         width: size,

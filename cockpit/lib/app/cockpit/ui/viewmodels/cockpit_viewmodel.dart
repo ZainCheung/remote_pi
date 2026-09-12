@@ -2,7 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data' show Uint8List;
 import 'dart:io'
-    show Directory, File, FileSystemEntity, FileSystemException, Platform;
+    show
+        Directory,
+        File,
+        FileMode,
+        FileSystemEntity,
+        FileSystemException,
+        Platform;
 import 'dart:math' show max;
 
 import 'package:cockpit/app/core/data/setup/remote_pi_resolver.dart';
@@ -46,6 +52,7 @@ import 'package:cockpit/app/cockpit/domain/entities/content_search.dart';
 import 'package:cockpit/app/cockpit/domain/entities/file_diff.dart';
 import 'package:cockpit/app/cockpit/domain/entities/file_node.dart';
 import 'package:cockpit/app/cockpit/domain/entities/gallery_template.dart';
+import 'package:cockpit/app/core/utils/workspace_env.dart';
 import 'package:cockpit/app/cockpit/domain/entities/notebook_document.dart';
 import 'package:cockpit/app/cockpit/domain/entities/file_view.dart';
 import 'package:cockpit/app/cockpit/domain/entities/kanban_document.dart';
@@ -2623,6 +2630,8 @@ class CockpitViewModel extends ChangeNotifier {
       return const Failure(
         FileOperationError(FileOperationErrorKind.writeFailed),
       );
+    } else if (template == GalleryTemplate.workspaceEnv) {
+      await _excludeFromGit(root, name);
     }
     _bumpFileTree();
     if (template.opensParent) {
@@ -2637,6 +2646,46 @@ class CockpitViewModel extends ChangeNotifier {
     String path,
     String newName,
   ) => files.renamePath(path, newName);
+
+  /// Tira [relative] do git de [root] sem tocar em arquivo versionado: se o
+  /// repo ainda não o ignora, acrescenta em `.git/info/exclude` (local, nunca
+  /// comitado). Cobre o `.env.cockpit` em repo cujo `.gitignore` não tem
+  /// `.env*`. Best-effort: pasta sem git, ou git ausente, só não exclui.
+  Future<void> _excludeFromGit(String root, String relative) async {
+    try {
+      final (code, _) = await git.output(root, [
+        'check-ignore',
+        '-q',
+        '--',
+        relative,
+      ]);
+      // 0 = já ignorado; 1 = não ignorado; 128 = não é repo git.
+      if (code != 1) return;
+      final (pathCode, excludePath) = await git.output(root, [
+        'rev-parse',
+        '--git-path',
+        'info/exclude',
+      ]);
+      final trimmed = excludePath.trim();
+      if (pathCode != 0 || trimmed.isEmpty) return;
+      // `--git-path` devolve relativo ao cwd no repo comum e absoluto em
+      // worktree; resolvemos os dois.
+      final absolute =
+          trimmed.startsWith('/') ||
+          RegExp(r'^[A-Za-z]:[\\/]').hasMatch(trimmed);
+      final file = File(absolute ? trimmed : joinPath(root, trimmed));
+      await file.parent.create(recursive: true);
+      final existing = await file.exists() ? await file.readAsString() : '';
+      final sep = existing.isEmpty || existing.endsWith('\n') ? '' : '\n';
+      await file.writeAsString(
+        '$sep/$relative\n',
+        mode: FileMode.append,
+        flush: true,
+      );
+    } on Object catch (e) {
+      debugPrint('gallery: exclude de $relative falhou ($e)');
+    }
+  }
 
   Future<Result<void, FileOperationError>> movePath(
     String path,
@@ -5328,6 +5377,11 @@ class CockpitViewModel extends ChangeNotifier {
       // `COCKPIT_TAB_ID` é o nome correto (o que a CLI endereça é uma tab);
       // `COCKPIT_PANE_ID` fica como alias legado (hook + binários antigos).
       spawnEnv: <String, String>{
+        // `.env.cockpit` do workspace (raiz + cada root em multi-root), lido a
+        // cada spawn: aba nova já vê a chave nova. Vem PRIMEIRO pra nunca
+        // sobrescrever o roteamento/transporte do Cockpit abaixo. Só local:
+        // no remoto o arquivo mora no host e este processo não o enxerga.
+        if (!_isRemoteWorkspace(projectId)) ..._workspaceEnvFor(projectId),
         'COCKPIT_TAB_ID': id,
         'COCKPIT_PANE_ID': id,
         ..._statusServer.hookEnv,
@@ -5348,6 +5402,15 @@ class CockpitViewModel extends ChangeNotifier {
     if (manualLabel != null) t.restoreManualLabel(manualLabel);
     _sessions[t.id] = t;
     return t;
+  }
+
+  /// Variáveis do `.env.cockpit` de um workspace local: a raiz do workspace e,
+  /// em multi-root, cada root por cima (na ordem das roots). Workspace sem
+  /// path (terminal de sistema) contribui com nada.
+  Map<String, String> _workspaceEnvFor(String projectId) {
+    final path = _projectById(projectId)?.path ?? '';
+    if (path.isEmpty) return const <String, String>{};
+    return loadWorkspaceEnvSync(<String>{path, ...rootsOf(projectId)});
   }
 
   /// Cria e boota um agente. [restoreSessionPath] (restauração) faz reanexar a

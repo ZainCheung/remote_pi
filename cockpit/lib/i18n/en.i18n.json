@@ -800,6 +800,10 @@
       "notebook": {
         "title": "Notebook",
         "description": "A folder of short notes with tags. The agent writes, you read and edit. Also opens in Obsidian."
+      },
+      "workspaceEnv": {
+        "title": "Workspace env",
+        "description": "Variables injected into every terminal of this workspace. Put API tokens or logins here instead of pasting them into the agent's prompt. Kept out of git."
       }
     },
     "notebook": {

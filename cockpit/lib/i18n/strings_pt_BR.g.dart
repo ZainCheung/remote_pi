@@ -1238,6 +1238,7 @@ class _Translations$cockpit$gallery$pt_BR extends Translations$cockpit$gallery$e
 	@override late final _Translations$cockpit$gallery$html$pt_BR html = _Translations$cockpit$gallery$html$pt_BR._(_root);
 	@override late final _Translations$cockpit$gallery$tasks$pt_BR tasks = _Translations$cockpit$gallery$tasks$pt_BR._(_root);
 	@override late final _Translations$cockpit$gallery$notebook$pt_BR notebook = _Translations$cockpit$gallery$notebook$pt_BR._(_root);
+	@override late final _Translations$cockpit$gallery$workspaceEnv$pt_BR workspaceEnv = _Translations$cockpit$gallery$workspaceEnv$pt_BR._(_root);
 }
 
 // Path: cockpit.notebook
@@ -1554,6 +1555,17 @@ class _Translations$cockpit$gallery$notebook$pt_BR extends Translations$cockpit$
 	// Translations
 	@override String get title => 'Caderno';
 	@override String get description => 'Uma pasta de notas curtas com tags. O agente escreve, você lê e edita. Abre no Obsidian também.';
+}
+
+// Path: cockpit.gallery.workspaceEnv
+class _Translations$cockpit$gallery$workspaceEnv$pt_BR extends Translations$cockpit$gallery$workspaceEnv$en {
+	_Translations$cockpit$gallery$workspaceEnv$pt_BR._(TranslationsPtBr root) : this._root = root, super.internal(root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Env do workspace';
+	@override String get description => 'Variáveis injetadas em todo terminal deste workspace. Coloque tokens ou logins de API aqui em vez de colar no prompt do agente. Fica fora do git.';
 }
 
 // Path: cockpit.notebook.format
@@ -2669,6 +2681,8 @@ extension on TranslationsPtBr {
 			'cockpit.gallery.tasks.description' => 'Comandos para rodar pelo painel de Tasks, como dev server, testes e build. Fica em .cockpit/tasks.json.',
 			'cockpit.gallery.notebook.title' => 'Caderno',
 			'cockpit.gallery.notebook.description' => 'Uma pasta de notas curtas com tags. O agente escreve, você lê e edita. Abre no Obsidian também.',
+			'cockpit.gallery.workspaceEnv.title' => 'Env do workspace',
+			'cockpit.gallery.workspaceEnv.description' => 'Variáveis injetadas em todo terminal deste workspace. Coloque tokens ou logins de API aqui em vez de colar no prompt do agente. Fica fora do git.',
 			'cockpit.notebook.notes' => 'Notas',
 			'cockpit.notebook.newNote' => 'Nova nota',
 			'cockpit.notebook.searchPlaceholder' => 'Buscar notas',
@@ -3025,10 +3039,10 @@ extension on TranslationsPtBr {
 			'settings.remoteHosts.statusIdle' => 'Não conectado',
 			'settings.remoteHosts.helpTitle' => 'Como funciona',
 			'settings.remoteHosts.helpBody' => 'O Cockpit conecta na sua máquina por SSH e fala com um servidor pequeno que roda os terminais, arquivos e git lá. O host precisa ter o Cockpit (desktop) ou o cockpit-server instalado e rodando, e a chave pública deste dispositivo adicionada no ~/.ssh/authorized_keys dele.',
-			'automation.error.unavailable' => ({required Object harness}) => '${harness} não está instalado ou não está no PATH.',
-			'automation.error.modelUnavailable' => ({required Object model, required Object harness}) => 'O modelo "${model}" não está disponível para ${harness}. Escolha outro modelo em Configurações.',
 			_ => null,
 		} ?? switch (path) {
+			'automation.error.unavailable' => ({required Object harness}) => '${harness} não está instalado ou não está no PATH.',
+			'automation.error.modelUnavailable' => ({required Object model, required Object harness}) => 'O modelo "${model}" não está disponível para ${harness}. Escolha outro modelo em Configurações.',
 			'automation.error.authentication' => ({required Object harness, required Object detail}) => '${harness}: ${detail}',
 			'automation.error.timeout' => ({required Object harness, required Object seconds}) => '${harness} não respondeu em ${seconds} segundos.',
 			'automation.error.cancelled' => 'A geração da mensagem de commit foi cancelada.',

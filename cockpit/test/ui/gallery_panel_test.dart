@@ -10,6 +10,11 @@ void main() {
     tester,
   ) async {
     GalleryTemplate? created;
+    // Oito cards não cabem na viewport padrão de teste (800x600); sem isso o
+    // último card do ListView nem é construído.
+    tester.view.physicalSize = const Size(800, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     await tester.pumpWidget(
       TranslationProvider(
         child: ShadcnApp(

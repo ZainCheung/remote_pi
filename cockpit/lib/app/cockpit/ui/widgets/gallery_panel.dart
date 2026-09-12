@@ -6,7 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 /// Aba **Gallery** do painel direito: vitrine dos documentos especiais do
-/// Cockpit (`.dbq`, `.kanban`, `.ckp`, `.http`). Cada card = ícone colorido +
+/// Cockpit (`.dbq`, `.kanban`, `.ckp`, `.http`, `.env.cockpit`). Cada card = ícone colorido +
 /// título + descrição; clicar cria o arquivo na raiz do workspace e abre a
 /// tab (o "como" mora no [onCreate], que o VM implementa).
 class GalleryPanel extends StatelessWidget {
@@ -51,6 +51,7 @@ class GalleryPanel extends StatelessWidget {
     GalleryTemplate.html => tr.html.title,
     GalleryTemplate.tasks => tr.tasks.title,
     GalleryTemplate.notebook => tr.notebook.title,
+    GalleryTemplate.workspaceEnv => tr.workspaceEnv.title,
   };
 
   static String _descriptionOf(
@@ -64,6 +65,7 @@ class GalleryPanel extends StatelessWidget {
     GalleryTemplate.html => tr.html.description,
     GalleryTemplate.tasks => tr.tasks.description,
     GalleryTemplate.notebook => tr.notebook.description,
+    GalleryTemplate.workspaceEnv => tr.workspaceEnv.description,
   };
 }
 

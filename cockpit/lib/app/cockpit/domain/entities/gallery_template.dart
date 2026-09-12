@@ -2,7 +2,8 @@
 /// workspace: extensão própria + conteúdo inicial que já abre na tab certa
 /// (`.dbq` → editor SQL, `.kanban` → quadro, `.ckp` → layout, `.http` →
 /// cliente HTTP, `.html` → preview renderizado, `.cockpit/tasks.json` → aba
-/// Tasks). Título/descrição são i18n na UI; aqui só o que é dado.
+/// Tasks, `.env.cockpit` → variáveis injetadas nos terminais do workspace).
+/// Título/descrição são i18n na UI; aqui só o que é dado.
 enum GalleryTemplate {
   dbQuery(
     baseName: 'query',
@@ -99,6 +100,20 @@ enum GalleryTemplate {
         '    cwd: .\n'
         '    split: right\n'
         '    command: claude\n',
+  ),
+  workspaceEnv(
+    baseName: '',
+    extension: 'env.cockpit',
+    fixedName: true,
+    iconAsset: 'assets/branding/cockpit_logo.png',
+    content:
+        '# Environment for every terminal Cockpit opens in this workspace.\n'
+        '# One KEY=VALUE per line. No interpolation, no multiline.\n'
+        '# New tabs pick up changes; running shells keep the old values.\n'
+        '# Kept out of git via .git/info/exclude when created from Cockpit.\n'
+        '\n'
+        '# API_EMAIL=me@example.com\n'
+        '# API_TOKEN=\n',
   );
 
   const GalleryTemplate({
@@ -134,7 +149,9 @@ enum GalleryTemplate {
   /// Conteúdo inicial do arquivo.
   final String content;
 
-  String get fileName => '$baseName.$extension';
+  /// `.env.cockpit` tem `baseName` vazio: o nome é só o "ponto + extensão".
+  String get fileName =>
+      baseName.isEmpty ? '.$extension' : '$baseName.$extension';
 
   /// Caminho relativo à raiz, com a subpasta quando houver
   /// (`.cockpit/tasks.json`).

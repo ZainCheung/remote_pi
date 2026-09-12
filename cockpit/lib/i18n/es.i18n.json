@@ -800,6 +800,10 @@
       "notebook": {
         "title": "Cuaderno",
         "description": "Una carpeta de notas cortas con tags. El agente escribe, tú lees y editas. También abre en Obsidian."
+      },
+      "workspaceEnv": {
+        "title": "Env del workspace",
+        "description": "Variables inyectadas en cada terminal de este workspace. Pon tokens o credenciales de API aquí en vez de pegarlos en el prompt del agente. Queda fuera de git."
       }
     },
     "notebook": {

@@ -1238,6 +1238,7 @@ class _Translations$cockpit$gallery$es extends Translations$cockpit$gallery$en {
 	@override late final _Translations$cockpit$gallery$html$es html = _Translations$cockpit$gallery$html$es._(_root);
 	@override late final _Translations$cockpit$gallery$tasks$es tasks = _Translations$cockpit$gallery$tasks$es._(_root);
 	@override late final _Translations$cockpit$gallery$notebook$es notebook = _Translations$cockpit$gallery$notebook$es._(_root);
+	@override late final _Translations$cockpit$gallery$workspaceEnv$es workspaceEnv = _Translations$cockpit$gallery$workspaceEnv$es._(_root);
 }
 
 // Path: cockpit.notebook
@@ -1554,6 +1555,17 @@ class _Translations$cockpit$gallery$notebook$es extends Translations$cockpit$gal
 	// Translations
 	@override String get title => 'Cuaderno';
 	@override String get description => 'Una carpeta de notas cortas con tags. El agente escribe, tú lees y editas. También abre en Obsidian.';
+}
+
+// Path: cockpit.gallery.workspaceEnv
+class _Translations$cockpit$gallery$workspaceEnv$es extends Translations$cockpit$gallery$workspaceEnv$en {
+	_Translations$cockpit$gallery$workspaceEnv$es._(TranslationsEs root) : this._root = root, super.internal(root);
+
+	final TranslationsEs _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Env del workspace';
+	@override String get description => 'Variables inyectadas en cada terminal de este workspace. Pon tokens o credenciales de API aquí en vez de pegarlos en el prompt del agente. Queda fuera de git.';
 }
 
 // Path: cockpit.notebook.format
@@ -2669,6 +2681,8 @@ extension on TranslationsEs {
 			'cockpit.gallery.tasks.description' => 'Comandos para ejecutar desde el panel de Tasks, como dev server, tests y build. Vive en .cockpit/tasks.json.',
 			'cockpit.gallery.notebook.title' => 'Cuaderno',
 			'cockpit.gallery.notebook.description' => 'Una carpeta de notas cortas con tags. El agente escribe, tú lees y editas. También abre en Obsidian.',
+			'cockpit.gallery.workspaceEnv.title' => 'Env del workspace',
+			'cockpit.gallery.workspaceEnv.description' => 'Variables inyectadas en cada terminal de este workspace. Pon tokens o credenciales de API aquí en vez de pegarlos en el prompt del agente. Queda fuera de git.',
 			'cockpit.notebook.notes' => 'Notas',
 			'cockpit.notebook.newNote' => 'Nueva nota',
 			'cockpit.notebook.searchPlaceholder' => 'Buscar notas',
@@ -3025,10 +3039,10 @@ extension on TranslationsEs {
 			'settings.remoteHosts.statusIdle' => 'No conectado',
 			'settings.remoteHosts.helpTitle' => 'Cómo funciona',
 			'settings.remoteHosts.helpBody' => 'Cockpit se conecta a tu máquina por SSH y habla con un pequeño servidor que ejecuta las terminales, archivos y git allí. El host debe tener Cockpit (escritorio) o el cockpit-server instalado y en ejecución, y la clave pública de este dispositivo añadida en su ~/.ssh/authorized_keys.',
-			'automation.error.unavailable' => ({required Object harness}) => '${harness} no está instalado o no está en el PATH.',
-			'automation.error.modelUnavailable' => ({required Object model, required Object harness}) => 'El modelo "${model}" no está disponible para ${harness}. Elige otro modelo en Configuración.',
 			_ => null,
 		} ?? switch (path) {
+			'automation.error.unavailable' => ({required Object harness}) => '${harness} no está instalado o no está en el PATH.',
+			'automation.error.modelUnavailable' => ({required Object model, required Object harness}) => 'El modelo "${model}" no está disponible para ${harness}. Elige otro modelo en Configuración.',
 			'automation.error.authentication' => ({required Object harness, required Object detail}) => '${harness}: ${detail}',
 			'automation.error.timeout' => ({required Object harness, required Object seconds}) => '${harness} no respondió en ${seconds} segundos.',
 			'automation.error.cancelled' => 'Se canceló la generación del mensaje de commit.',
