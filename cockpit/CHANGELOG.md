@@ -24,6 +24,21 @@ As versões seguem o `version:` do `pubspec.yaml` (SSOT). O campo `notes` do
     linhas não-vazias — o começo da seção deve fazer sentido sozinho.
 -->
 
+## [1.28.30] - 2026-09-12
+
+**Still a beta for the upcoming 2.0.0.** Accents work inside Claude Code and
+other Kitty-protocol apps again.
+
+### Fixed
+
+- **Dead keys compose inside Claude Code.** With the Kitty keyboard protocol
+  active (Claude Code, Codex, pi), typing an accent such as `'` + `e` produced
+  `'e` instead of `é`: the dead-key press was encoded as an escape sequence
+  before macOS could compose the character. The terminal now lets the IME
+  compose first. Plain shells were never affected.
+- **iOS text input reopen** is deferred to the next frame after a marked-text
+  desync, so the keyboard keeps delivering keys without a manual refocus.
+
 ## [1.28.29] - 2026-09-11
 
 **Still a beta for the upcoming 2.0.0.** Workspace environment files for your
