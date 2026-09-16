@@ -9,6 +9,11 @@ labels: {bug: red, cd: orange, mobile: blue, docs: green, feature: purple, secur
 - [ ] Files pane: right-click on the empty area below the tree does nothing, so you cannot paste into the root <!-- id: k20 labels: bug -->
       The context menu only opens on a file or folder row. Clicking the empty space at the bottom of the pane (or inside an empty folder) shows nothing, so there is no way to paste, create a file or folder at the workspace root without picking a folder first. The empty area should open the folder menu targeting the root (or the folder being viewed when it is empty).
 
+- [ ] Task debug tab opens empty (no output) <!-- id: k26 labels: bug -->
+      Running a task from the Tasks panel opens the task output tab but it stays blank: no command echo, no stdout/stderr, no exit status. Check whether the runner actually spawned (PtyTaskRunner, `launchctl asuser` prefix on macOS, login shell `-ilc`), whether the TaskOutputSession is attached to the right tab (see k23: `openTaskOutput` writes `active` into the focused pane), and whether output is gated by the visible/active flags of the pane. May share the root cause with k23.
+      <!-- comment: 2026-09-15T11:00 -->
+      k23 fixed (task tab now activates in its own pane; pane_view compares with the shown index). Re-test this one on the next build: if the blank tab was the focused pane losing its active tab, it is the same bug. If the task tab itself still shows nothing, it is the runner/output path.
+
 - [ ] Opening a .ckp layout should replace the current layout (close the existing tabs first) <!-- id: k21 labels: feature -->
       Today applying a .ckp file adds its terminals and splits on top of whatever is already open, so the workspace ends up with the old tabs plus the new ones. Opening a layout should mean "become this layout": close the current tabs of the workspace, then build the panes described in the file. Applies to opening from the Files pane and to `cockpit orchestrate`. Consider a confirmation when a tab has a running process.
 
@@ -20,11 +25,6 @@ labels: {bug: red, cd: orange, mobile: blue, docs: green, feature: purple, secur
 
 - [ ] Validate cockpit-server running on a VPS <!-- id: k25 labels: feature -->
       End-to-end check of the remote path on a real VPS (not only LAN/localhost): install the server on a fresh Linux box, connect from Cockpit over SSH, open a remote workspace, terminals, agents, file tree and git. Note what breaks or is awkward (install script, server updates, reconnect after sleep, latency, permissions, firewall) and feed the findings into k13 (remote workspace redesign) and the site docs.
-
-- [ ] Task debug tab opens empty (no output) <!-- id: k26 labels: bug -->
-      Running a task from the Tasks panel opens the task output tab but it stays blank: no command echo, no stdout/stderr, no exit status. Check whether the runner actually spawned (PtyTaskRunner, `launchctl asuser` prefix on macOS, login shell `-ilc`), whether the TaskOutputSession is attached to the right tab (see k23: `openTaskOutput` writes `active` into the focused pane), and whether output is gated by the visible/active flags of the pane. May share the root cause with k23.
-      <!-- comment: 2026-09-15T11:00 -->
-      k23 fixed (task tab now activates in its own pane; pane_view compares with the shown index). Re-test this one on the next build: if the blank tab was the focused pane losing its active tab, it is the same bug. If the task tab itself still shows nothing, it is the runner/output path.
 
 - [ ] Windows code signing via SignPath OSS <!-- id: k3 labels: cd -->
       Application submitted on signpath.org (MIT license added 2026-07-30). Once approved, integrate signing into the windows job of cockpit-release.yml. Unsigned builds keep triggering SmartScreen.
