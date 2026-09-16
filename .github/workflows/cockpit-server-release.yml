@@ -104,6 +104,7 @@ jobs:
           unzip -q "$GITHUB_WORKSPACE/cockpit/out/cockpit-server-${VERSION}-linux-${{ matrix.arch }}.zip"
           ./cockpit-server/install.sh
           test -x "$HOME/.cockpit/server/bin/cockpit-server"
+          test -L "$HOME/.local/bin/cockpit-server"
           [ "$("$HOME/.cockpit/server/bin/cockpit-server" --version)" = "$VERSION" ]
           # Segunda rodada = no-op (idempotência).
           ./cockpit-server/install.sh | grep -q "already installed"

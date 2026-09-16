@@ -20,7 +20,10 @@
 #   4. Smoke test: starts the server on a temp socket with --exit-on-idle 1
 #      and waits for the socket. Failure restores the backup and shows the log
 #      (this is where a glibc/arch mismatch shows up).
-#   5. --service: registers a systemd --user unit via
+#   5. Symlinks ~/.local/bin/cockpit-server so `cockpit-server service …`
+#      works from any shell (~/.local/bin is on PATH by default on most
+#      distros once it exists).
+#   6. --service: registers a systemd --user unit via
 #      `cockpit-server service install` (may ask you to run one sudo command
 #      for `loginctl enable-linger`). If a unit already exists, restarts it.
 #
@@ -127,6 +130,18 @@ else
 fi
 trap - EXIT; rm -f "$LOG"
 ok "installed cockpit-server $VERSION at $DEST"
+
+# ── PATH: ~/.local/bin/cockpit-server → the installed binary ─────────────────
+# Same convention as the Pi installer. Debian/Ubuntu/Fedora add ~/.local/bin
+# to PATH at login when it exists; the symlink follows updates by itself since
+# it points at the stable $DEST path, not at a versioned folder.
+LINK_DIR="$HOME/.local/bin"
+mkdir -p "$LINK_DIR"
+ln -sfn "$DEST/bin/cockpit-server" "$LINK_DIR/cockpit-server"
+case ":$PATH:" in
+  *":$LINK_DIR:"*) ok "cockpit-server is on PATH ($LINK_DIR)" ;;
+  *) warn "$LINK_DIR is not on PATH in this shell; open a new login shell or add: export PATH=\"\$HOME/.local/bin:\$PATH\"" ;;
+esac
 
 # ── 5. service ───────────────────────────────────────────────────────────────
 UNIT="$HOME/.config/systemd/user/cockpit-server.service"

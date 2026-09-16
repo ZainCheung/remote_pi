@@ -1332,7 +1332,8 @@ cockpit mongo browse --db atlas --database shop`}
                     from the GitHub release, verifies its SHA-256 and runs the{" "}
                     <InlineCode>install.sh</InlineCode> shipped inside the zip.
                     That installs to <InlineCode>~/.cockpit/server</InlineCode>{" "}
-                    (the same layout the desktop app uses), checks every file
+                    (the same layout the desktop app uses), links the binary
+                    into <InlineCode>~/.local/bin</InlineCode>, checks every file
                     against <InlineCode>bundle.manifest</InlineCode> and does a
                     smoke start before swapping the new version in. A host
                     without internet access can take the zip by{" "}
@@ -1367,10 +1368,10 @@ cockpit mongo browse --db atlas --database shop`}
                     code={`# at install time
 curl -fsSL https://remote-pi.jacobmoura.work/cockpit-server.sh | bash -s -- --service
 
-# or later, with the installed binary
-~/.cockpit/server/bin/cockpit-server service install
-~/.cockpit/server/bin/cockpit-server service status
-~/.cockpit/server/bin/cockpit-server service uninstall`}
+# or later (the installer links cockpit-server into ~/.local/bin)
+cockpit-server service install
+cockpit-server service status
+cockpit-server service uninstall`}
                   />
                   <p>
                     The unit lives in{" "}
