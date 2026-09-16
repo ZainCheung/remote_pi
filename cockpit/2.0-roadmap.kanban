@@ -6,19 +6,25 @@ labels: {bug: red, cd: orange, mobile: blue, docs: green, feature: purple, secur
 
 ## Backlog
 
-- [ ] Validate cockpit-server running on a VPS <!-- id: k25 labels: feature -->
-      End-to-end check of the remote path on a real VPS (not only LAN/localhost): install the server on a fresh Linux box, connect from Cockpit over SSH, open a remote workspace, terminals, agents, file tree and git. Note what breaks or is awkward (install script, server updates, reconnect after sleep, latency, permissions, firewall) and feed the findings into k13 (remote workspace redesign) and the site docs.
+- [ ] cockpit-server on a VPS: curl installer (Linux x86_64 + arm64), release tarballs, docs, validation <!-- id: k25 labels: feature, docs -->
+      Why: the desktop client already installs the server over SSH from its embedded bundle, but the mobile client (iPad/Android) carries no bundle and can only connect to a host a desktop prepared first. A VPS needs a way to get the server without a desktop.
+      Decisions (2026-09-15): install dir stays `~/.cockpit/server/{bin,lib}` + `bundle.manifest` (what the client looks for; no sudo, no systemd, the client starts the server on demand over SSH with --exit-on-idle); client and server must be the same release (mobile already reports version_mismatch); Linux only, x86_64 and arm64.
+      Steps:
+      1. CI: the linux jobs already build the native server bundle for amd64/arm64. Pack `cockpit-server-<version>-linux-x86_64.tar.gz` and `-linux-arm64.tar.gz` (bin/ + lib/ + bundle.manifest), attach to the GitHub Release, list in SHA256SUMS and latest.json.
+      2. Script `site/public/cockpit-server.sh` (same style as install.sh): `curl -fsSL https://remote-pi.jacobmoura.work/cockpit-server.sh | bash`. Detect `uname -m` (x86_64 | aarch64), resolve version (latest via latest.json, or `COCKPIT_VERSION=x.y.z`), download tarball + SHA256SUMS, verify, stage, atomic swap into `~/.cockpit/server` (same no-nest rename the client uses), smoke run `cockpit-server --socket <tmp> --exit-on-idle 1`, print next step (connect from Cockpit). Idempotent: same version installed = no-op. Re-run = update.
+      3. Docs on the site: "Remote host on a VPS" page: requirements (SSH key, Linux x86_64/arm64, glibc note), the curl one-liner, how updates work (desktop auto-updates over SSH, mobile needs the curl again), troubleshooting (version_mismatch, missing libcockpit_pty.so, socket permissions).
+      4. Validate on two real VPS (one x86_64, one arm64), including an older distro (Ubuntu 22.04 / Debian 12) to catch the glibc floor of the ubuntu-24.04 build; if it fails, build the x86_64 slice with the Zig cross-link targeting glibc 2.31 like the arm64 slice. Test from the desktop and from the iPad. Feed findings into k13 and the docs.
+
+- [ ] Remote workspace redesign (plan 58) <!-- id: k13 labels: feature -->
+      Remote workspace = a host folder with worktrees, git and file tree like local; pick the folder when connecting; the "+" becomes a Local/Remote menu instead of a fixed button.
+      <!-- comment: 2026-09-12T16:59 -->
+      Precisamos entender melhor sobre isso
 
 - [ ] Windows code signing via SignPath OSS <!-- id: k3 labels: cd -->
       Application submitted on signpath.org (MIT license added 2026-07-30). Once approved, integrate signing into the windows job of cockpit-release.yml. Unsigned builds keep triggering SmartScreen.
 
 
 
-
-- [ ] Remote workspace redesign (plan 58) <!-- id: k13 labels: feature -->
-      Remote workspace = a host folder with worktrees, git and file tree like local; pick the folder when connecting; the "+" becomes a Local/Remote menu instead of a fixed button.
-      <!-- comment: 2026-09-12T16:59 -->
-      Precisamos entender melhor sobre isso
 
 
 
@@ -42,20 +48,6 @@ labels: {bug: red, cd: orange, mobile: blue, docs: green, feature: purple, secur
       `../site`: .env.cockpit, Restart tab, Neovim, workspace CLI, remote hosts, Gallery documents, Database panel and everything else that shipped since the page was last updated.
 
 ## Doing
-- [ ] Android CD pipeline <!-- id: k7 labels: cd, mobile -->
-      <!-- comment: 2026-09-12T19:20 -->
-      Job `android` added to cockpit-release.yml: restores the keystore from COCKPIT_ANDROID_* secrets (uploaded), builds the arm64 APK (split, ~45 MB) and the AAB, verifies the APK cert against the keystore (fails on debug fallback) and jarsigner-verifies the AAB, uploads both; publish now expects 8 artifacts and lists android apk/aab in latest.json. First real run happens on the next cockpit-v* tag.
-
-      GitHub Actions job that builds and signs the Android app on tag, like the macOS/Windows/Linux jobs in cockpit-release.yml.
-- [ ] Test on a physical Android device <!-- id: k8 labels: mobile blockedBy: k7, k14 -->
-      <!-- comment: 2026-09-12T18:40 -->
-      Blocker cleared: anaki_* hooks published to pub.dev (sqlite 0.1.5, postgres 0.1.7, mysql 0.1.8, mssql 0.1.6, redis 0.1.5, mongodb 0.1.8), constraints bumped in cockpit (666617b6). `flutter build apk` and `flutter run` on Android now work with no override. Pixel Tablet emulator (API 36, arm64) boots the app fine.
-
-      <!-- comment: 2026-09-12T18:10 -->
-      Android bring-up done: applicationId work.jacobmoura.cockpit (same as iOS), label "Cockpit Remote", adaptive icon copied from ../app/android, release keystore generated (android/keystore/cockpit-release.jks, gitignored; back it up to iCloud like the mobile app one; passwords in android/key.properties), Gradle signing wired, permissions INTERNET + ACCESS_NETWORK_STATE + POST_NOTIFICATIONS + cleartext for http dev servers. Toolchain pinned to AGP 8.11.1/Gradle 8.14 (AGP 9 rejects flutter_inappwebview's proguard file). First signed APK built: ~/Desktop/CockpitRemote-1.28.31-android.apk. Blocker for reproducible builds: anaki_* hooks throw on Android/iOS; fixed in anakiORM (tag cockpit-pin-mobile-hooks) but must be PUBLISHED to pub.dev (git checkout has no desktop binaries).
-- [ ] Test on iOS (iPad) <!-- id: k9 labels: mobile blockedBy: k14 -->
-      <!-- comment: 2026-09-12T20:05 -->
-      iOS tests passed on device. Store prep: bundle id switched to work.jacobmoura.cockpit.remote (the plain id was taken by the BDZ7AJ7ZN2 team via Xcode automatic signing); .remote and .remote.debug registered in team U843T2P7A2 through the App Store Connect API; ITSAppUsesNonExemptEncryption=false and PrivacyInfo.xcprivacy added to the Runner target. `flutter build ios --release --no-codesign` OK with the new id. Next: create the app record in App Store Connect with the .remote id, decide iPad-only vs iPhone, screenshots, privacy policy URL, demo SSH host for the reviewer.
 - [ ] Publish on the App Store <!-- id: k12 labels: cd, mobile blockedBy: k9, k16 -->
 - [ ] Publish on Google Play <!-- id: k11 labels: cd, mobile blockedBy: k8, k16 -->
 
@@ -69,10 +61,27 @@ labels: {bug: red, cd: orange, mobile: blue, docs: green, feature: purple, secur
 
 ## Done
 
+- [x] Test on iOS (iPad) <!-- id: k9 labels: mobile blockedBy: k14 -->
+      <!-- comment: 2026-09-12T20:05 -->
+      iOS tests passed on device. Store prep: bundle id switched to work.jacobmoura.cockpit.remote (the plain id was taken by the BDZ7AJ7ZN2 team via Xcode automatic signing); .remote and .remote.debug registered in team U843T2P7A2 through the App Store Connect API; ITSAppUsesNonExemptEncryption=false and PrivacyInfo.xcprivacy added to the Runner target. `flutter build ios --release --no-codesign` OK with the new id. Next: create the app record in App Store Connect with the .remote id, decide iPad-only vs iPhone, screenshots, privacy policy URL, demo SSH host for the reviewer.
+
+- [x] Android CD pipeline <!-- id: k7 labels: cd, mobile -->
+      <!-- comment: 2026-09-12T19:20 -->
+      Job `android` added to cockpit-release.yml: restores the keystore from COCKPIT_ANDROID_* secrets (uploaded), builds the arm64 APK (split, ~45 MB) and the AAB, verifies the APK cert against the keystore (fails on debug fallback) and jarsigner-verifies the AAB, uploads both; publish now expects 8 artifacts and lists android apk/aab in latest.json. First real run happens on the next cockpit-v* tag.
+
+      GitHub Actions job that builds and signs the Android app on tag, like the macOS/Windows/Linux jobs in cockpit-release.yml.
+
 - [x] Agent profiles: run Claude Code / Codex with different accounts (sandboxed or per-profile config) <!-- id: k24 labels: decision -->
       Need a way to launch a harness (Claude Code, Codex CLI, Pi) under a different account or isolated config per workspace or per tab, e.g. a personal and a work account side by side. Open question: build it in Cockpit (per-profile HOME / CLAUDE_CONFIG_DIR / CODEX_HOME injected into the terminal env, like .env.cockpit does) or delegate to an existing tool (containers, devcontainers, `sandbox-exec`, direnv, a profile manager). Investigate what each harness supports natively (Claude Code honours CLAUDE_CONFIG_DIR; Codex uses CODEX_HOME) before deciding. Park until the 2.0 core items are done.
       <!-- comment: 2026-09-15T16:00 -->
       Decision: no new feature. Claude Code has no built-in profile flag; the only native mechanisms are `CLAUDE_CONFIG_DIR` (whole account: credentials, settings, history) and `CLAUDE_CODE_OAUTH_TOKEN` (credential only); Codex uses `CODEX_HOME`. `.env.cockpit` already injects these per workspace (they are not in the blocklist), so the flow is: add `CLAUDE_CONFIG_DIR=/abs/path/.claude-work` to the workspace `.env.cockpit`, restart the tabs, run `claude` and `/login` once. Orca does the same thing internally and still has an open issue for multiple subscriptions. Follow-ups: document the recipe on the site (k2) and, if wanted later, a per-account usage/rate-limit indicator like Orca's status bar.
+
+- [x] Test on a physical Android device <!-- id: k8 labels: mobile blockedBy: k7, k14 -->
+      <!-- comment: 2026-09-12T18:40 -->
+      Blocker cleared: anaki_* hooks published to pub.dev (sqlite 0.1.5, postgres 0.1.7, mysql 0.1.8, mssql 0.1.6, redis 0.1.5, mongodb 0.1.8), constraints bumped in cockpit (666617b6). `flutter build apk` and `flutter run` on Android now work with no override. Pixel Tablet emulator (API 36, arm64) boots the app fine.
+
+      <!-- comment: 2026-09-12T18:10 -->
+      Android bring-up done: applicationId work.jacobmoura.cockpit (same as iOS), label "Cockpit Remote", adaptive icon copied from ../app/android, release keystore generated (android/keystore/cockpit-release.jks, gitignored; back it up to iCloud like the mobile app one; passwords in android/key.properties), Gradle signing wired, permissions INTERNET + ACCESS_NETWORK_STATE + POST_NOTIFICATIONS + cleartext for http dev servers. Toolchain pinned to AGP 8.11.1/Gradle 8.14 (AGP 9 rejects flutter_inappwebview's proguard file). First signed APK built: ~/Desktop/CockpitRemote-1.28.31-android.apk. Blocker for reproducible builds: anaki_* hooks throw on Android/iOS; fixed in anakiORM (tag cockpit-pin-mobile-hooks) but must be PUBLISHED to pub.dev (git checkout has no desktop binaries).
 
 - [x] Files pane: right-click on the empty area below the tree does nothing, so you cannot paste into the root <!-- id: k20 labels: bug -->
       The context menu only opens on a file or folder row. Clicking the empty space at the bottom of the pane (or inside an empty folder) shows nothing, so there is no way to paste, create a file or folder at the workspace root without picking a folder first. The empty area should open the folder menu targeting the root (or the folder being viewed when it is empty).
