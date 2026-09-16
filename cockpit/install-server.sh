@@ -17,7 +17,8 @@
 #      `cockpit-server-v*` GitHub release.
 #   3. Downloads cockpit-server-<version>-linux-<arch>.zip + SHA256SUMS from
 #      that release and verifies the checksum.
-#   4. Unzips to a temp dir and runs the install.sh shipped inside the zip,
+#   4. Unzips (unzip, else python3, else installs unzip via the package
+#      manager when sudo is passwordless) and runs the install.sh inside,
 #      which installs to ~/.cockpit/server (same layout the desktop app uses).
 #   --service: also registers a systemd --user unit so the server starts at
 #      boot (`cockpit-server service install`; may print one sudo command for
@@ -55,9 +56,53 @@ case "$(uname -m)" in
   aarch64|arm64) ARCH=arm64 ;;
   *) die "unsupported architecture: $(uname -m) (x86_64 and arm64 only)" ;;
 esac
-for tool in curl unzip sha256sum; do
-  command -v "$tool" >/dev/null 2>&1 || die "'$tool' is required (apt install $tool)"
+for tool in curl sha256sum; do
+  command -v "$tool" >/dev/null 2>&1 || die "'$tool' is required"
 done
+
+# Extracting the zip: prefer `unzip`; fall back to python3's zipfile module
+# (present on nearly every distro); as a last resort install `unzip` with the
+# package manager when sudo works without a password (cloud images, OrbStack,
+# containers). Otherwise stop with the exact command to run.
+extract_zip() { # <zip> <dest dir>
+  if command -v unzip >/dev/null 2>&1; then
+    unzip -q "$1" -d "$2"
+  elif command -v python3 >/dev/null 2>&1; then
+    python3 - "$1" "$2" <<'PY'
+import os, sys, zipfile
+src, dest = sys.argv[1], sys.argv[2]
+with zipfile.ZipFile(src) as z:
+    for info in z.infolist():
+        target = z.extract(info, dest)
+        mode = (info.external_attr >> 16) & 0o777
+        if mode and not info.is_dir():
+            os.chmod(target, mode)
+PY
+  else
+    return 1
+  fi
+}
+ensure_extractor() {
+  command -v unzip >/dev/null 2>&1 && return 0
+  command -v python3 >/dev/null 2>&1 && return 0
+  local pm=""
+  if command -v apt-get >/dev/null 2>&1; then pm="apt-get install -y unzip"
+  elif command -v dnf >/dev/null 2>&1; then pm="dnf install -y unzip"
+  elif command -v yum >/dev/null 2>&1; then pm="yum install -y unzip"
+  elif command -v apk >/dev/null 2>&1; then pm="apk add unzip"
+  elif command -v pacman >/dev/null 2>&1; then pm="pacman -S --noconfirm unzip"
+  elif command -v zypper >/dev/null 2>&1; then pm="zypper install -y unzip"
+  fi
+  [ -n "$pm" ] || die "neither 'unzip' nor 'python3' found; install unzip and re-run"
+  if [ "$(id -u)" = 0 ]; then
+    step "Installing unzip"; $pm >/dev/null || die "could not install unzip ($pm)"
+  elif command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
+    step "Installing unzip (sudo)"; sudo -n $pm >/dev/null || die "could not install unzip (sudo $pm)"
+  else
+    die "'unzip' is required and sudo needs a password here. Run:  sudo $pm   then re-run this installer"
+  fi
+}
+ensure_extractor
 
 step "Resolving version"
 if [ -n "${COCKPIT_VERSION:-}" ]; then
@@ -85,5 +130,5 @@ curl -fsSL --retry 3 -o "$TMP/SHA256SUMS" "$GH_DL/$TAG/SHA256SUMS" \
 ok "checksum verified"
 
 step "Installing"
-( cd "$TMP" && unzip -q "$ZIP" )
+extract_zip "$TMP/$ZIP" "$TMP" || die "could not extract $ZIP"
 "$TMP/cockpit-server/install.sh" "${INSTALL_ARGS[@]+"${INSTALL_ARGS[@]}"}"

@@ -29,7 +29,9 @@ The script lives at [install-server.sh](install-server.sh). What it does, in ord
    Cockpit app you connect from.
 3. Downloads `cockpit-server-<version>-linux-<arch>.zip` and `SHA256SUMS` from
    that release and verifies the checksum.
-4. Unzips to a temp folder and runs the `install.sh` shipped inside the zip,
+4. Unzips to a temp folder (`unzip`, else `python3`, else installs `unzip`
+   with the package manager when sudo is passwordless) and runs the
+   `install.sh` shipped inside the zip,
    which verifies `bundle.manifest`, does a smoke start, swaps the folder into
    `~/.cockpit/server` atomically (previous install kept as backup until the
    smoke passes) and links `~/.local/bin/cockpit-server`.
