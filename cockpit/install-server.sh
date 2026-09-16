@@ -7,6 +7,10 @@
 #   curl -fsSL https://remote-pi.jacobmoura.work/cockpit-server.sh | bash -s -- --service
 #   COCKPIT_VERSION=1.28.33 curl -fsSL ... | bash
 #
+# Canonical file: cockpit/install-server.sh in the repo; the site URL above
+# redirects to the GitHub raw of this file:
+#   https://raw.githubusercontent.com/jacobaraujo7/remote_pi/main/cockpit/install-server.sh
+#
 # What it does (user-space, NO sudo, idempotent):
 #   1. Detects the architecture (x86_64 or arm64; Linux only).
 #   2. Resolves the version: $COCKPIT_VERSION, else the latest

@@ -180,7 +180,7 @@ cockpit-server/
 ```
 
 Instalação no host: `curl -fsSL https://remote-pi.jacobmoura.work/cockpit-server.sh | bash`
-(script em `site/public/`, só resolve versão e arch, baixa, confere o hash e
+(script em `cockpit/install-server.sh`, só resolve versão e arch, baixa, confere o hash e
 chama o `install.sh` do zip). `--service` registra a unit `systemd --user`
 via `cockpit-server service install|uninstall|status`. Documentação: seção
 "Remote hosts & VPS" em `site/src/app/cockpit/docs/page.tsx`.

@@ -9,7 +9,7 @@
 #   cockpit-server-<versão>-linux-x86_64.zip
 #   cockpit-server-<versão>-linux-arm64.zip
 #   SHA256SUMS
-# É o que o instalador do site (site/public/cockpit-server.sh) baixa.
+# É o que o instalador (cockpit/install-server.sh, servido pelo site e pelo raw) baixa.
 # Layout do zip: cockpit/tool/build-server-zip.sh.
 
 name: cockpit-server-release

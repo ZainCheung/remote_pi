@@ -1324,7 +1324,9 @@ cockpit mongo browse --db atlas --database shop`}
                   <CodeBlock
                     label="on the host"
                     language="bash"
-                    code={`curl -fsSL https://remote-pi.jacobmoura.work/cockpit-server.sh | bash`}
+                    code={`curl -fsSL https://remote-pi.jacobmoura.work/cockpit-server.sh | bash
+# or straight from GitHub (the URL above redirects here):
+curl -fsSL https://raw.githubusercontent.com/jacobaraujo7/remote_pi/main/cockpit/install-server.sh | bash`}
                   />
                   <p>
                     The script detects the architecture, downloads{" "}

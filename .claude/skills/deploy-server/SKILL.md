@@ -32,7 +32,7 @@ cd cockpit
 git status --short && git pull --ff-only
 VERSION=$(sed -n 's/^version: *\([0-9][0-9.]*\).*/\1/p' pubspec.yaml); echo $VERSION
 ( cd packages/cockpit_server && dart analyze && dart test )   # Linux-only cases skip on macOS
-bash -n packages/cockpit_server/install.sh tool/build-server-zip.sh ../site/public/cockpit-server.sh
+bash -n packages/cockpit_server/install.sh tool/build-server-zip.sh install-server.sh
 git tag -l "cockpit-server-v$VERSION"    # empty = not released yet
 ```
 

@@ -17,9 +17,11 @@ installed once. Linux x86_64 and arm64 only, user space, no sudo.
 
 ```bash
 curl -fsSL https://remote-pi.jacobmoura.work/cockpit-server.sh | bash
+# same script straight from GitHub (the site URL redirects here):
+curl -fsSL https://raw.githubusercontent.com/jacobaraujo7/remote_pi/main/cockpit/install-server.sh | bash
 ```
 
-What the script does, in order:
+The script lives at [install-server.sh](install-server.sh). What it does, in order:
 
 1. Checks that the host is Linux and maps `uname -m` to `x86_64` or `arm64`.
 2. Resolves the version: `COCKPIT_VERSION=x.y.z` if set, otherwise the latest
