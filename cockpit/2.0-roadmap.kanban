@@ -9,6 +9,8 @@ labels: {bug: red, cd: orange, mobile: blue, docs: green, feature: purple, secur
 - [ ] Windows/Linux: "Open with Cockpit" (file association + single instance) <!-- id: k17 labels: feature -->
       <!-- comment: 2026-09-13T16:40 -->
       Part 3 done (plugins + present channel in windows/runner/flutter_window.cpp and linux/runner/my_application.cc), so "Open in new window" from inside the app now gets plugins, title and size on Windows/Linux too. Written without a local toolchain: the first CI build for those targets validates it. Still open: single instance (forward the path to the running app via the CLI socket) and file association (Inno Setup / .desktop MimeType).
+      <!-- comment: 2026-09-15T10:00 -->
+      1.28.32 validated by hand on Windows and Linux: "Open in new window" works (plugins, title, size). Only single instance and file association remain.
 
       macOS is done (k10). On Windows/Linux the OS starts a NEW process with the file path as argument: detect a running Cockpit (the CLI socket already exists), forward the path to it and exit; otherwise open a document window directly. Association: Inno Setup registry keys (Windows) and MimeType in the .desktop (Linux). Also register the desktop_multi_window plugin callback on those platforms (windows/runner + linux/my_application.cc) so document windows get plugins.
 
