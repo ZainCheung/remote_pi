@@ -140,7 +140,25 @@ mkdir -p "$LINK_DIR"
 ln -sfn "$DEST/bin/cockpit-server" "$LINK_DIR/cockpit-server"
 case ":$PATH:" in
   *":$LINK_DIR:"*) ok "cockpit-server is on PATH ($LINK_DIR)" ;;
-  *) warn "$LINK_DIR is not on PATH in this shell; open a new login shell or add: export PATH=\"\$HOME/.local/bin:\$PATH\"" ;;
+  *)
+    # Debian/Ubuntu only pick ~/.local/bin up at login when it already exists,
+    # so a fresh host never has it in the current session. Add an idempotent
+    # line to the shell rc files (same approach as rustup/uv); the running
+    # shell still needs a reload.
+    PATH_LINE='export PATH="$HOME/.local/bin:$PATH"'
+    MARK='# added by cockpit-server installer'
+    added=""
+    for rc in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.profile"; do
+      [ -f "$rc" ] || continue
+      grep -qF "$MARK" "$rc" && continue
+      printf '\n%s\n%s\n' "$MARK" "$PATH_LINE" >> "$rc"
+      added="$added $(basename "$rc")"
+    done
+    if [ -n "$added" ]; then
+      ok "added $LINK_DIR to PATH in:$added"
+    fi
+    warn "PATH takes effect in a new shell: run  exec \$SHELL -l  (or: $PATH_LINE)"
+    ;;
 esac
 
 # ── 5. service ───────────────────────────────────────────────────────────────
