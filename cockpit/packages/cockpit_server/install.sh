@@ -76,10 +76,44 @@ step "Verifying cockpit-server $VERSION ($ARCH)"
 [ -f "$SRC/lib/libcockpit_pty.so" ] || die "lib/libcockpit_pty.so missing"
 ok "manifest matches"
 
+# ── PATH: ~/.local/bin/cockpit-server → the installed binary ─────────────────
+# Same convention as the Pi installer. The symlink points at the stable $DEST
+# path, so it follows updates by itself. Runs on every invocation (also when
+# the version is already installed): a host that lost the link or the PATH
+# line gets them back without reinstalling.
+ensure_path() {
+  LINK_DIR="$HOME/.local/bin"
+  mkdir -p "$LINK_DIR"
+  ln -sfn "$DEST/bin/cockpit-server" "$LINK_DIR/cockpit-server"
+  case ":$PATH:" in
+    *":$LINK_DIR:"*) ok "cockpit-server is on PATH ($LINK_DIR)" ;;
+    *)
+      # Debian/Ubuntu only pick ~/.local/bin up at login when it already exists,
+      # so a fresh host never has it in the current session. Add an idempotent
+      # line to the shell rc files (same approach as rustup/uv); the running
+      # shell still needs a reload.
+      PATH_LINE='export PATH="$HOME/.local/bin:$PATH"'
+      MARK='# added by cockpit-server installer'
+      added=""
+      for rc in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.profile"; do
+        [ -f "$rc" ] || continue
+        grep -qF "$MARK" "$rc" && continue
+        printf '\n%s\n%s\n' "$MARK" "$PATH_LINE" >> "$rc"
+        added="$added $(basename "$rc")"
+      done
+      if [ -n "$added" ]; then
+        ok "added $LINK_DIR to PATH in:$added"
+      fi
+      warn "PATH takes effect in a new shell: run  exec \$SHELL -l  (or: $PATH_LINE)"
+      ;;
+  esac
+}
+
 # ── 3. idempotence ───────────────────────────────────────────────────────────
 if [ -f "$DEST/VERSION" ] && [ -f "$DEST/bundle.manifest" ] \
    && cmp -s "$DEST/bundle.manifest" "$SRC/bundle.manifest"; then
   ok "already installed at $DEST ($(sed -n '1p' "$DEST/VERSION"))"
+  ensure_path
   if [ "$WANT_SERVICE" = 1 ]; then
     step "Registering systemd user service"
     "$DEST/bin/cockpit-server" service install
@@ -130,36 +164,7 @@ else
 fi
 trap - EXIT; rm -f "$LOG"
 ok "installed cockpit-server $VERSION at $DEST"
-
-# ── PATH: ~/.local/bin/cockpit-server → the installed binary ─────────────────
-# Same convention as the Pi installer. Debian/Ubuntu/Fedora add ~/.local/bin
-# to PATH at login when it exists; the symlink follows updates by itself since
-# it points at the stable $DEST path, not at a versioned folder.
-LINK_DIR="$HOME/.local/bin"
-mkdir -p "$LINK_DIR"
-ln -sfn "$DEST/bin/cockpit-server" "$LINK_DIR/cockpit-server"
-case ":$PATH:" in
-  *":$LINK_DIR:"*) ok "cockpit-server is on PATH ($LINK_DIR)" ;;
-  *)
-    # Debian/Ubuntu only pick ~/.local/bin up at login when it already exists,
-    # so a fresh host never has it in the current session. Add an idempotent
-    # line to the shell rc files (same approach as rustup/uv); the running
-    # shell still needs a reload.
-    PATH_LINE='export PATH="$HOME/.local/bin:$PATH"'
-    MARK='# added by cockpit-server installer'
-    added=""
-    for rc in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.profile"; do
-      [ -f "$rc" ] || continue
-      grep -qF "$MARK" "$rc" && continue
-      printf '\n%s\n%s\n' "$MARK" "$PATH_LINE" >> "$rc"
-      added="$added $(basename "$rc")"
-    done
-    if [ -n "$added" ]; then
-      ok "added $LINK_DIR to PATH in:$added"
-    fi
-    warn "PATH takes effect in a new shell: run  exec \$SHELL -l  (or: $PATH_LINE)"
-    ;;
-esac
+ensure_path
 
 # ── 5. service ───────────────────────────────────────────────────────────────
 UNIT="$HOME/.config/systemd/user/cockpit-server.service"
