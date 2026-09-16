@@ -725,7 +725,8 @@ class _TabState extends State<_Tab> {
         // do terminal, e um quadro aberto o dia todo merece um nome melhor que
         // o do arquivo.
         if (viewer != null) ...[
-          // Cópia solta numa janela de documento (a aba continua aqui).
+          // Move o arquivo pra uma janela de documento: a aba daqui fecha
+          // (com a mesma confirmação de edição não salva do ⌘W).
           if (!isMobilePlatform && !viewer.scratch)
             AppMenuItem(
               value: 'open-window',
@@ -804,7 +805,10 @@ class _TabState extends State<_Tab> {
       case 'pin':
         if (viewer != null) viewer.pin();
       case 'open-window':
-        if (viewer != null) unawaited(DocumentWindows.open(viewer.path));
+        if (viewer != null) {
+          unawaited(DocumentWindows.open(viewer.path));
+          await _requestClose();
+        }
       case 'copy-id':
         if (terminal != null) {
           await Clipboard.setData(ClipboardData(text: terminal.id));
