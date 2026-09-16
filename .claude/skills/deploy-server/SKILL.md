@@ -19,10 +19,10 @@ Rules that always apply:
 - The tag version MUST equal `version:` in `cockpit/pubspec.yaml` (the meta
   job fails otherwise). Client and server are the same version by design:
   the mobile app refuses a different server version.
-- Do not bump `pubspec.yaml` here. If a new version is needed, run the
-  `deploy-cockpit` skill first (it bumps and tags the app), then this one on
-  the same commit. Releasing the server alone for the CURRENT pubspec version
-  is fine when only server code changed.
+- This skill publishes the server only. It does not bump `pubspec.yaml` and
+  does not tag or release the app. It releases the server for the version
+  currently in `pubspec.yaml`; if that version already has a server release,
+  see the note in pre-flight.
 - Never kill any user process. No em-dashes in commit messages.
 
 ## 1. Pre-flight
@@ -38,7 +38,8 @@ git tag -l "cockpit-server-v$VERSION"    # empty = not released yet
 
 If the tag already exists and has a published release, ask the user whether
 they really want to re-release the same version (it overwrites the zips with
-`--clobber`); prefer a new app version via `deploy-cockpit`.
+`--clobber`). A new version number comes from the app's own release flow,
+not from this skill.
 
 ## 2. Tag and watch
 

@@ -52,9 +52,9 @@ git commit -m "chore(cockpit): bump x.y.z+n"
 git push
 ```
 
-If the user also wants the server released in the same version (the mobile
-client requires equal versions), run the `deploy-server` skill after this one
-using the same commit.
+This skill publishes the app only. It never tags or releases
+`cockpit-server`; that is the `deploy-server` skill, run only when the user
+asks for it.
 
 ## 3. Tag and watch
 
