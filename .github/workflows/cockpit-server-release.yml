@@ -76,10 +76,20 @@ jobs:
       # Flutter é o mesmo que o app usa: mantém servidor e cliente no mesmo
       # compilador.
       - uses: subosito/flutter-action@v2
+        if: matrix.arch == 'x86_64'
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
+      # Não existe SDK empacotado de Flutter pra linux-arm64 (flutter-action
+      # falha em host ARM). Mesmo caminho do job linux-arm64 do app: git +
+      # bootstrap do tool, que baixa o Dart SDK arm64.
+      - name: Flutter arm64 (via git)
+        if: matrix.arch == 'arm64'
+        run: |
+          git clone --depth 1 --branch "$FLUTTER_VERSION" https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/flutter/bin/dart" --version
       - name: Rust (CLI + native assets do anaki)
         run: |
           rustup toolchain install stable --profile minimal --no-self-update || true

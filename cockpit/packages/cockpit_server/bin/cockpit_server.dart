@@ -30,11 +30,16 @@ Future<void> main(List<String> args) async {
 Future<void> _run(List<String> args) async {
   // Subcomandos que não sobem servidor nenhum: `service …` (systemd, k25) e
   // `--version` (lê o VERSION do bundle, gravado pelo empacotador).
+  // `exit()` não espera o buffer do stdout: sem o flush, `--version` saía
+  // vazio no CI (o zip falhou na checagem da versão) mesmo com o writeln.
   if (args.isNotEmpty && args.first == 'service') {
-    exit(await runServiceCommand(args.sublist(1)));
+    final code = await runServiceCommand(args.sublist(1));
+    await stdout.flush();
+    exit(code);
   }
   if (args.contains('--version')) {
     stdout.writeln(bundleVersion() ?? 'unknown');
+    await stdout.flush();
     exit(0);
   }
   final socketPath =
