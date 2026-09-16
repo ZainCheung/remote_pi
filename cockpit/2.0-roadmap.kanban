@@ -6,9 +6,6 @@ labels: {bug: red, cd: orange, mobile: blue, docs: green, feature: purple, secur
 
 ## Backlog
 
-- [ ] Agent profiles: run Claude Code / Codex with different accounts (sandboxed or per-profile config) <!-- id: k24 labels: decision -->
-      Need a way to launch a harness (Claude Code, Codex CLI, Pi) under a different account or isolated config per workspace or per tab, e.g. a personal and a work account side by side. Open question: build it in Cockpit (per-profile HOME / CLAUDE_CONFIG_DIR / CODEX_HOME injected into the terminal env, like .env.cockpit does) or delegate to an existing tool (containers, devcontainers, `sandbox-exec`, direnv, a profile manager). Investigate what each harness supports natively (Claude Code honours CLAUDE_CONFIG_DIR; Codex uses CODEX_HOME) before deciding. Park until the 2.0 core items are done.
-
 - [ ] Validate cockpit-server running on a VPS <!-- id: k25 labels: feature -->
       End-to-end check of the remote path on a real VPS (not only LAN/localhost): install the server on a fresh Linux box, connect from Cockpit over SSH, open a remote workspace, terminals, agents, file tree and git. Note what breaks or is awkward (install script, server updates, reconnect after sleep, latency, permissions, firewall) and feed the findings into k13 (remote workspace redesign) and the site docs.
 
@@ -71,6 +68,11 @@ labels: {bug: red, cd: orange, mobile: blue, docs: green, feature: purple, secur
 ## Review
 
 ## Done
+
+- [x] Agent profiles: run Claude Code / Codex with different accounts (sandboxed or per-profile config) <!-- id: k24 labels: decision -->
+      Need a way to launch a harness (Claude Code, Codex CLI, Pi) under a different account or isolated config per workspace or per tab, e.g. a personal and a work account side by side. Open question: build it in Cockpit (per-profile HOME / CLAUDE_CONFIG_DIR / CODEX_HOME injected into the terminal env, like .env.cockpit does) or delegate to an existing tool (containers, devcontainers, `sandbox-exec`, direnv, a profile manager). Investigate what each harness supports natively (Claude Code honours CLAUDE_CONFIG_DIR; Codex uses CODEX_HOME) before deciding. Park until the 2.0 core items are done.
+      <!-- comment: 2026-09-15T16:00 -->
+      Decision: no new feature. Claude Code has no built-in profile flag; the only native mechanisms are `CLAUDE_CONFIG_DIR` (whole account: credentials, settings, history) and `CLAUDE_CODE_OAUTH_TOKEN` (credential only); Codex uses `CODEX_HOME`. `.env.cockpit` already injects these per workspace (they are not in the blocklist), so the flow is: add `CLAUDE_CONFIG_DIR=/abs/path/.claude-work` to the workspace `.env.cockpit`, restart the tabs, run `claude` and `/login` once. Orca does the same thing internally and still has an open issue for multiple subscriptions. Follow-ups: document the recipe on the site (k2) and, if wanted later, a per-account usage/rate-limit indicator like Orca's status bar.
 
 - [x] Files pane: right-click on the empty area below the tree does nothing, so you cannot paste into the root <!-- id: k20 labels: bug -->
       The context menu only opens on a file or folder row. Clicking the empty space at the bottom of the pane (or inside an empty folder) shows nothing, so there is no way to paste, create a file or folder at the workspace root without picking a folder first. The empty area should open the folder menu targeting the root (or the folder being viewed when it is empty).
