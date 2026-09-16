@@ -29,6 +29,7 @@ import 'package:cockpit/app/core/ui/widgets/hover_tap.dart';
 import 'package:cockpit/i18n/strings.g.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:path/path.dart' as p;
 import 'package:cockpit/app/core/utils/platform_kind.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
@@ -1252,21 +1253,38 @@ class _FileTreePanelState extends State<FileTreePanel> {
                       builder: (context, candidates, _) => GestureDetector(
                         behavior: HitTestBehavior.translucent,
                         onTap: _deselect,
-                        child: SingleChildScrollView(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 8,
-                            horizontal: 6,
+                        // Botão direito / toque longo no espaço vazio abaixo
+                        // da árvore → menu de PASTA mirando a raiz (novo
+                        // arquivo/pasta, colar, terminal…). As linhas têm o
+                        // gesto próprio (mais interno, vence na arena), então
+                        // só o vazio chega aqui.
+                        child: ContextMenuGesture(
+                          behavior: HitTestBehavior.translucent,
+                          onMenu: (pos) => _showNodeMenu(
+                            context,
+                            pos,
+                            _folderMenuSpec(
+                              edit,
+                              path: widget.rootPath,
+                              name: p.basename(widget.rootPath),
+                            ),
                           ),
-                          // Árvore única da raiz do workspace, mesmo em
-                          // multi-root — a coloração git resolve a root dona
-                          // por caminho absoluto, e a divisão por repo vive
-                          // no Source Control (lá é onde importa).
-                          child: _DirView(
-                            path: widget.rootPath,
-                            rootPath: widget.rootPath,
-                            depth: 0,
-                            refreshToken: _refreshToken,
-                            edit: edit,
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 8,
+                              horizontal: 6,
+                            ),
+                            // Árvore única da raiz do workspace, mesmo em
+                            // multi-root; a coloração git resolve a root dona
+                            // por caminho absoluto, e a divisão por repo vive
+                            // no Source Control (lá é onde importa).
+                            child: _DirView(
+                              path: widget.rootPath,
+                              rootPath: widget.rootPath,
+                              depth: 0,
+                              refreshToken: _refreshToken,
+                              edit: edit,
+                            ),
                           ),
                         ),
                       ),
@@ -1738,6 +1756,23 @@ class _DirViewState extends State<_DirView> {
                 edit.onCommitCreate(widget.path, pending.isFolder, name),
             onCancel: edit.onCancelCreate,
           ),
+        // Pasta expandida VAZIA: sem linha filha não haveria onde clicar. Um
+        // slot invisível da altura de uma linha recebe o botão direito / toque
+        // longo e abre o menu da própria pasta (novo arquivo, colar…).
+        if (children.isEmpty && !showCreate)
+          ContextMenuGesture(
+            behavior: HitTestBehavior.opaque,
+            onMenu: (pos) => _showNodeMenu(
+              context,
+              pos,
+              _folderMenuSpec(
+                edit,
+                path: widget.path,
+                name: p.basename(widget.path),
+              ),
+            ),
+            child: const SizedBox(height: 26, width: double.infinity),
+          ),
         for (final node in children)
           // Pasta `.notebook` é um documento (caderno): vira linha de arquivo,
           // sem expandir — duplo clique abre a tab. Mesmo espírito do `.app`
@@ -1932,6 +1967,220 @@ class _FolderState extends State<_Folder> {
   }
 }
 
+/// Caminho de [widget] relativo à sua root (absoluto se estiver fora dela).
+String _relativeOf(_Row widget) {
+  final root = widget.rootPath.endsWith('/')
+      ? widget.rootPath
+      : '${widget.rootPath}/';
+  return widget.path.startsWith(root)
+      ? widget.path.substring(root.length)
+      : widget.path;
+}
+
+/// Spec de PASTA pro [_showNodeMenu] fora de uma linha (área vazia da árvore →
+/// raiz; pasta expandida vazia → ela mesma). Mesmos callbacks que o [_Folder]
+/// liga na sua linha, menos renomear/apagar/copiar/recortar; na raiz eles não
+/// se aplicam e, dentro da pasta vazia, o alvo do gesto é o CONTEÚDO dela, não
+/// a pasta em si.
+_Row _folderMenuSpec(
+  _TreeEdit edit, {
+  required String path,
+  required String name,
+}) => _Row(
+  depth: 0,
+  isFolder: true,
+  name: name,
+  path: path,
+  rootPath: path,
+  onCreateInFolder: edit.onCreateInFolder,
+  onNewFile: () => edit.onStartCreate(path, false),
+  onNewFolder: () => edit.onStartCreate(path, true),
+  onOpenWith: () => edit.onOpenWith(path),
+  onOpenInWindow: edit.onOpenInWindow == null
+      ? null
+      : () => edit.onOpenInWindow!(path),
+  onPaste: () => edit.onRequestPaste(path),
+  canPaste: edit.canPaste,
+);
+
+String _fileExplorerLabel(BuildContext context) {
+  if (Platform.isMacOS) return context.t.cockpit.fileTreePanel.openInFinder;
+  if (Platform.isWindows) {
+    return context.t.cockpit.fileTreePanel.openInExplorer;
+  }
+  return context.t.cockpit.fileTreePanel.openInFileManager;
+}
+
+/// Menu de contexto de um nó da árvore. [spec] é um [_Row] usado só como
+/// descrição (rótulos + callbacks): as linhas passam o próprio `widget`; a
+/// área vazia da árvore e o slot de pasta vazia passam um spec de pasta
+/// (ver [_folderMenuSpec]); os itens ficam idênticos aos da linha.
+void _showNodeMenu(BuildContext context, Offset globalPosition, _Row widget) {
+  final isFolder = widget.isFolder;
+  final isFile = !isFolder;
+  // "Create agent" só quando agentes estão ligados (Settings → General →
+  // "Enable agents"). "Create terminal" segue sempre. Lido na hora do menu
+  // pra refletir o toggle atual.
+  final agentsEnabled = context.read<SettingsController>().settings.enableAgent;
+  final tr = context.t.cockpit.fileTreePanel;
+  showAppMenu<String>(
+    context,
+    minWidth: 220,
+    globalPosition: globalPosition,
+    items: [
+      if (isFile) ...[
+        AppMenuItem(value: 'open', label: tr.open, icon: Icons.open_in_new),
+        AppMenuItem(
+          value: 'openwith',
+          label: tr.openWith,
+          icon: Icons.launch_outlined,
+        ),
+        // Janela de documento própria (a aba, se houver, fica onde está).
+        if (widget.onOpenInWindow != null)
+          AppMenuItem(
+            value: 'open-window',
+            label: tr.openInNewWindow,
+            icon: Icons.open_in_browser,
+          ),
+        // Só arquivos `.kanban`: escapa do quadro e edita o markdown cru.
+        if (widget.onOpenAsSource != null)
+          AppMenuItem(
+            value: 'as-source',
+            label: tr.openAsMarkdown,
+            icon: Icons.notes_outlined,
+          ),
+        // Só arquivos `.ckp`: aplica o layout de orquestração de panes.
+        if (widget.onOpenLayout != null)
+          AppMenuItem(
+            value: 'layout',
+            label: tr.openLayout,
+            icon: Icons.grid_view_outlined,
+          ),
+        // Sempre visível; desabilitado quando o arquivo não tem mudança git.
+        AppMenuItem(
+          value: 'diff',
+          label: tr.showGitDiff,
+          icon: Icons.difference_outlined,
+          enabled: widget.gitStatus != null,
+        ),
+      ],
+      if (isFolder) ...[
+        // Pasta `.notebook` é um documento (caderno): também abre solta.
+        if (widget.onOpenInWindow != null &&
+            widget.name.toLowerCase().endsWith('.notebook'))
+          AppMenuItem(
+            value: 'open-window',
+            label: tr.openInNewWindow,
+            icon: Icons.open_in_browser,
+          ),
+        AppMenuItem(
+          value: 'newfile',
+          label: tr.newFile,
+          icon: Icons.note_add_outlined,
+        ),
+        AppMenuItem(
+          value: 'newfolder',
+          label: tr.newFolder,
+          icon: Icons.create_new_folder_outlined,
+        ),
+        if (agentsEnabled)
+          AppMenuItem(
+            value: 'agent',
+            label: tr.createAgent,
+            icon: Icons.auto_awesome,
+          ),
+        AppMenuItem(
+          value: 'terminal',
+          label: tr.createTerminal,
+          icon: Icons.terminal_outlined,
+        ),
+      ],
+      if (isFolder)
+        AppMenuItem(
+          value: 'reveal',
+          label: _fileExplorerLabel(context),
+          icon: Icons.folder_open_outlined,
+        ),
+      // Sem callback (raiz do workspace via área vazia) o item não aparece:
+      // renomear/apagar/recortar a raiz não faz sentido.
+      if (widget.onStartRename != null)
+        AppMenuItem(
+          value: 'rename',
+          label: tr.rename,
+          icon: Icons.drive_file_rename_outline,
+        ),
+      if (widget.onDelete != null)
+        AppMenuItem(
+          value: 'delete',
+          label: context.t.common.delete,
+          icon: Icons.delete_outline,
+        ),
+      if (widget.onCopy != null)
+        AppMenuItem(
+          value: 'copy',
+          label: tr.copy,
+          icon: Icons.copy_all_outlined,
+        ),
+      if (widget.onCut != null)
+        AppMenuItem(value: 'cut', label: tr.cut, icon: Icons.content_cut),
+      AppMenuItem(
+        value: 'paste',
+        label: tr.paste,
+        icon: Icons.content_paste,
+        enabled: widget.canPaste,
+      ),
+      AppMenuItem(
+        value: 'rel',
+        label: tr.copyRelativePath,
+        icon: Icons.content_copy_outlined,
+      ),
+      AppMenuItem(
+        value: 'abs',
+        label: tr.copyAbsolutePath,
+        icon: Icons.content_copy,
+      ),
+    ],
+  ).then((value) {
+    switch (value) {
+      case 'open':
+        widget.onDoubleTap?.call();
+      case 'diff':
+        widget.onShowDiff?.call();
+      case 'openwith':
+      case 'reveal':
+        widget.onOpenWith?.call();
+      case 'open-window':
+        widget.onOpenInWindow?.call();
+      case 'layout':
+        widget.onOpenLayout?.call();
+      case 'as-source':
+        widget.onOpenAsSource?.call();
+      case 'newfile':
+        widget.onNewFile?.call();
+      case 'newfolder':
+        widget.onNewFolder?.call();
+      case 'agent':
+        widget.onCreateInFolder?.call(_relativeOf(widget), false);
+      case 'terminal':
+        widget.onCreateInFolder?.call(_relativeOf(widget), true);
+      case 'rename':
+        widget.onStartRename?.call();
+      case 'delete':
+        widget.onDelete?.call();
+      case 'copy':
+        widget.onCopy?.call();
+      case 'cut':
+        widget.onCut?.call();
+      case 'paste':
+        widget.onPaste?.call();
+      case 'rel':
+        Clipboard.setData(ClipboardData(text: _relativeOf(widget)));
+      case 'abs':
+        Clipboard.setData(ClipboardData(text: widget.path));
+    }
+  });
+}
+
 class _Row extends StatefulWidget {
   const _Row({
     required this.depth,
@@ -2018,15 +2267,6 @@ class _Row extends StatefulWidget {
 class _RowState extends State<_Row> {
   DateTime? _lastTap;
 
-  String get _relative {
-    final root = widget.rootPath.endsWith('/')
-        ? widget.rootPath
-        : '${widget.rootPath}/';
-    return widget.path.startsWith(root)
-        ? widget.path.substring(root.length)
-        : widget.path;
-  }
-
   void _handleTap() {
     if (widget.onDoubleTap == null) {
       widget.onTap?.call();
@@ -2040,177 +2280,6 @@ class _RowState extends State<_Row> {
       _lastTap = now;
       widget.onTap?.call();
     }
-  }
-
-  String get _fileExplorerLabel {
-    if (Platform.isMacOS) return context.t.cockpit.fileTreePanel.openInFinder;
-    if (Platform.isWindows) {
-      return context.t.cockpit.fileTreePanel.openInExplorer;
-    }
-    return context.t.cockpit.fileTreePanel.openInFileManager;
-  }
-
-  void _showMenu(BuildContext context, Offset globalPosition) {
-    final isFolder = widget.isFolder;
-    final isFile = !isFolder;
-    // "Create agent" só quando agentes estão ligados (Settings → General →
-    // "Enable agents"). "Create terminal" segue sempre. Lido na hora do menu
-    // pra refletir o toggle atual.
-    final agentsEnabled = context
-        .read<SettingsController>()
-        .settings
-        .enableAgent;
-    final tr = context.t.cockpit.fileTreePanel;
-    showAppMenu<String>(
-      context,
-      minWidth: 220,
-      globalPosition: globalPosition,
-      items: [
-        if (isFile) ...[
-          AppMenuItem(value: 'open', label: tr.open, icon: Icons.open_in_new),
-          AppMenuItem(
-            value: 'openwith',
-            label: tr.openWith,
-            icon: Icons.launch_outlined,
-          ),
-          // Janela de documento própria (a aba, se houver, fica onde está).
-          if (widget.onOpenInWindow != null)
-            AppMenuItem(
-              value: 'open-window',
-              label: tr.openInNewWindow,
-              icon: Icons.open_in_browser,
-            ),
-          // Só arquivos `.kanban`: escapa do quadro e edita o markdown cru.
-          if (widget.onOpenAsSource != null)
-            AppMenuItem(
-              value: 'as-source',
-              label: tr.openAsMarkdown,
-              icon: Icons.notes_outlined,
-            ),
-          // Só arquivos `.ckp`: aplica o layout de orquestração de panes.
-          if (widget.onOpenLayout != null)
-            AppMenuItem(
-              value: 'layout',
-              label: tr.openLayout,
-              icon: Icons.grid_view_outlined,
-            ),
-          // Sempre visível; desabilitado quando o arquivo não tem mudança git.
-          AppMenuItem(
-            value: 'diff',
-            label: tr.showGitDiff,
-            icon: Icons.difference_outlined,
-            enabled: widget.gitStatus != null,
-          ),
-        ],
-        if (isFolder) ...[
-          // Pasta `.notebook` é um documento (caderno): também abre solta.
-          if (widget.onOpenInWindow != null &&
-              widget.name.toLowerCase().endsWith('.notebook'))
-            AppMenuItem(
-              value: 'open-window',
-              label: tr.openInNewWindow,
-              icon: Icons.open_in_browser,
-            ),
-          AppMenuItem(
-            value: 'newfile',
-            label: tr.newFile,
-            icon: Icons.note_add_outlined,
-          ),
-          AppMenuItem(
-            value: 'newfolder',
-            label: tr.newFolder,
-            icon: Icons.create_new_folder_outlined,
-          ),
-          if (agentsEnabled)
-            AppMenuItem(
-              value: 'agent',
-              label: tr.createAgent,
-              icon: Icons.auto_awesome,
-            ),
-          AppMenuItem(
-            value: 'terminal',
-            label: tr.createTerminal,
-            icon: Icons.terminal_outlined,
-          ),
-        ],
-        if (isFolder)
-          AppMenuItem(
-            value: 'reveal',
-            label: _fileExplorerLabel,
-            icon: Icons.folder_open_outlined,
-          ),
-        AppMenuItem(
-          value: 'rename',
-          label: tr.rename,
-          icon: Icons.drive_file_rename_outline,
-        ),
-        AppMenuItem(
-          value: 'delete',
-          label: context.t.common.delete,
-          icon: Icons.delete_outline,
-        ),
-        AppMenuItem(
-          value: 'copy',
-          label: tr.copy,
-          icon: Icons.copy_all_outlined,
-        ),
-        AppMenuItem(value: 'cut', label: tr.cut, icon: Icons.content_cut),
-        AppMenuItem(
-          value: 'paste',
-          label: tr.paste,
-          icon: Icons.content_paste,
-          enabled: widget.canPaste,
-        ),
-        AppMenuItem(
-          value: 'rel',
-          label: tr.copyRelativePath,
-          icon: Icons.content_copy_outlined,
-        ),
-        AppMenuItem(
-          value: 'abs',
-          label: tr.copyAbsolutePath,
-          icon: Icons.content_copy,
-        ),
-      ],
-    ).then((value) {
-      switch (value) {
-        case 'open':
-          widget.onDoubleTap?.call();
-        case 'diff':
-          widget.onShowDiff?.call();
-        case 'openwith':
-        case 'reveal':
-          widget.onOpenWith?.call();
-        case 'open-window':
-          widget.onOpenInWindow?.call();
-        case 'layout':
-          widget.onOpenLayout?.call();
-        case 'as-source':
-          widget.onOpenAsSource?.call();
-        case 'newfile':
-          widget.onNewFile?.call();
-        case 'newfolder':
-          widget.onNewFolder?.call();
-        case 'agent':
-          widget.onCreateInFolder?.call(_relative, false);
-        case 'terminal':
-          widget.onCreateInFolder?.call(_relative, true);
-        case 'rename':
-          widget.onStartRename?.call();
-        case 'delete':
-          widget.onDelete?.call();
-        case 'copy':
-          widget.onCopy?.call();
-        case 'cut':
-          widget.onCut?.call();
-        case 'paste':
-          widget.onPaste?.call();
-        case 'rel':
-          Clipboard.setData(ClipboardData(text: _relative));
-        case 'abs':
-          Clipboard.setData(ClipboardData(text: widget.path));
-      }
-    });
   }
 
   @override
@@ -2283,7 +2352,7 @@ class _RowState extends State<_Row> {
       // A linha usa LongPressDraggable no mobile (arrastar arquivo pra outro
       // painel): o toque longo já está ocupado ali.
       longPressOnMobile: false,
-      onMenu: (pos) => _showMenu(context, pos),
+      onMenu: (pos) => _showNodeMenu(context, pos, widget),
       child: row,
     );
   }
