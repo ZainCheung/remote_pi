@@ -1036,19 +1036,21 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
     final paneId = projectId == null ? null : _focused[projectId];
     if (projectId == null || tree == null || paneId == null) return;
 
-    // Já aberta nesta pane? só foca.
+    // Já aberta? só foca, na pane que DE FATO contém a aba. Gravar o id na
+    // pane focada deixava esta com `active` órfão (aba de outra pane): todas
+    // as suas abas viravam inativas e o terminal sumia até o próximo clique.
     for (final entry in _sessions.entries) {
       final s = entry.value;
       if (s is TaskOutputSession &&
           s.taskId == taskId &&
           s.projectId == projectId) {
-        _trees[projectId] = updateLeaf(
-          tree,
-          paneId,
-          (p) => p.copyWith(active: entry.key),
-        );
-        notifyListeners();
-        return;
+        for (final leaf in leaves(tree)) {
+          if (leaf.tabs.contains(entry.key)) {
+            selectTab(leaf.id, entry.key);
+            return;
+          }
+        }
+        break;
       }
     }
 
