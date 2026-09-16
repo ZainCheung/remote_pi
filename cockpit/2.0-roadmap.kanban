@@ -6,14 +6,6 @@ labels: {bug: red, cd: orange, mobile: blue, docs: green, feature: purple, secur
 
 ## Backlog
 
-- [ ] Windows/Linux: "Open with Cockpit" (file association + single instance) <!-- id: k17 labels: feature -->
-      <!-- comment: 2026-09-13T16:40 -->
-      Part 3 done (plugins + present channel in windows/runner/flutter_window.cpp and linux/runner/my_application.cc), so "Open in new window" from inside the app now gets plugins, title and size on Windows/Linux too. Written without a local toolchain: the first CI build for those targets validates it. Still open: single instance (forward the path to the running app via the CLI socket) and file association (Inno Setup / .desktop MimeType).
-      <!-- comment: 2026-09-15T10:00 -->
-      1.28.32 validated by hand on Windows and Linux: "Open in new window" works (plugins, title, size). Only single instance and file association remain.
-
-      macOS is done (k10). On Windows/Linux the OS starts a NEW process with the file path as argument: detect a running Cockpit (the CLI socket already exists), forward the path to it and exit; otherwise open a document window directly. Association: Inno Setup registry keys (Windows) and MimeType in the .desktop (Linux). Also register the desktop_multi_window plugin callback on those platforms (windows/runner + linux/my_application.cc) so document windows get plugins.
-
 - [ ] Files pane: right-click on the empty area below the tree does nothing, so you cannot paste into the root <!-- id: k20 labels: bug -->
       The context menu only opens on a file or folder row. Clicking the empty space at the bottom of the pane (or inside an empty folder) shows nothing, so there is no way to paste, create a file or folder at the workspace root without picking a folder first. The empty area should open the folder menu targeting the root (or the folder being viewed when it is empty).
 
@@ -93,6 +85,16 @@ labels: {bug: red, cd: orange, mobile: blue, docs: green, feature: purple, secur
 ## Review
 
 ## Done
+
+- [x] Windows/Linux: "Open with Cockpit" (file association + single instance) <!-- id: k17 labels: feature -->
+      <!-- comment: 2026-09-13T16:40 -->
+      Part 3 done (plugins + present channel in windows/runner/flutter_window.cpp and linux/runner/my_application.cc), so "Open in new window" from inside the app now gets plugins, title and size on Windows/Linux too. Written without a local toolchain: the first CI build for those targets validates it. Still open: single instance (forward the path to the running app via the CLI socket) and file association (Inno Setup / .desktop MimeType).
+      <!-- comment: 2026-09-15T10:00 -->
+      1.28.32 validated by hand on Windows and Linux: "Open in new window" works (plugins, title, size). Only single instance and file association remain.
+
+      macOS is done (k10). On Windows/Linux the OS starts a NEW process with the file path as argument: detect a running Cockpit (the CLI socket already exists), forward the path to it and exit; otherwise open a document window directly. Association: Inno Setup registry keys (Windows) and MimeType in the .desktop (Linux). Also register the desktop_multi_window plugin callback on those platforms (windows/runner + linux/my_application.cc) so document windows get plugins.
+      <!-- comment: 2026-09-15T12:30 -->
+      Single instance + association done (blind, CI compiles): second process forwards `open-document` over the CLI socket (POSIX UDS; Windows reads `~/.cockpit/status.json` with port+token that the app now writes) and exits, else boots and opens the files after bind. Inno Setup registers Cockpit.Kanban/Layout/Query/Http ProgIds (default for .kanban/.ckp/.dbq/.http, "Open with" only for .md). Linux: `Exec=cockpit %F`, MimeType list, shared-mime XML installed to share/mime/packages. To verify on a real machine: double-click a .kanban with Cockpit closed and open; `cockpit` CLI outside a pane on Windows.
 
 - [x] Running a task blanks the terminal in the other pane when a task tab already exists <!-- id: k23 labels: bug -->
       Repro: two panes side by side; the task (debug) tab lives in the right pane and you are working in a terminal on the left pane. Run the task again. The task tab is reused correctly, but the left pane goes blank (the terminal text disappears). Clicking the left tab again brings it back. Looks like focusing/re-selecting the existing task tab in the right pane re-renders or detaches the terminal view of the pane that was active, so it may be a general pane bug: any cross-pane tab activation (task run, `cockpit` CLI focus, click on a notification) could blank the previously active pane. Check the pane/tab selection path and the terminal view keep-alive when the active pane changes without user input.

@@ -24,6 +24,7 @@ import 'package:cockpit/app/cockpit/domain/services/mongo_browse_service.dart';
 import 'package:cockpit/app/cockpit/domain/entities/browser_capability.dart';
 import 'package:cockpit/app/core/domain/result.dart';
 import 'package:cockpit/app/core/utils/path_utils.dart';
+import 'package:cockpit/app/cockpit/ui/document/document_windows.dart';
 import 'package:cockpit/app/cockpit/ui/session/agent_session.dart';
 import 'package:cockpit/app/cockpit/ui/session/browser_session.dart';
 import 'package:cockpit/app/cockpit/ui/session/notebook_session.dart';
@@ -226,6 +227,25 @@ class CockpitCliHandler {
           );
         }
         await _vm.openFile(path, inPane: targetLeaf, isPreview: false);
+        return const CockpitCommandResult.ok();
+
+      // `open-document` — abre cada caminho numa janela de documento. Não é um
+      // verbo da CLI: é o que o SEGUNDO processo do Cockpit (duplo clique no
+      // Explorer/xdg) manda pro app vivo antes de sair (instância única no
+      // Windows/Linux, ver `RunningInstance`). Não depende de workspace ativo.
+      case 'open-document':
+        final raw = c.args['paths'];
+        final paths = raw is List
+            ? raw.map((e) => e.toString()).where((e) => e.isNotEmpty).toList()
+            : const <String>[];
+        if (paths.isEmpty) {
+          return const CockpitCommandResult.fail('missing paths');
+        }
+        for (final path in paths) {
+          if (await File(path).exists() || await Directory(path).exists()) {
+            unawaited(DocumentWindows.open(path));
+          }
+        }
         return const CockpitCommandResult.ok();
 
       // `cockpit new-tab` — cria uma aba de terminal. A CLI já resolveu o cwd
