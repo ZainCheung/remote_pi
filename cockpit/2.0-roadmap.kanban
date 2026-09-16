@@ -6,20 +6,6 @@ labels: {bug: red, cd: orange, mobile: blue, docs: green, feature: purple, secur
 
 ## Backlog
 
-- [ ] Files pane: right-click on the empty area below the tree does nothing, so you cannot paste into the root <!-- id: k20 labels: bug -->
-      The context menu only opens on a file or folder row. Clicking the empty space at the bottom of the pane (or inside an empty folder) shows nothing, so there is no way to paste, create a file or folder at the workspace root without picking a folder first. The empty area should open the folder menu targeting the root (or the folder being viewed when it is empty).
-
-- [ ] Task debug tab opens empty (no output) <!-- id: k26 labels: bug -->
-      Running a task from the Tasks panel opens the task output tab but it stays blank: no command echo, no stdout/stderr, no exit status. Check whether the runner actually spawned (PtyTaskRunner, `launchctl asuser` prefix on macOS, login shell `-ilc`), whether the TaskOutputSession is attached to the right tab (see k23: `openTaskOutput` writes `active` into the focused pane), and whether output is gated by the visible/active flags of the pane. May share the root cause with k23.
-      <!-- comment: 2026-09-15T11:00 -->
-      k23 fixed (task tab now activates in its own pane; pane_view compares with the shown index). Re-test this one on the next build: if the blank tab was the focused pane losing its active tab, it is the same bug. If the task tab itself still shows nothing, it is the runner/output path.
-
-- [ ] Opening a .ckp layout should replace the current layout (close the existing tabs first) <!-- id: k21 labels: feature -->
-      Today applying a .ckp file adds its terminals and splits on top of whatever is already open, so the workspace ends up with the old tabs plus the new ones. Opening a layout should mean "become this layout": close the current tabs of the workspace, then build the panes described in the file. Applies to opening from the Files pane and to `cockpit orchestrate`. Consider a confirmation when a tab has a running process.
-
-- [ ] Code/text editor: Tab inserts indentation instead of moving focus <!-- id: k22 labels: feature -->
-      The file editor (`code_editor.dart`) is a plain TextField, so Tab follows Flutter's default and moves keyboard focus out of the editor. Make it behave like VS Code: Tab inserts spaces up to the next tab stop (or a real tab when the file already uses tabs), Shift+Tab outdents. With a multi-line selection, Tab/Shift+Tab indent/outdent every selected line. Implementation: wrap the editor in `Actions` overriding `NextFocusIntent`/`PreviousFocusIntent` (or a `Focus.onKeyEvent` that handles Tab and returns handled) and edit the controller text/selection directly, keeping undo. Indent unit: detect from the file content (tabs vs spaces, width from the first indented lines); fallback 2 for Dart/YAML/JSON, 4 elsewhere. Escape then Tab could restore focus traversal for accessibility, as VS Code does.
-
 - [ ] Agent profiles: run Claude Code / Codex with different accounts (sandboxed or per-profile config) <!-- id: k24 labels: decision -->
       Need a way to launch a harness (Claude Code, Codex CLI, Pi) under a different account or isolated config per workspace or per tab, e.g. a personal and a work account side by side. Open question: build it in Cockpit (per-profile HOME / CLAUDE_CONFIG_DIR / CODEX_HOME injected into the terminal env, like .env.cockpit does) or delegate to an existing tool (containers, devcontainers, `sandbox-exec`, direnv, a profile manager). Investigate what each harness supports natively (Claude Code honours CLAUDE_CONFIG_DIR; Codex uses CODEX_HOME) before deciding. Park until the 2.0 core items are done.
 
@@ -85,6 +71,30 @@ labels: {bug: red, cd: orange, mobile: blue, docs: green, feature: purple, secur
 ## Review
 
 ## Done
+
+- [x] Files pane: right-click on the empty area below the tree does nothing, so you cannot paste into the root <!-- id: k20 labels: bug -->
+      The context menu only opens on a file or folder row. Clicking the empty space at the bottom of the pane (or inside an empty folder) shows nothing, so there is no way to paste, create a file or folder at the workspace root without picking a folder first. The empty area should open the folder menu targeting the root (or the folder being viewed when it is empty).
+      <!-- comment: 2026-09-15T14:00 -->
+      Root cause: the folder context menu lived only in _RowState._showMenu, so nothing below the last row (or inside an empty expanded folder) was hit-testable. Fix: extracted the menu into _showNodeMenu(context, pos, spec) reused as-is; the tree background (ContextMenuGesture translucent around the scroll view) opens it targeting the workspace root, and an empty expanded folder renders an invisible 26px slot that opens it targeting that folder. Root spec hides rename/delete/copy/cut (no callback). Right-click on desktop, long-press on touch.
+
+- [x] Task debug tab opens empty (no output) <!-- id: k26 labels: bug -->
+      Running a task from the Tasks panel opens the task output tab but it stays blank: no command echo, no stdout/stderr, no exit status. Check whether the runner actually spawned (PtyTaskRunner, `launchctl asuser` prefix on macOS, login shell `-ilc`), whether the TaskOutputSession is attached to the right tab (see k23: `openTaskOutput` writes `active` into the focused pane), and whether output is gated by the visible/active flags of the pane. May share the root cause with k23.
+      <!-- comment: 2026-09-15T11:00 -->
+      k23 fixed (task tab now activates in its own pane; pane_view compares with the shown index). Re-test this one on the next build: if the blank tab was the focused pane losing its active tab, it is the same bug. If the task tab itself still shows nothing, it is the runner/output path.
+      <!-- comment: 2026-09-15T14:00 -->
+      Root cause in TaskTerminalStore._onRun: the guard `_lastPid[id] == run.pid` read an absent key as null, so a running run without pid never subscribed, and `_lastPid` was never cleared at exit, so a re-run that got the same pid back from the OS kept the subscription on the closed stream of the previous process (blank tab). Fix: containsKey guard + `_lastPid.remove` when the run ends. Runner ordering (PtyTaskRunner/RemoteTaskRunner set `_running` before `_emit(running)`, sync broadcast) was verified correct and is now pinned by test/session/task_terminal_store_run_ordering_test.dart. The UI-side blank (pane active index) was k23.
+
+- [x] Opening a .ckp layout should replace the current layout (close the existing tabs first) <!-- id: k21 labels: feature -->
+      <!-- comment: 2026-09-15T14:00 -->
+      Done. Opening a layout now means "become this layout": `applyLayoutFile` defaults to `LayoutApplyMode.replace`, which validates the .ckp first (a parse error closes nothing), then closes every tab of the workspace (labelled/pinned tabs included, PTYs and agents disposed through the same path as the tab "x") and only then builds the panes, so the split geometry is deterministic. The Files pane "Open layout" asks "Replace the current layout? N tabs will be closed" only when a tab has running work (agent mid-turn, harness running in a terminal, task with a live process); idle tabs close without a prompt. `cockpit orchestrate` replaces without asking and keeps the tab it is run from (closing it would kill the CLI mid-call); the new `--append` flag restores the old idempotent merge, and the output/JSON gained `closed: N`. The worktree autorun keeps appending (fresh workspace, no UI). Ordering lives in `domain/services/layout_apply_runner.dart` with tests in `test/layout/layout_apply_runner_test.dart` (replace closes, append keeps, invalid file leaves tabs untouched).
+
+      Today applying a .ckp file adds its terminals and splits on top of whatever is already open, so the workspace ends up with the old tabs plus the new ones. Opening a layout should mean "become this layout": close the current tabs of the workspace, then build the panes described in the file. Applies to opening from the Files pane and to `cockpit orchestrate`. Consider a confirmation when a tab has a running process.
+
+- [x] Code/text editor: Tab inserts indentation instead of moving focus <!-- id: k22 labels: feature -->
+      <!-- comment: 2026-09-15T14:00 -->
+      Done in `code_editor.dart`: the TextField is wrapped in `Actions` overriding `NextFocusIntent`/`PreviousFocusIntent`, so Tab and Shift+Tab never leave the editor. Tab with a caret inserts spaces up to the next tab stop (a real tab when the file already uses tabs); Shift+Tab removes up to one indent unit from the line start; with a multi-line selection both act on every selected line and the selection keeps covering the same lines. Indent unit is detected from the content (tabs, else the smallest indentation delta among the first 200 indented lines) with a fallback by extension (2 for dart/yaml/json/js/ts/html/css/md, 4 otherwise). Pure logic lives in `editor_indent.dart` and is applied through `controller.value`, so undo keeps working. Tests: `test/ui/editor_indent_test.dart` and `test/ui/code_editor_tab_indent_test.dart`. Escape-then-Tab focus escape was skipped.
+
+      The file editor (`code_editor.dart`) is a plain TextField, so Tab follows Flutter's default and moves keyboard focus out of the editor. Make it behave like VS Code: Tab inserts spaces up to the next tab stop (or a real tab when the file already uses tabs), Shift+Tab outdents. With a multi-line selection, Tab/Shift+Tab indent/outdent every selected line. Implementation: wrap the editor in `Actions` overriding `NextFocusIntent`/`PreviousFocusIntent` (or a `Focus.onKeyEvent` that handles Tab and returns handled) and edit the controller text/selection directly, keeping undo. Indent unit: detect from the file content (tabs vs spaces, width from the first indented lines); fallback 2 for Dart/YAML/JSON, 4 elsewhere. Escape then Tab could restore focus traversal for accessibility, as VS Code does.
 
 - [x] Windows/Linux: "Open with Cockpit" (file association + single instance) <!-- id: k17 labels: feature -->
       <!-- comment: 2026-09-13T16:40 -->

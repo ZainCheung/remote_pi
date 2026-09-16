@@ -2,6 +2,7 @@ import 'dart:async' show unawaited;
 import 'dart:convert';
 import 'dart:io' show Directory, File, FileSystemException, Platform;
 
+import 'package:cockpit/app/cockpit/domain/entities/layout_spec.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/http_request_runner.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/task_discovery.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/task_runner_gateway.dart';
@@ -356,9 +357,11 @@ class CockpitCliHandler {
           'tabId': s.id,
         }, () => _vm.closeTab(closingLeaf, closingId));
 
-      // `cockpit orchestrate <file.ckp>` — aplica um layout de panes no
-      // workspace ativo. A CLI já resolveu o path pro absoluto. Merge
-      // idempotente (tab de mesmo nome = pulada); devolve {created, skipped}.
+      // `cockpit orchestrate <file.ckp> [--append]` — aplica um layout de
+      // panes no workspace ativo. A CLI já resolveu o path pro absoluto.
+      // Default = REPLACE (fecha as abas do workspace antes, sem diálogo: a
+      // CLI não pergunta); `--append` = merge idempotente antigo (tab de mesmo
+      // nome = pulada). Devolve {created, skipped, closed}.
       // `cockpit note add <dir.notebook> --title T [--tag a]... [--body ...]`
       // Cria a nota com frontmatter certo (tag `agent` sempre entra — é a
       // marca de nota escrita por agente) e recarrega a aba do caderno se
@@ -446,11 +449,19 @@ class CockpitCliHandler {
         if (sender != null && sender.projectId != _vm.selectedProjectId) {
           _vm.selectProject(sender.projectId);
         }
-        final applied = await _vm.applyLayoutFile(path);
+        final append = c.args['append'] == true;
+        // A aba emissora sobrevive ao replace: fechá-la mataria o `cockpit`
+        // que ainda espera esta resposta.
+        final applied = await _vm.applyLayoutFile(
+          path,
+          mode: append ? LayoutApplyMode.append : LayoutApplyMode.replace,
+          keepTabId: sender?.id,
+        );
         return switch (applied) {
           Success(:final value) => CockpitCommandResult.ok({
             'created': value.created,
             'skipped': value.skipped,
+            'closed': value.closed,
           }),
           Failure(:final error) => CockpitCommandResult.fail(error),
         };
