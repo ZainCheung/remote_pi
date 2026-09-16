@@ -139,14 +139,18 @@ Future<void> _run(List<String> args) async {
   }
 }
 
-/// Versão do bundle: `VERSION` na raiz do bundle (`bin/../VERSION`), escrito
-/// pelo empacotador do zip. Ausente no build de dev.
+/// Versão do bundle: primeira linha do `VERSION` na raiz do bundle
+/// (`bin/../VERSION`, linha 1 versão, linha 2 arquitetura), escrito pelo
+/// empacotador do zip. Ausente no build de dev.
 String? bundleVersion() {
   final bin = File(Platform.resolvedExecutable).parent;
   final file = File('${bin.parent.path}/VERSION');
   if (!file.existsSync()) return null;
-  final v = file.readAsStringSync().trim();
-  return v.isEmpty ? null : v;
+  final first = file.readAsLinesSync().map((l) => l.trim()).firstWhere(
+    (l) => l.isNotEmpty,
+    orElse: () => '',
+  );
+  return first.isEmpty ? null : first;
 }
 
 String? _argValue(List<String> args, String name) {

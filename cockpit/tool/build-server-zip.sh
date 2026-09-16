@@ -58,8 +58,8 @@ COCKPIT_PTY_DYLIB="$PKG/lib/libcockpit_pty.so" \
 for _ in $(seq 1 40); do [ -S "$SOCK" ] && break; sleep 0.25; done
 [ -S "$SOCK" ] || { echo "[server-zip] smoke failed:" >&2; cat "$STAGE/smoke.log" >&2; exit 1; }
 wait || true
-[ "$("$PKG/bin/cockpit-server" --version)" = "$VERSION" ] || {
-  echo "[server-zip] --version did not report $VERSION" >&2; exit 1; }
+GOT="$("$PKG/bin/cockpit-server" --version 2>&1 || true)"; [ "$GOT" = "$VERSION" ] || {
+  echo "[server-zip] --version reported '$GOT', expected $VERSION" >&2; exit 1; }
 
 ZIP="$OUT/cockpit-server-$VERSION-linux-$ARCH.zip"
 rm -f "$ZIP"
