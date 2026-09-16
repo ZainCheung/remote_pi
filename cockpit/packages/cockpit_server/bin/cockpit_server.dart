@@ -28,6 +28,15 @@ Future<void> main(List<String> args) async {
 }
 
 Future<void> _run(List<String> args) async {
+  // Subcomandos que não sobem servidor nenhum: `service …` (systemd, k25) e
+  // `--version` (lê o VERSION do bundle, gravado pelo empacotador).
+  if (args.isNotEmpty && args.first == 'service') {
+    exit(await runServiceCommand(args.sublist(1)));
+  }
+  if (args.contains('--version')) {
+    stdout.writeln(bundleVersion() ?? 'unknown');
+    exit(0);
+  }
   final socketPath =
       _argValue(args, '--socket') ??
       '${Directory.systemTemp.path}/cockpit-server-$pid.sock';
@@ -123,6 +132,16 @@ Future<void> _run(List<String> args) async {
       cancelOnError: true,
     );
   }
+}
+
+/// Versão do bundle: `VERSION` na raiz do bundle (`bin/../VERSION`), escrito
+/// pelo empacotador do zip. Ausente no build de dev.
+String? bundleVersion() {
+  final bin = File(Platform.resolvedExecutable).parent;
+  final file = File('${bin.parent.path}/VERSION');
+  if (!file.existsSync()) return null;
+  final v = file.readAsStringSync().trim();
+  return v.isEmpty ? null : v;
 }
 
 String? _argValue(List<String> args, String name) {
