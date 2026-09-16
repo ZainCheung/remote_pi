@@ -11,9 +11,12 @@ Android clients for remote hosts.
 ## cockpit-server on a Linux host (VPS)
 
 Remote workspaces run a small headless `cockpit-server` on the host, reached
-over SSH. The desktop app installs it by itself on first connect; the mobile
-apps do not, so a host you want to reach from iPad or Android needs it
-installed once. Linux x86_64 and arm64 only, user space, no sudo.
+over SSH. The desktop app installs and updates it by itself on first connect
+when it ships that target (macOS and Linux arm64 clients ship Linux arm64;
+Linux x86_64 ships Linux x86_64). Every other combination, and the mobile
+apps (which carry no server), need the host prepared once with the installer
+below. Both paths install to the same place and recognize each other. Linux
+x86_64 and arm64 only, user space, no sudo.
 
 ```bash
 curl -fsSL https://remote-pi.jacobmoura.work/cockpit-server.sh | bash

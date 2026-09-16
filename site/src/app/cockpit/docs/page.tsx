@@ -1308,12 +1308,63 @@ cockpit mongo browse --db atlas --database shop`}
                   next connection picks them up where they were.
                 </p>
                 <p>
-                  From the <strong>desktop</strong> app you need nothing on the
-                  host: Cockpit uploads the server over SSH on first connect and
-                  keeps it updated. The <strong>mobile</strong> apps (iPad,
-                  Android) carry no server, so a host you want to reach from
-                  them must be prepared once, either by a desktop or with the
-                  installer below. This is the usual case for a VPS.
+                  From the <strong>desktop</strong> app you usually need nothing
+                  on the host: Cockpit uploads the server over SSH on first
+                  connect and keeps it updated (it compares a manifest of the
+                  installed files with the bundle it ships and reinstalls when
+                  they differ). The <strong>mobile</strong> apps (iPad, Android)
+                  carry no server, so a host you want to reach from them must
+                  be prepared once, either by a desktop or with the installer
+                  below.
+                </p>
+                <p>
+                  The desktop can only install the targets it ships, so the
+                  installer is also the way in for the other combinations:
+                </p>
+                <div className="overflow-x-auto">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Client</th>
+                        <th>Linux arm64 host</th>
+                        <th>Linux x86_64 host</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>macOS</td>
+                        <td>installs and updates over SSH</td>
+                        <td>installer</td>
+                      </tr>
+                      <tr>
+                        <td>Linux arm64</td>
+                        <td>installs and updates over SSH</td>
+                        <td>installer</td>
+                      </tr>
+                      <tr>
+                        <td>Linux x86_64</td>
+                        <td>installer</td>
+                        <td>installs and updates over SSH</td>
+                      </tr>
+                      <tr>
+                        <td>Windows</td>
+                        <td>installer</td>
+                        <td>installer</td>
+                      </tr>
+                      <tr>
+                        <td>iPad / Android</td>
+                        <td>installer</td>
+                        <td>installer</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p>
+                  Both paths land in the same place and recognize each other: a
+                  host prepared with the installer is reused as is by a desktop
+                  that ships the same version, and a host prepared by a desktop
+                  can be updated later with the installer. Whoever gets there
+                  first installs; the other one just connects.
                 </p>
 
                 <DocsSubsection id="remote-install" title="Install the server">
@@ -1359,10 +1410,17 @@ curl -fsSL https://raw.githubusercontent.com/jacobaraujo7/remote_pi/main/cockpit
                 <DocsSubsection id="remote-service" title="Start at boot">
                   <p>
                     By default the app starts the server on demand and it
-                    exits when idle with no live session, so most hosts need
-                    no service. For a dedicated VPS you can register a{" "}
-                    <InlineCode>systemd --user</InlineCode> unit so the server
-                    is up right after a reboot:
+                    exits when idle with no live session; terminals and agents
+                    keep the server alive while they run, so most hosts need
+                    no service. Note that if you kill the server while a
+                    Cockpit workspace is open on it, the client treats that as
+                    a dropped connection and starts it again. For a dedicated
+                    VPS you can register a{" "}
+                    <InlineCode>systemd --user</InlineCode> unit: the server is
+                    up right after a reboot, never exits on idle, and systemd
+                    restarts it on failure. It does not change how the app
+                    connects, and a reboot still ends the sessions that were
+                    running.
                   </p>
                   <CodeBlock
                     label="on the host"
@@ -1382,9 +1440,10 @@ cockpit-server service uninstall`}
                     <em>linger</em>; the command tries to enable it and, when
                     that needs root, prints the one-line{" "}
                     <InlineCode>sudo loginctl enable-linger</InlineCode> for you
-                    to run once. Updates restart the unit automatically. A
-                    reboot still ends the sessions that were running: the
-                    service brings the server back, not the terminals.
+                    to run once. Updates restart the unit automatically. To
+                    stop it for real use{" "}
+                    <InlineCode>systemctl --user stop cockpit-server</InlineCode>{" "}
+                    (a plain kill is undone by systemd in two seconds).
                   </p>
                 </DocsSubsection>
 
@@ -1394,25 +1453,33 @@ cockpit-server service uninstall`}
                 >
                   <ul>
                     <li>
-                      <strong>version_mismatch</strong> — the host runs another
+                      <strong>version_mismatch</strong>: the host runs another
                       release than the app. Re-run the installer (mobile) or
                       reconnect from a desktop, which reinstalls.
                     </li>
                     <li>
                       <strong>cockpit-server did not start</strong> during
-                      install — the log printed above the error is the reason.
+                      install: the log printed above the error is the reason.
                       A glibc older than the build expects is the usual cause on
                       old distributions; check{" "}
                       <InlineCode>ldd --version</InlineCode>.
                     </li>
                     <li>
-                      <strong>Socket permission</strong> — the server listens on{" "}
+                      <strong>Socket permission</strong>: the server listens on{" "}
                       <InlineCode>~/.cockpit/cockpit-server.sock</InlineCode>{" "}
                       as the SSH user; connect with the same user that ran the
                       installer.
                     </li>
                     <li>
-                      <strong>Nothing after reboot</strong> — without the
+                      <strong>Updating means restarting</strong>: a new server
+                      version replaces the running process, which ends the
+                      terminals and agents on that host. The desktop does it
+                      silently when its bundle differs from the host; the
+                      installer does it when you run it with a newer release.
+                      Finish long jobs first.
+                    </li>
+                    <li>
+                      <strong>Nothing after reboot</strong>: without the
                       service the first connection starts the server (a second
                       or two); with it, check{" "}
                       <InlineCode>cockpit-server service status</InlineCode> and
