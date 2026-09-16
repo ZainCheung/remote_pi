@@ -1,17 +1,67 @@
-# cockpit
+# Remote Pi Cockpit
 
-A new Flutter project.
+Desktop client for coding agents: terminals, agents, files, git, worktrees,
+databases and tasks side by side, on macOS, Windows and Linux, with iPad and
+Android clients for remote hosts.
 
-## Getting Started
+- Site and docs: https://remote-pi.jacobmoura.work/cockpit
+- Downloads (dmg, exe, deb, rpm, apk): https://github.com/jacobaraujo7/remote_pi/releases?q=cockpit-v
+- Packaging and release runbook: [packaging/README.md](packaging/README.md)
 
-This project is a starting point for a Flutter application.
+## cockpit-server on a Linux host (VPS)
 
-A few resources to get you started if this is your first Flutter project:
+Remote workspaces run a small headless `cockpit-server` on the host, reached
+over SSH. The desktop app installs it by itself on first connect; the mobile
+apps do not, so a host you want to reach from iPad or Android needs it
+installed once. Linux x86_64 and arm64 only, user space, no sudo.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+```bash
+curl -fsSL https://remote-pi.jacobmoura.work/cockpit-server.sh | bash
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+What the script does, in order:
+
+1. Checks that the host is Linux and maps `uname -m` to `x86_64` or `arm64`.
+2. Resolves the version: `COCKPIT_VERSION=x.y.z` if set, otherwise the latest
+   `cockpit-server-v*` release on GitHub. The server version must match the
+   Cockpit app you connect from.
+3. Downloads `cockpit-server-<version>-linux-<arch>.zip` and `SHA256SUMS` from
+   that release and verifies the checksum.
+4. Unzips to a temp folder and runs the `install.sh` shipped inside the zip,
+   which verifies `bundle.manifest`, does a smoke start, swaps the folder into
+   `~/.cockpit/server` atomically (previous install kept as backup until the
+   smoke passes) and links `~/.local/bin/cockpit-server`.
+5. With `--service` (`bash -s -- --service`), registers a `systemd --user`
+   unit via `cockpit-server service install` so the server starts at boot.
+   It may print one `sudo loginctl enable-linger` command for you to run once.
+
+Re-running the script updates the install; the same version is a no-op.
+
+Manual download, for a host without internet access or if you prefer to read
+the files first:
+
+- Releases: https://github.com/jacobaraujo7/remote_pi/releases?q=cockpit-server-v
+- Then `unzip cockpit-server-<version>-linux-<arch>.zip && ./cockpit-server/install.sh`
+
+Service commands, once installed:
+
+```bash
+cockpit-server service install     # systemd --user unit, starts at boot
+cockpit-server service status
+cockpit-server service uninstall
+cockpit-server --version
+```
+
+Full page with troubleshooting: https://remote-pi.jacobmoura.work/cockpit/docs#remote
+
+## Development
+
+Prerequisites: Flutter (version pinned in `.github/workflows/cockpit-release.yml`),
+Rust via rustup, Zig 0.16.0. See [CLAUDE.md](CLAUDE.md) for the architecture
+and conventions.
+
+```bash
+flutter pub get
+flutter run -d macos
+flutter analyze && flutter test
+```
