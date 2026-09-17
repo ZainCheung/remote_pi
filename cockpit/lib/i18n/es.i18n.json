@@ -651,6 +651,11 @@
     },
     "projectsRail": {
       "workspaces": "Workspaces",
+      "keepAwake": "Mantener este equipo despierto",
+      "keepAwakeOn": "Manteniendo este equipo despierto para acceso remoto. Haz clic para dejarlo dormir de nuevo.",
+      "keepAwakeOff": "Mantener este equipo despierto para acceso remoto. Se apaga solo cuando Cockpit se reinicia.",
+      "keepAwakeBattery": "Despierto con batería. Esto consume la batería.",
+      "keepAwakeLid": "Cerrar la tapa del portátil sigue poniéndolo a dormir.",
       "newWorkspace": "Nuevo workspace",
       "settings": "Configuración",
       "mergeToParent": "Fusionar en el padre",

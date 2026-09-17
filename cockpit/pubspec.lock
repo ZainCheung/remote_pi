@@ -224,6 +224,13 @@ packages:
       relative: true
     source: path
     version: "0.1.0"
+  cockpit_keepawake:
+    dependency: "direct main"
+    description:
+      path: "packages/cockpit_keepawake"
+      relative: true
+    source: path
+    version: "0.1.0"
   cockpit_protocol:
     dependency: transitive
     description:

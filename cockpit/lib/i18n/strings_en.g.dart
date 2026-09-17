@@ -2121,6 +2121,21 @@ class Translations$cockpit$projectsRail$en {
 	/// en: 'Workspaces'
 	String get workspaces => 'Workspaces';
 
+	/// en: 'Keep this computer awake'
+	String get keepAwake => 'Keep this computer awake';
+
+	/// en: 'Keeping this computer awake for remote access. Click to let it sleep again.'
+	String get keepAwakeOn => 'Keeping this computer awake for remote access. Click to let it sleep again.';
+
+	/// en: 'Keep this computer awake for remote access. Off again when Cockpit restarts.'
+	String get keepAwakeOff => 'Keep this computer awake for remote access. Off again when Cockpit restarts.';
+
+	/// en: 'Keeping awake on battery power. This drains the battery.'
+	String get keepAwakeBattery => 'Keeping awake on battery power. This drains the battery.';
+
+	/// en: 'Closing a laptop lid still puts it to sleep.'
+	String get keepAwakeLid => 'Closing a laptop lid still puts it to sleep.';
+
 	/// en: 'New workspace'
 	String get newWorkspace => 'New workspace';
 
@@ -4815,6 +4830,11 @@ extension on Translations {
 			'cockpit.sshPrompts.keptInMemoryHint' => 'Kept in memory until Cockpit quits. To let agents use this connection, enable "Save passphrase" in the connection.',
 			'cockpit.sshPrompts.unlock' => 'Unlock',
 			'cockpit.projectsRail.workspaces' => 'Workspaces',
+			'cockpit.projectsRail.keepAwake' => 'Keep this computer awake',
+			'cockpit.projectsRail.keepAwakeOn' => 'Keeping this computer awake for remote access. Click to let it sleep again.',
+			'cockpit.projectsRail.keepAwakeOff' => 'Keep this computer awake for remote access. Off again when Cockpit restarts.',
+			'cockpit.projectsRail.keepAwakeBattery' => 'Keeping awake on battery power. This drains the battery.',
+			'cockpit.projectsRail.keepAwakeLid' => 'Closing a laptop lid still puts it to sleep.',
 			'cockpit.projectsRail.newWorkspace' => 'New workspace',
 			'cockpit.projectsRail.settings' => 'Settings',
 			'cockpit.projectsRail.mergeToParent' => 'Merge to Parent',
@@ -5279,13 +5299,13 @@ extension on Translations {
 			'settings.page.automations.modelUnavailable' => 'The model list is unavailable until the harness is found.',
 			'settings.page.automations.modelCliOnly' => 'This harness uses its CLI default model.',
 			'settings.page.automations.modelCliDefault' => 'CLI default',
+			_ => null,
+		} ?? switch (path) {
 			'settings.page.automations.modelAuto' => 'Auto',
 			'settings.page.automations.modelSearch' => ({required Object count}) => 'Search among ${count} models…',
 			'settings.page.automations.modelAutoRouted' => 'This harness routes the model automatically.',
 			'settings.page.automations.modelAccountOnly' => 'Only models your account can use are listed.',
 			'settings.page.automations.generateFromSourceControl' => 'Generate from Source Control',
-			_ => null,
-		} ?? switch (path) {
 			'settings.page.automations.generateFromSourceControlDescription' => 'Cockpit sends only the selected diff and recent commit subjects. Common credential patterns and sensitive files are redacted before the harness runs.',
 			'settings.page.automations.discoveryFailed' => 'Could not discover installed automation harnesses.',
 			'settings.page.automations.staleModel' => ({required Object model, required Object harness}) => 'Model "${model}" is no longer available for ${harness}. Using the CLI default — pick another model in Settings if needed.',

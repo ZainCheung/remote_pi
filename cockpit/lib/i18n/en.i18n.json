@@ -651,6 +651,11 @@
     },
     "projectsRail": {
       "workspaces": "Workspaces",
+      "keepAwake": "Keep this computer awake",
+      "keepAwakeOn": "Keeping this computer awake for remote access. Click to let it sleep again.",
+      "keepAwakeOff": "Keep this computer awake for remote access. Off again when Cockpit restarts.",
+      "keepAwakeBattery": "Keeping awake on battery power. This drains the battery.",
+      "keepAwakeLid": "Closing a laptop lid still puts it to sleep.",
       "newWorkspace": "New workspace",
       "settings": "Settings",
       "mergeToParent": "Merge to Parent",

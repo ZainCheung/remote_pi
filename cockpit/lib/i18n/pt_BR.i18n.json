@@ -651,6 +651,11 @@
     },
     "projectsRail": {
       "workspaces": "Workspaces",
+      "keepAwake": "Manter este computador acordado",
+      "keepAwakeOn": "Mantendo este computador acordado para acesso remoto. Clique para deixá-lo dormir de novo.",
+      "keepAwakeOff": "Manter este computador acordado para acesso remoto. Desliga sozinho quando o Cockpit reinicia.",
+      "keepAwakeBattery": "Acordado na bateria. Isso consome a bateria.",
+      "keepAwakeLid": "Fechar a tampa do notebook continua colocando-o para dormir.",
       "newWorkspace": "Novo workspace",
       "settings": "Configurações",
       "mergeToParent": "Mesclar no pai",

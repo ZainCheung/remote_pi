@@ -54,6 +54,10 @@ dependencies:
     path: packages/cockpit_core
   cockpit_remote:
     path: packages/cockpit_remote
+  # Segura o sleep por inatividade da máquina (botão "Keep awake" no rodapé
+  # do rail). Dart puro, desktop-only, no-op em iPad/Android.
+  cockpit_keepawake:
+    path: packages/cockpit_keepawake
 
   # Parse dos layouts `.ckp` (orquestração de panes) — YAML puro-Dart.
   yaml: ^3.1.2

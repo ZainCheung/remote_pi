@@ -23,6 +23,7 @@ import 'package:cockpit/app/core/data/theme_store.dart';
 import 'package:cockpit/app/core/domain/entities/app_settings.dart';
 import 'package:cockpit/app/core/domain/services/window_placement.dart';
 import 'package:cockpit/app/core/env.dart';
+import 'package:cockpit/app/core/ui/keep_awake_controller.dart';
 import 'package:cockpit/app/core/ui/automation_controller.dart';
 import 'package:cockpit/app/core/ui/menu/editor_menu_bridge.dart';
 import 'package:cockpit/app/core/ui/menu/workspace_menu_bridge.dart';
@@ -460,6 +461,8 @@ class _CockpitBootstrapperState extends State<CockpitBootstrapper> {
           ..addChangeNotifier<AutomationController>(
             () => inject<AutomationController>(),
           )
+          // Botão "Keep awake" do rail: assertion da máquina, efêmera, app-scoped.
+          ..addChangeNotifier<KeepAwakeController>(KeepAwakeController.new)
           ..addChangeNotifier<EditorMenuBridge>(EditorMenuBridge.new)
           ..addChangeNotifier<WorkspaceMenuBridge>(WorkspaceMenuBridge.new),
         child: const AppRoot(),

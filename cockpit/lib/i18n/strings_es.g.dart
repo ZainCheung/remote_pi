@@ -1036,6 +1036,11 @@ class _Translations$cockpit$projectsRail$es extends Translations$cockpit$project
 
 	// Translations
 	@override String get workspaces => 'Workspaces';
+	@override String get keepAwake => 'Mantener este equipo despierto';
+	@override String get keepAwakeOn => 'Manteniendo este equipo despierto para acceso remoto. Haz clic para dejarlo dormir de nuevo.';
+	@override String get keepAwakeOff => 'Mantener este equipo despierto para acceso remoto. Se apaga solo cuando Cockpit se reinicia.';
+	@override String get keepAwakeBattery => 'Despierto con batería. Esto consume la batería.';
+	@override String get keepAwakeLid => 'Cerrar la tapa del portátil sigue poniéndolo a dormir.';
 	@override String get newWorkspace => 'Nuevo workspace';
 	@override String get settings => 'Configuración';
 	@override String get mergeToParent => 'Fusionar en el padre';
@@ -2618,6 +2623,11 @@ extension on TranslationsEs {
 			'cockpit.sshPrompts.keptInMemoryHint' => 'Se mantiene en memoria hasta que Cockpit se cierre. Para que los agentes usen esta conexión, activa "Guardar frase de contraseña" en la conexión.',
 			'cockpit.sshPrompts.unlock' => 'Desbloquear',
 			'cockpit.projectsRail.workspaces' => 'Workspaces',
+			'cockpit.projectsRail.keepAwake' => 'Mantener este equipo despierto',
+			'cockpit.projectsRail.keepAwakeOn' => 'Manteniendo este equipo despierto para acceso remoto. Haz clic para dejarlo dormir de nuevo.',
+			'cockpit.projectsRail.keepAwakeOff' => 'Mantener este equipo despierto para acceso remoto. Se apaga solo cuando Cockpit se reinicia.',
+			'cockpit.projectsRail.keepAwakeBattery' => 'Despierto con batería. Esto consume la batería.',
+			'cockpit.projectsRail.keepAwakeLid' => 'Cerrar la tapa del portátil sigue poniéndolo a dormir.',
 			'cockpit.projectsRail.newWorkspace' => 'Nuevo workspace',
 			'cockpit.projectsRail.settings' => 'Configuración',
 			'cockpit.projectsRail.mergeToParent' => 'Fusionar en el padre',
@@ -3082,13 +3092,13 @@ extension on TranslationsEs {
 			'settings.page.automations.modelUnavailable' => 'La lista de modelos no está disponible hasta encontrar el harness.',
 			'settings.page.automations.modelCliOnly' => 'Este harness usa el modelo predeterminado de su CLI.',
 			'settings.page.automations.modelCliDefault' => 'Predeterminado de la CLI',
+			_ => null,
+		} ?? switch (path) {
 			'settings.page.automations.modelAuto' => 'Auto',
 			'settings.page.automations.modelSearch' => ({required Object count}) => 'Buscar entre ${count} modelos…',
 			'settings.page.automations.modelAutoRouted' => 'Este harness elige el modelo automáticamente.',
 			'settings.page.automations.modelAccountOnly' => 'Solo se muestran los modelos disponibles en tu cuenta.',
 			'settings.page.automations.generateFromSourceControl' => 'Generar desde Control de versiones',
-			_ => null,
-		} ?? switch (path) {
 			'settings.page.automations.generateFromSourceControlDescription' => 'Cockpit envía solo el diff seleccionado y los asuntos de los commits recientes. Los patrones habituales de credenciales y los archivos sensibles se redactan antes de ejecutar el harness.',
 			'settings.page.automations.discoveryFailed' => 'No se pudieron descubrir los harnesses de automatización instalados.',
 			'settings.page.automations.staleModel' => ({required Object model, required Object harness}) => 'El modelo "${model}" ya no está disponible para ${harness}. Se usará el predeterminado de la CLI; elige otro modelo en Configuración si lo necesitas.',
