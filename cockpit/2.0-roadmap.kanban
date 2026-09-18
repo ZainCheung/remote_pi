@@ -16,11 +16,6 @@ labels: {bug: red, cd: orange, mobile: blue, docs: green, feature: purple, secur
 
 
 
-- [x] Remove the native Pi agent (pi --mode rpc) from the binary <!-- id: k16 labels: feature -->
-      Decided 2026-09-12: the native agent tab is deprecated and leaves in 2.0. Few people use it, the terminal path (claude, codex, pi in a terminal tab with hooks) is the product, and the agent tab never got .env.cockpit, Restart or extension UI requests. Delete the agent tab, the RPC harness (cockpit/data/rpc), the composer, the enableAgent setting and its migration, the pi daemon/cron integration that depends on it, and the i18n keys. Do it LAST, right before the store publications, so nothing else on this board depends on the removal and the binary ships without it. Closes the "Pi extension UI requests are dropped" bug as won't fix.
-      <!-- comment: 2026-09-17T14:00 -->
-      Done ahead of the planned order (asked on 2026-09-17). Removed: agent tab (AgentSession/entries, composer, transcript, edit dialog, setup checklist, model picker, session history, subfolder picker), the RPC harness and its entities, PiSpawnConfig/env, EnvironmentProbe/Installer, the `enableAgent` setting and its migration, the Settings tabs Connectivity / Daemon Agents / Schedules with the supervisor client, relay gateway, pairing and revoke dialogs, the `agentError` sound and crash notification, Cmd/Ctrl+L composer shortcut (Ctrl+L reaches the terminal again), the matching i18n groups in en/pt-BR/es, and the deps qr_flutter, flutter_sticky_header and win32. The empty pane is now an `EmptyTab` that turns into a terminal; saved layouts with `agent` tabs drop them on restore. `flutter analyze` clean, 1469 tests passing.
-
 - [ ] Consolidated 2.0.0 release notes <!-- id: k1 labels: docs blockedBy: k16, k2 -->
       Every 1.x since 1.28.0 is a 2.0 beta. Write the single 2.0.0 section from the 1.x changelog entries; it is what Sparkle and the download page will show.
 
@@ -45,6 +40,11 @@ labels: {bug: red, cd: orange, mobile: blue, docs: green, feature: purple, secur
 ## Review
 
 ## Done
+
+- [x] Remove the native Pi agent (pi --mode rpc) from the binary <!-- id: k16 labels: feature -->
+      Decided 2026-09-12: the native agent tab is deprecated and leaves in 2.0. Few people use it, the terminal path (claude, codex, pi in a terminal tab with hooks) is the product, and the agent tab never got .env.cockpit, Restart or extension UI requests. Delete the agent tab, the RPC harness (cockpit/data/rpc), the composer, the enableAgent setting and its migration, the pi daemon/cron integration that depends on it, and the i18n keys. Do it LAST, right before the store publications, so nothing else on this board depends on the removal and the binary ships without it. Closes the "Pi extension UI requests are dropped" bug as won't fix.
+      <!-- comment: 2026-09-17T14:00 -->
+      Done ahead of the planned order (asked on 2026-09-17). Removed: agent tab (AgentSession/entries, composer, transcript, edit dialog, setup checklist, model picker, session history, subfolder picker), the RPC harness and its entities, PiSpawnConfig/env, EnvironmentProbe/Installer, the `enableAgent` setting and its migration, the Settings tabs Connectivity / Daemon Agents / Schedules with the supervisor client, relay gateway, pairing and revoke dialogs, the `agentError` sound and crash notification, Cmd/Ctrl+L composer shortcut (Ctrl+L reaches the terminal again), the matching i18n groups in en/pt-BR/es, and the deps qr_flutter, flutter_sticky_header and win32. The empty pane is now an `EmptyTab` that turns into a terminal; saved layouts with `agent` tabs drop them on restore. `flutter analyze` clean, 1469 tests passing.
 
 - [x] Remote workspace redesign (plan 58) <!-- id: k13 labels: feature -->
       Remote workspace = a host folder with worktrees, git and file tree like local; pick the folder when connecting; the "+" becomes a Local/Remote menu instead of a fixed button.
