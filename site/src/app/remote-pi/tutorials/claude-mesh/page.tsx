@@ -48,7 +48,7 @@ export default function ClaudeMeshTutorial() {
               The <InlineCode>remote-pi</InlineCode> CLI on your{" "}
               <InlineCode>$PATH</InlineCode> — run{" "}
               <InlineCode>/remote-pi install</InlineCode> once (see the{" "}
-              <Link href="/tutorials/daemon" className="text-accent underline">
+              <Link href="/remote-pi/tutorials/daemon" className="text-accent underline">
                 daemon tutorial
               </Link>
               ) to link it.
@@ -213,7 +213,7 @@ Agent name [api]: reviewer`}
             opens a development channel for the local MCP server (it shows a
             one-time confirmation dialog at startup). Only point this at folders
             and peers you trust — same posture as promoting a folder to a{" "}
-            <Link href="/tutorials/daemon" className="text-accent underline">
+            <Link href="/remote-pi/tutorials/daemon" className="text-accent underline">
               daemon
             </Link>
             .
@@ -246,7 +246,7 @@ Agent name [api]: reviewer`}
           </p>
           <p>
             To watch two agents talk on one machine, pair this with the{" "}
-            <Link href="/tutorials/mesh-local" className="text-accent underline">
+            <Link href="/remote-pi/tutorials/mesh-local" className="text-accent underline">
               local mesh
             </Link>{" "}
             tutorial — start one peer as Pi and another as Claude, in two
@@ -257,8 +257,8 @@ Agent name [api]: reviewer`}
             </article>
 
             <Pager
-              prev={{ href: "/tutorials/daemon", label: "Daemon mode" }}
-              next={{ href: "/tutorials", label: "All tutorials" }}
+              prev={{ href: "/remote-pi/tutorials/daemon", label: "Daemon mode" }}
+              next={{ href: "/remote-pi/tutorials", label: "All tutorials" }}
             />
           </div>
         </div>

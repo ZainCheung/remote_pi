@@ -25,7 +25,7 @@ export default function MeshRemoteTutorial() {
               <h1>Remote mesh</h1>
               <p className="lede">
                 The{" "}
-                <Link href="/tutorials/mesh-local">local mesh</Link> stops at
+                <Link href="/remote-pi/tutorials/mesh-local">local mesh</Link> stops at
                 one machine. Turn on the relay and the same{" "}
                 <InlineCode>agent_send</InlineCode> reaches agents on other PCs
                 — your laptop talking to your desktop, a build box, a server.
@@ -65,7 +65,7 @@ export default function MeshRemoteTutorial() {
           <p>
             Point both machines at the same relay. The default is the community
             relay; for your own, see{" "}
-            <Link href="/docs#relay" className="text-accent underline">
+            <Link href="/remote-pi/docs#relay" className="text-accent underline">
               the relay reference
             </Link>
             .
@@ -146,7 +146,7 @@ export default function MeshRemoteTutorial() {
             the application layer — the relay operator could in principle read
             plaintext in memory while forwarding. If you need confidentiality
             from the relay operator,{" "}
-            <Link href="/docs#self-host" className="text-accent underline">
+            <Link href="/remote-pi/docs#self-host" className="text-accent underline">
               self-host the relay
             </Link>{" "}
             behind a VPN.
@@ -180,7 +180,7 @@ export default function MeshRemoteTutorial() {
             <p>
               Cross-PC coordination is most useful when the remote agents are
               always up. That&apos;s the next guide:{" "}
-              <Link href="/tutorials/daemon" className="text-accent underline">
+              <Link href="/remote-pi/tutorials/daemon" className="text-accent underline">
                 run them as 24/7 daemons
               </Link>
               .
@@ -191,8 +191,8 @@ export default function MeshRemoteTutorial() {
             </article>
 
             <Pager
-              prev={{ href: "/tutorials/mesh-local", label: "Local mesh" }}
-              next={{ href: "/tutorials/daemon", label: "Daemon mode" }}
+              prev={{ href: "/remote-pi/tutorials/mesh-local", label: "Local mesh" }}
+              next={{ href: "/remote-pi/tutorials/daemon", label: "Daemon mode" }}
             />
           </div>
         </div>

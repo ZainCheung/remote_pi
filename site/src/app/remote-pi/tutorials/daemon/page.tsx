@@ -26,7 +26,7 @@ export default function DaemonTutorial() {
                 mode keeps a folder running as a background agent that survives
                 logout, restarts on crash, and answers your phone at 3am. This
                 is the <em>how</em>; for the <em>why</em> — and how it compares
-                to all-in-one platforms — see <Link href="/why">Why Pi</Link>.
+                to all-in-one platforms — see <Link href="/remote-pi/why">Why Pi</Link>.
               </p>
             </header>
 
@@ -234,7 +234,7 @@ remote-pi cron remove j_ab12       # delete the job`}
             <InlineCode>~/.pi/remote/cron.jsonl</InlineCode>, which{" "}
             <InlineCode>cron log</InlineCode> tails. Full subcommand reference is
             in the{" "}
-            <Link href="/docs#commands-cron" className="text-accent underline">
+            <Link href="/remote-pi/docs#commands-cron" className="text-accent underline">
               docs
             </Link>
             .
@@ -252,7 +252,7 @@ remote-pi uninstall                # remove the supervisor service (registry kep
             <InlineCode>uninstall</InlineCode> is reversible — re-running{" "}
             <InlineCode>/remote-pi install</InlineCode> later brings every
             registered daemon back. Full flags and paths are in the{" "}
-            <Link href="/docs#daemon-mode" className="text-accent underline">
+            <Link href="/remote-pi/docs#daemon-mode" className="text-accent underline">
               reference docs
             </Link>
             .
@@ -262,7 +262,7 @@ remote-pi uninstall                # remove the supervisor service (registry kep
             </article>
 
             <Pager
-              prev={{ href: "/tutorials/mesh-remote", label: "Remote mesh" }}
+              prev={{ href: "/remote-pi/tutorials/mesh-remote", label: "Remote mesh" }}
             />
           </div>
         </div>

@@ -52,7 +52,7 @@ export default function MeshLocalTutorial() {
         <DocsSection id="start" title="1. Start a second agent">
           <p>
             You already have one agent from the{" "}
-            <Link href="/tutorials/getting-started" className="text-accent underline">
+            <Link href="/remote-pi/tutorials/getting-started" className="text-accent underline">
               getting started
             </Link>{" "}
             guide. Open a second terminal in a{" "}
@@ -197,8 +197,8 @@ agent_send({
             </article>
 
             <Pager
-              prev={{ href: "/tutorials/getting-started", label: "Getting started" }}
-              next={{ href: "/tutorials/mesh-remote", label: "Remote mesh" }}
+              prev={{ href: "/remote-pi/tutorials/getting-started", label: "Getting started" }}
+              next={{ href: "/remote-pi/tutorials/mesh-remote", label: "Remote mesh" }}
             />
           </div>
         </div>

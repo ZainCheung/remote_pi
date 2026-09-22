@@ -59,7 +59,7 @@ export default function GettingStartedTutorial() {
                 Google Play
               </a>
               , or the{" "}
-              <Link className="text-accent underline" href="/download">
+              <Link className="text-accent underline" href="/remote-pi/download">
                 Android APK
               </Link>{" "}
               direct download.
@@ -182,14 +182,14 @@ export default function GettingStartedTutorial() {
           </p>
           <ul className="ml-6 list-disc space-y-2">
             <li>
-              <Link href="/tutorials/mesh-local" className="text-accent underline">
+              <Link href="/remote-pi/tutorials/mesh-local" className="text-accent underline">
                 Local mesh
               </Link>{" "}
               — two agents on the same machine discovering and messaging each
               other.
             </li>
             <li>
-              <Link href="/tutorials/daemon" className="text-accent underline">
+              <Link href="/remote-pi/tutorials/daemon" className="text-accent underline">
                 Daemon mode
               </Link>{" "}
               — promote a folder to a 24/7 background agent.
@@ -200,7 +200,7 @@ export default function GettingStartedTutorial() {
             </article>
 
             <Pager
-              next={{ href: "/tutorials/mesh-local", label: "Local mesh" }}
+              next={{ href: "/remote-pi/tutorials/mesh-local", label: "Local mesh" }}
             />
           </div>
         </div>

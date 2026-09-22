@@ -162,10 +162,10 @@ export default function WhyPage() {
                 marginTop: 28,
               }}
             >
-              <Link className="btn btn-primary" href="/#install">
+              <Link className="btn btn-primary" href="/remote-pi#install">
                 <IconDownload /> Install
               </Link>
-              <Link className="btn btn-ghost" href="/tutorials/daemon">
+              <Link className="btn btn-ghost" href="/remote-pi/tutorials/daemon">
                 Daemon how-to →
               </Link>
               <a
