@@ -183,6 +183,7 @@ class Translations$cockpit$en {
 	late final Translations$cockpit$documentWindow$en documentWindow = Translations$cockpit$documentWindow$en.internal(_root);
 	late final Translations$cockpit$gallery$en gallery = Translations$cockpit$gallery$en.internal(_root);
 	late final Translations$cockpit$notebook$en notebook = Translations$cockpit$notebook$en.internal(_root);
+	late final Translations$cockpit$layoutPreview$en layoutPreview = Translations$cockpit$layoutPreview$en.internal(_root);
 }
 
 // Path: settings
@@ -897,6 +898,12 @@ class Translations$cockpit$paneView$en {
 
 	/// en: 'Open terminal'
 	String get openTerminal => 'Open terminal';
+
+	/// en: 'Open as layout'
+	String get openAsLayout => 'Open as layout';
+
+	/// en: 'Open as YAML'
+	String get openAsYaml => 'Open as YAML';
 }
 
 // Path: cockpit.fileTreePanel
@@ -1227,6 +1234,9 @@ class Translations$cockpit$fileViewer$en {
 
 	/// en: 'Source'
 	String get source => 'Source';
+
+	/// en: 'Reload'
+	String get reload => 'Reload';
 }
 
 // Path: cockpit.workspaceSettingsDialog
@@ -2404,6 +2414,63 @@ class Translations$cockpit$notebook$en {
 
 	/// en: 'Hide notes list'
 	String get hideList => 'Hide notes list';
+}
+
+// Path: cockpit.layoutPreview
+class Translations$cockpit$layoutPreview$en {
+	Translations$cockpit$layoutPreview$en.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Could not apply the layout'
+	String get applyFailedTitle => 'Could not apply the layout';
+
+	/// en: 'Apply in Cockpit'
+	String get applyInCockpit => 'Apply in Cockpit';
+
+	/// en: 'Open as new workspace'
+	String get applyNewWorkspace => 'Open as new workspace';
+
+	/// en: 'Apply to ${workspace}'
+	String applyTo({required Object workspace}) => 'Apply to ${workspace}';
+
+	/// en: 'autorun: worktree. This layout is also applied on its own when you create a worktree of the workspace that holds it.'
+	String get autorunWorktree => 'autorun: worktree. This layout is also applied on its own when you create a worktree of the workspace that holds it.';
+
+	/// en: 'Command'
+	String get command => 'Command';
+
+	/// en: 'Folder'
+	String get folder => 'Folder';
+
+	/// en: 'no command, opens a shell'
+	String get noCommand => 'no command, opens a shell';
+
+	/// en: 'Replace layout'
+	String get replaceConfirm => 'Replace layout';
+
+	/// en: '${n} open tabs of this workspace will be closed, including any running work.'
+	String replaceMessage({required Object n}) => '${n} open tabs of this workspace will be closed, including any running work.';
+
+	/// en: 'Replace the layout of ${workspace}?'
+	String replaceTitle({required Object workspace}) => 'Replace the layout of ${workspace}?';
+
+	/// en: 'Not created on this system'
+	String get skippedTitle => 'Not created on this system';
+
+	/// en: 'split down'
+	String get splitDown => 'split down';
+
+	/// en: 'split right'
+	String get splitRight => 'split right';
+
+	/// en: 'tab'
+	String get splitTab => 'tab';
+
+	/// en: 'This layout opens ${n} terminals. Read the commands before applying.'
+	String subtitle({required Object n}) => 'This layout opens ${n} terminals. Read the commands before applying.';
 }
 
 // Path: settings.language
@@ -3786,6 +3853,8 @@ extension on Translations {
 			'cockpit.paneView.dockAsTab' => 'Dock as tab',
 			'cockpit.paneView.openBrowser' => 'Open browser',
 			'cockpit.paneView.openTerminal' => 'Open terminal',
+			'cockpit.paneView.openAsLayout' => 'Open as layout',
+			'cockpit.paneView.openAsYaml' => 'Open as YAML',
 			'cockpit.fileTreePanel.viewDiff' => 'View Diff',
 			'cockpit.fileTreePanel.commit' => 'Commit',
 			'cockpit.fileTreePanel.stageAndCommit' => 'Stage and Commit',
@@ -3890,6 +3959,7 @@ extension on Translations {
 			'cockpit.fileViewer.couldNotLoadImage' => 'Could not load the image.',
 			'cockpit.fileViewer.preview' => 'Preview',
 			'cockpit.fileViewer.source' => 'Source',
+			'cockpit.fileViewer.reload' => 'Reload',
 			'cockpit.workspaceSettingsDialog.choosePhotoTitle' => 'Choose workspace photo',
 			'cockpit.workspaceSettingsDialog.title' => 'Workspace settings',
 			'cockpit.workspaceSettingsDialog.namePlaceholder' => 'Workspace name',
@@ -4094,11 +4164,11 @@ extension on Translations {
 			'cockpit.projectsRail.forkWorktree' => 'Fork Worktree',
 			'cockpit.projectsRail.copyBranch' => 'Copy branch',
 			'cockpit.projectsRail.remove' => 'Remove',
+			_ => null,
+		} ?? switch (path) {
 			'cockpit.projectsRail.moveToRealm' => 'Move to realm',
 			'cockpit.projectsRail.copyWorkspaceId' => 'Copy workspace id',
 			'cockpit.projectsRail.rename' => 'Rename',
-			_ => null,
-		} ?? switch (path) {
 			'cockpit.projectsRail.close' => 'Close',
 			'cockpit.projectsRail.newRealm' => 'New realm…',
 			'cockpit.projectsRail.manageRealms' => 'Manage realms…',
@@ -4255,6 +4325,22 @@ extension on Translations {
 			'cockpit.notebook.deleteTagConfirm' => ({required Object name, required Object count}) => 'Remove “${name}” from ${count} notes? The notes stay.',
 			'cockpit.notebook.showList' => 'Show notes list',
 			'cockpit.notebook.hideList' => 'Hide notes list',
+			'cockpit.layoutPreview.applyFailedTitle' => 'Could not apply the layout',
+			'cockpit.layoutPreview.applyInCockpit' => 'Apply in Cockpit',
+			'cockpit.layoutPreview.applyNewWorkspace' => 'Open as new workspace',
+			'cockpit.layoutPreview.applyTo' => ({required Object workspace}) => 'Apply to ${workspace}',
+			'cockpit.layoutPreview.autorunWorktree' => 'autorun: worktree. This layout is also applied on its own when you create a worktree of the workspace that holds it.',
+			'cockpit.layoutPreview.command' => 'Command',
+			'cockpit.layoutPreview.folder' => 'Folder',
+			'cockpit.layoutPreview.noCommand' => 'no command, opens a shell',
+			'cockpit.layoutPreview.replaceConfirm' => 'Replace layout',
+			'cockpit.layoutPreview.replaceMessage' => ({required Object n}) => '${n} open tabs of this workspace will be closed, including any running work.',
+			'cockpit.layoutPreview.replaceTitle' => ({required Object workspace}) => 'Replace the layout of ${workspace}?',
+			'cockpit.layoutPreview.skippedTitle' => 'Not created on this system',
+			'cockpit.layoutPreview.splitDown' => 'split down',
+			'cockpit.layoutPreview.splitRight' => 'split right',
+			'cockpit.layoutPreview.splitTab' => 'tab',
+			'cockpit.layoutPreview.subtitle' => ({required Object n}) => 'This layout opens ${n} terminals. Read the commands before applying.',
 			'settings.language.title' => 'Language',
 			'settings.language.system' => 'System',
 			'settings.language.english' => 'English',

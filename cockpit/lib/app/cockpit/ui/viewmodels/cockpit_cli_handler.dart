@@ -249,6 +249,22 @@ class CockpitCliHandler {
         }
         return const CockpitCommandResult.ok();
 
+      // `apply-layout` — o botão Apply do viewer de `.ckp` aberto na JANELA DE
+      // DOCUMENTO. Também não é verbo da CLI (quem aplica layout por script é
+      // o `orchestrate`, que tem uma aba emissora para se ancorar): a janela
+      // solta não tem workspace, então empurra o caminho para o app, que
+      // resolve o destino e pede a confirmação com a janela na frente.
+      case 'apply-layout':
+        final path = (c.args['path'] ?? '').toString();
+        if (path.isEmpty) {
+          return const CockpitCommandResult.fail('missing path');
+        }
+        if (!await File(path).exists()) {
+          return CockpitCommandResult.fail('file not found: "$path"');
+        }
+        _vm.requestLayoutApply(path);
+        return const CockpitCommandResult.ok();
+
       // `cockpit new-tab` — cria uma aba de terminal. A CLI já resolveu o cwd
       // pro absoluto. Ancora no workspace/pane da tab emissora (trazendo o
       // workspace pra frente, mesma regra do `open`); `split` = right|down

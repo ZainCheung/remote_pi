@@ -14,6 +14,7 @@ import 'package:cockpit/app/core/data/setup/remote_pi_resolver.dart';
 import 'package:flutter/scheduler.dart' show SchedulerBinding;
 import 'package:flutter/services.dart' show PlatformException;
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
+import 'package:window_manager/window_manager.dart';
 
 import 'package:cockpit/app/cockpit/domain/contracts/app_launcher.dart';
 import 'package:cockpit/app/cockpit/domain/services/db_query_service.dart';
@@ -64,6 +65,7 @@ import 'package:cockpit/app/cockpit/domain/entities/git_history_file_change.dart
 import 'package:cockpit/app/cockpit/domain/git_history_parsers.dart';
 import 'package:cockpit/app/cockpit/domain/entities/layout_spec.dart';
 import 'package:cockpit/app/cockpit/domain/services/layout_apply_runner.dart';
+import 'package:cockpit/app/cockpit/domain/services/layout_destinations.dart';
 import 'package:cockpit/app/cockpit/domain/entities/git_file_status.dart';
 import 'package:cockpit/app/cockpit/domain/entities/git_info.dart';
 import 'package:cockpit/app/cockpit/domain/entities/launchable_app.dart';
@@ -4807,6 +4809,84 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
       closeAll: () => _closeAllTabsInSelectedWorkspace(keepTabId: keepTabId),
       apply: (spec) => _applyLayout(spec, _dirname(ckpPath)),
     );
+  }
+
+  /// `.ckp` que a **janela de documento** mandou aplicar (comando
+  /// `apply-layout` no socket). A página consome no próximo notify e conduz o
+  /// resto na UI: resolver destino, perguntar se for ambíguo, confirmar o
+  /// fechamento das abas. O VM não abre diálogo — só guarda o pedido.
+  String? _pendingLayoutApply;
+
+  /// Registra o pedido e acorda a UI. Traz a janela principal para a frente:
+  /// o clique foi noutra janela, e o que vem a seguir é um diálogo.
+  void requestLayoutApply(String ckpPath) {
+    _pendingLayoutApply = ckpPath;
+    if (!isMobilePlatform) {
+      unawaited(windowManager.show());
+      unawaited(windowManager.focus());
+    }
+    notifyListeners();
+  }
+
+  /// Devolve (uma vez) o pedido pendente.
+  String? takePendingLayoutApply() {
+    final path = _pendingLayoutApply;
+    _pendingLayoutApply = null;
+    return path;
+  }
+
+  /// Workspaces abertos que contêm o `.ckp` — os destinos possíveis do botão
+  /// Apply do viewer de layout. Vazio = o arquivo está fora de qualquer
+  /// workspace (Downloads), e o destino vira um workspace novo na pasta dele.
+  /// Ver [layoutDestinationsFor] para a regra e os casos ambíguos.
+  List<Project> layoutDestinations(String ckpPath) =>
+      layoutDestinationsFor(ckpPath, _projectList);
+
+  /// Impacto de substituir o layout de um workspace **qualquer** (não só o
+  /// selecionado): o viewer precisa dizer no diálogo quantas abas fecham no
+  /// destino escolhido, que pode nem estar na frente.
+  ({int tabs, bool running}) layoutReplaceImpactOf(String projectId) {
+    final tabs = allSessions
+        .where((s) => s.projectId == projectId && !_isEmptyPlaceholder(s))
+        .toList();
+    final running = tabs.any(
+      (s) =>
+          s.isWorking ||
+          (s is TerminalSession && s.activeHarness != null) ||
+          (s is TaskOutputSession && _taskRunner.runOf(s.taskId).isActive),
+    );
+    return (tabs: tabs.length, running: running);
+  }
+
+  /// Aplica o `.ckp` num workspace **específico** (o destino do Apply).
+  ///
+  /// Seleciona o destino antes de aplicar, porque [applyLayoutFile] age no
+  /// workspace selecionado. A ordem importa: **ativa primeiro** (garante a
+  /// árvore de panes carregada, inclusive de um workspace que ainda não foi
+  /// aberto nesta sessão) e só então seleciona — assim o `_activateProject`
+  /// disparado lá dentro vira no-op em vez de correr em paralelo com este.
+  /// Trocar de realm, quando o destino é de outro, é responsabilidade do
+  /// [selectProject].
+  Future<Result<LayoutApplyReport, String>> applyLayoutFileTo(
+    String projectId,
+    String ckpPath,
+  ) async {
+    if (_selectedProjectId != projectId) {
+      await _activateProject(projectId);
+      selectProject(projectId);
+    }
+    return applyLayoutFile(ckpPath);
+  }
+
+  /// Abre um workspace novo na pasta do `.ckp` e aplica o layout nele. É o
+  /// caso do arquivo solto (fora de qualquer workspace): a pasta do arquivo é
+  /// para onde os `cwd` do layout apontam de qualquer forma, e o workspace
+  /// nasce vazio — não há aba de ninguém para fechar.
+  Future<Result<LayoutApplyReport, String>> openWorkspaceAndApplyLayout(
+    String ckpPath,
+  ) async {
+    final project = await addProject(_dirname(ckpPath));
+    return applyLayoutFileTo(project.id, ckpPath);
   }
 
   /// Impacto de substituir o layout do workspace selecionado: quantas abas

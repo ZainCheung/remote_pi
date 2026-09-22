@@ -135,6 +135,7 @@ class _Translations$cockpit$pt_BR extends Translations$cockpit$en {
 	@override late final _Translations$cockpit$documentWindow$pt_BR documentWindow = _Translations$cockpit$documentWindow$pt_BR._(_root);
 	@override late final _Translations$cockpit$gallery$pt_BR gallery = _Translations$cockpit$gallery$pt_BR._(_root);
 	@override late final _Translations$cockpit$notebook$pt_BR notebook = _Translations$cockpit$notebook$pt_BR._(_root);
+	@override late final _Translations$cockpit$layoutPreview$pt_BR layoutPreview = _Translations$cockpit$layoutPreview$pt_BR._(_root);
 }
 
 // Path: settings
@@ -493,6 +494,8 @@ class _Translations$cockpit$paneView$pt_BR extends Translations$cockpit$paneView
 	@override String get dockAsTab => 'Encaixar como aba';
 	@override String get openBrowser => 'Abrir navegador';
 	@override String get openTerminal => 'Abrir terminal';
+	@override String get openAsLayout => 'Abrir como layout';
+	@override String get openAsYaml => 'Abrir como YAML';
 }
 
 // Path: cockpit.fileTreePanel
@@ -615,6 +618,7 @@ class _Translations$cockpit$fileViewer$pt_BR extends Translations$cockpit$fileVi
 	@override String get couldNotLoadImage => 'Não foi possível carregar a imagem.';
 	@override String get preview => 'Pré-visualização';
 	@override String get source => 'Código-fonte';
+	@override String get reload => 'Recarregar';
 }
 
 // Path: cockpit.workspaceSettingsDialog
@@ -1162,6 +1166,31 @@ class _Translations$cockpit$notebook$pt_BR extends Translations$cockpit$notebook
 	@override String deleteTagConfirm({required Object name, required Object count}) => 'Remover “${name}” de ${count} notas? As notas ficam.';
 	@override String get showList => 'Mostrar lista de notas';
 	@override String get hideList => 'Ocultar lista de notas';
+}
+
+// Path: cockpit.layoutPreview
+class _Translations$cockpit$layoutPreview$pt_BR extends Translations$cockpit$layoutPreview$en {
+	_Translations$cockpit$layoutPreview$pt_BR._(TranslationsPtBr root) : this._root = root, super.internal(root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get applyFailedTitle => 'Não foi possível aplicar o layout';
+	@override String get applyInCockpit => 'Aplicar no Cockpit';
+	@override String get applyNewWorkspace => 'Abrir como novo workspace';
+	@override String applyTo({required Object workspace}) => 'Aplicar em ${workspace}';
+	@override String get autorunWorktree => 'autorun: worktree. Este layout também é aplicado sozinho quando você cria uma worktree do workspace onde ele está.';
+	@override String get command => 'Comando';
+	@override String get folder => 'Pasta';
+	@override String get noCommand => 'sem comando, abre um shell';
+	@override String get replaceConfirm => 'Substituir layout';
+	@override String replaceMessage({required Object n}) => '${n} abas abertas deste workspace serão fechadas, inclusive as com trabalho em andamento.';
+	@override String replaceTitle({required Object workspace}) => 'Substituir o layout de ${workspace}?';
+	@override String get skippedTitle => 'Não criados neste sistema';
+	@override String get splitDown => 'divide abaixo';
+	@override String get splitRight => 'divide à direita';
+	@override String get splitTab => 'aba';
+	@override String subtitle({required Object n}) => 'Este layout abre ${n} terminais. Leia os comandos antes de aplicar.';
 }
 
 // Path: settings.language
@@ -1951,6 +1980,8 @@ extension on TranslationsPtBr {
 			'cockpit.paneView.dockAsTab' => 'Encaixar como aba',
 			'cockpit.paneView.openBrowser' => 'Abrir navegador',
 			'cockpit.paneView.openTerminal' => 'Abrir terminal',
+			'cockpit.paneView.openAsLayout' => 'Abrir como layout',
+			'cockpit.paneView.openAsYaml' => 'Abrir como YAML',
 			'cockpit.fileTreePanel.viewDiff' => 'Ver Diff',
 			'cockpit.fileTreePanel.commit' => 'Commit',
 			'cockpit.fileTreePanel.stageAndCommit' => 'Stage e Commit',
@@ -2055,6 +2086,7 @@ extension on TranslationsPtBr {
 			'cockpit.fileViewer.couldNotLoadImage' => 'Não foi possível carregar a imagem.',
 			'cockpit.fileViewer.preview' => 'Pré-visualização',
 			'cockpit.fileViewer.source' => 'Código-fonte',
+			'cockpit.fileViewer.reload' => 'Recarregar',
 			'cockpit.workspaceSettingsDialog.choosePhotoTitle' => 'Escolher foto do workspace',
 			'cockpit.workspaceSettingsDialog.title' => 'Configurações do workspace',
 			'cockpit.workspaceSettingsDialog.namePlaceholder' => 'Nome do workspace',
@@ -2259,11 +2291,11 @@ extension on TranslationsPtBr {
 			'cockpit.projectsRail.forkWorktree' => 'Criar worktree derivada',
 			'cockpit.projectsRail.copyBranch' => 'Copiar branch',
 			'cockpit.projectsRail.remove' => 'Remover',
+			_ => null,
+		} ?? switch (path) {
 			'cockpit.projectsRail.moveToRealm' => 'Mover para realm',
 			'cockpit.projectsRail.copyWorkspaceId' => 'Copiar id do workspace',
 			'cockpit.projectsRail.rename' => 'Renomear',
-			_ => null,
-		} ?? switch (path) {
 			'cockpit.projectsRail.close' => 'Fechar',
 			'cockpit.projectsRail.newRealm' => 'Novo realm…',
 			'cockpit.projectsRail.manageRealms' => 'Gerenciar realms…',
@@ -2420,6 +2452,22 @@ extension on TranslationsPtBr {
 			'cockpit.notebook.deleteTagConfirm' => ({required Object name, required Object count}) => 'Remover “${name}” de ${count} notas? As notas ficam.',
 			'cockpit.notebook.showList' => 'Mostrar lista de notas',
 			'cockpit.notebook.hideList' => 'Ocultar lista de notas',
+			'cockpit.layoutPreview.applyFailedTitle' => 'Não foi possível aplicar o layout',
+			'cockpit.layoutPreview.applyInCockpit' => 'Aplicar no Cockpit',
+			'cockpit.layoutPreview.applyNewWorkspace' => 'Abrir como novo workspace',
+			'cockpit.layoutPreview.applyTo' => ({required Object workspace}) => 'Aplicar em ${workspace}',
+			'cockpit.layoutPreview.autorunWorktree' => 'autorun: worktree. Este layout também é aplicado sozinho quando você cria uma worktree do workspace onde ele está.',
+			'cockpit.layoutPreview.command' => 'Comando',
+			'cockpit.layoutPreview.folder' => 'Pasta',
+			'cockpit.layoutPreview.noCommand' => 'sem comando, abre um shell',
+			'cockpit.layoutPreview.replaceConfirm' => 'Substituir layout',
+			'cockpit.layoutPreview.replaceMessage' => ({required Object n}) => '${n} abas abertas deste workspace serão fechadas, inclusive as com trabalho em andamento.',
+			'cockpit.layoutPreview.replaceTitle' => ({required Object workspace}) => 'Substituir o layout de ${workspace}?',
+			'cockpit.layoutPreview.skippedTitle' => 'Não criados neste sistema',
+			'cockpit.layoutPreview.splitDown' => 'divide abaixo',
+			'cockpit.layoutPreview.splitRight' => 'divide à direita',
+			'cockpit.layoutPreview.splitTab' => 'aba',
+			'cockpit.layoutPreview.subtitle' => ({required Object n}) => 'Este layout abre ${n} terminais. Leia os comandos antes de aplicar.',
 			'settings.language.title' => 'Idioma',
 			'settings.language.system' => 'Sistema',
 			'settings.language.english' => 'Inglês',

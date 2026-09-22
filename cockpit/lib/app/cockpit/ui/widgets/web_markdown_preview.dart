@@ -232,31 +232,78 @@ class _WebMarkdownPreviewState extends State<WebMarkdownPreview> {
 /// webview, com leitura restrita à raiz do workspace (recursos relativos
 /// funcionam; nada fora da raiz é legível). JS desligado — é um preview de
 /// documento, não um runtime.
-class WebHtmlPreview extends StatelessWidget {
+///
+/// Stateful por causa do **reload** (card k39): o webview carrega o arquivo uma
+/// única vez, pelo `initialUrlRequest`, e o path não muda quando o conteúdo
+/// muda no disco. Sem guardar o controller, o preview ficava eternamente na
+/// primeira versão da página. [revision] é o gatilho: o dono muda o valor (o
+/// watcher releu o arquivo, ou o usuário clicou em recarregar) e o webview
+/// recarrega.
+class WebHtmlPreview extends StatefulWidget {
   const WebHtmlPreview({
     super.key,
     required this.path,
     required this.workspaceRoot,
+    this.revision = 0,
   });
 
   final String path;
   final String workspaceRoot;
+
+  /// Muda a cada conteúdo novo em disco (ou clique em recarregar).
+  final int revision;
+
+  @override
+  State<WebHtmlPreview> createState() => _WebHtmlPreviewState();
+}
+
+class _WebHtmlPreviewState extends State<WebHtmlPreview> {
+  InAppWebViewController? _controller;
+
+  /// Recarga pedida antes de o webview existir (troca rápida de aba, arquivo
+  /// que muda durante o load): fica pendente e roda no `onLoadStop`.
+  bool _pending = false;
+
+  @override
+  void didUpdateWidget(WebHtmlPreview old) {
+    super.didUpdateWidget(old);
+    // Path novo = arquivo diferente: a key muda lá em cima e o webview é
+    // recriado, não há o que recarregar.
+    if (widget.path != old.path || widget.revision == old.revision) return;
+    _reload();
+  }
+
+  void _reload() {
+    final c = _controller;
+    if (c == null) {
+      _pending = true;
+      return;
+    }
+    unawaited(c.reload());
+  }
 
   @override
   Widget build(BuildContext context) {
     // Mesmo motivo do preview de markdown: platform view fora do zoom do app.
     return UnzoomedNativeView(
       builder: (context, contentZoom) => InAppWebView(
-        key: ValueKey('html:$path'),
-        initialUrlRequest: URLRequest(url: WebUri.uri(Uri.file(path))),
+        key: ValueKey('html:${widget.path}'),
+        initialUrlRequest: URLRequest(url: WebUri.uri(Uri.file(widget.path))),
+        onWebViewCreated: (c) {
+          _controller = c;
+          if (_pending) {
+            _pending = false;
+            unawaited(c.reload());
+          }
+        },
         initialSettings: InAppWebViewSettings(
           javaScriptEnabled: false,
           isInspectable: false,
           pageZoom: contentZoom,
           // Leitura restrita à raiz do workspace (loadFileURL:allowingReadAccessTo:).
-          allowingReadAccessTo: workspaceRoot.isEmpty
+          allowingReadAccessTo: widget.workspaceRoot.isEmpty
               ? null
-              : WebUri.uri(Uri.directory(workspaceRoot)),
+              : WebUri.uri(Uri.directory(widget.workspaceRoot)),
         ),
       ),
     );

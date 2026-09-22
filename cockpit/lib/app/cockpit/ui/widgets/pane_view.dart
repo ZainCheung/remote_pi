@@ -31,6 +31,7 @@ import 'package:cockpit/app/cockpit/ui/widgets/diff_viewer.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/file_viewer.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/http_request_view.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/kanban_board_view.dart';
+import 'package:cockpit/app/cockpit/ui/widgets/layout_preview_tab.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/notebook_view.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/pane_tab_leading.dart';
 import 'package:cockpit/app/core/domain/entities/terminal_profile.dart';
@@ -765,6 +766,16 @@ class _TabState extends State<_Tab> {
               label: viewer.rawSource ? tr.openAsBoard : tr.openAsMarkdown,
               icon: viewer.rawSource
                   ? Icons.view_column_outlined
+                  : Icons.notes_outlined,
+            ),
+          // Mesma saída de emergência no `.ckp`: ler/editar o YAML do layout
+          // em vez do preview.
+          if (viewer.path.toLowerCase().endsWith('.ckp'))
+            AppMenuItem(
+              value: 'raw-source',
+              label: viewer.rawSource ? tr.openAsLayout : tr.openAsYaml,
+              icon: viewer.rawSource
+                  ? Icons.dashboard_outlined
                   : Icons.notes_outlined,
             ),
         ],
@@ -1646,6 +1657,25 @@ class _PaneBodyState extends State<_PaneBody> {
                 vm.setKanbanListView(item.id, asList),
           );
         },
+      );
+    }
+
+    // Tab de layout `.ckp`: preview do que o layout vai fazer + botão Apply
+    // com o destino escrito nele. Nunca aplica sozinho — um `.ckp` tem um
+    // `command` por pane, então abrir o arquivo é inspecionar, não executar.
+    // `rawSource` (menu da aba) cai no editor de texto, igual ao `.kanban`.
+    if (item is FileViewerSession && item.path.toLowerCase().endsWith('.ckp')) {
+      final vm = context.read<CockpitViewModel>();
+      return ListenableBuilder(
+        listenable: item,
+        builder: (context, _) => item.rawSource
+            ? FileViewer(
+                session: item,
+                active: widget.active,
+                focused: widget.focused,
+                onSave: (content) => vm.saveFile(item.id, content),
+              )
+            : LayoutPreviewTab(session: item),
       );
     }
 

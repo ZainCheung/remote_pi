@@ -236,7 +236,9 @@
       "dropHereToMove": "Suelta aquí para mover la pestaña",
       "dockAsTab": "Acoplar como pestaña",
       "openBrowser": "Abrir navegador",
-      "openTerminal": "Abrir terminal"
+      "openTerminal": "Abrir terminal",
+      "openAsLayout": "Abrir como diseño",
+      "openAsYaml": "Abrir como YAML"
     },
     "fileTreePanel": {
       "viewDiff": "Ver Diff",
@@ -344,7 +346,8 @@
       "cantOpen": "No se puede abrir este archivo.",
       "couldNotLoadImage": "No se pudo cargar la imagen.",
       "preview": "Vista previa",
-      "source": "Código fuente"
+      "source": "Código fuente",
+      "reload": "Recargar"
     },
     "workspaceSettingsDialog": {
       "choosePhotoTitle": "Elegir foto del workspace",
@@ -800,6 +803,24 @@
       "deleteTagConfirm": "¿Quitar “${name}” de ${count} notas? Las notas se conservan.",
       "showList": "Mostrar lista de notas",
       "hideList": "Ocultar lista de notas"
+    },
+    "layoutPreview": {
+      "applyFailedTitle": "No se pudo aplicar el diseño",
+      "applyInCockpit": "Aplicar en Cockpit",
+      "applyNewWorkspace": "Abrir como nuevo espacio de trabajo",
+      "applyTo": "Aplicar en ${workspace}",
+      "autorunWorktree": "autorun: worktree. Este diseño también se aplica solo al crear un worktree del espacio de trabajo que lo contiene.",
+      "command": "Comando",
+      "folder": "Carpeta",
+      "noCommand": "sin comando, abre un shell",
+      "replaceConfirm": "Reemplazar diseño",
+      "replaceMessage": "Se cerrarán ${n} pestañas abiertas de este espacio de trabajo, incluidas las que tienen trabajo en curso.",
+      "replaceTitle": "¿Reemplazar el diseño de ${workspace}?",
+      "skippedTitle": "No se crean en este sistema",
+      "splitDown": "divide abajo",
+      "splitRight": "divide a la derecha",
+      "splitTab": "pestaña",
+      "subtitle": "Este diseño abre ${n} terminales. Lee los comandos antes de aplicarlo."
     }
   },
   "settings": {

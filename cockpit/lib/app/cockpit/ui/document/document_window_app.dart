@@ -4,12 +4,14 @@ import 'dart:io';
 import 'package:cockpit/app/cockpit/data/filesystem/file_reader_impl.dart';
 import 'package:cockpit/app/cockpit/domain/entities/file_view.dart';
 import 'package:cockpit/app/cockpit/ui/document/document_windows.dart';
+import 'package:cockpit/app/cockpit/ui/document/running_instance.dart';
 import 'package:cockpit/app/cockpit/ui/document/standalone_document_host.dart';
 import 'package:cockpit/app/cockpit/ui/session/document_host.dart';
 import 'package:cockpit/app/cockpit/ui/session/file_viewer_session.dart';
 import 'package:cockpit/app/cockpit/ui/session/notebook_session.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/file_viewer.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/kanban_board_view.dart';
+import 'package:cockpit/app/cockpit/ui/widgets/layout_preview_view.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/notebook_view.dart';
 import 'package:cockpit/app/core/data/repositories/json_settings_store.dart';
 import 'package:cockpit/app/core/data/setup/json_state_store.dart';
@@ -385,6 +387,23 @@ class _DocumentScreenState extends State<DocumentScreen>
           onSave: _save,
           onReload: _load,
           onViewModeChanged: (_) {},
+        );
+      } else if (widget.path.toLowerCase().endsWith('.ckp')) {
+        // Layout: a janela solta MOSTRA o que o arquivo faria, mas não tem
+        // workspace nenhum para aplicar. O botão despacha para o app, que
+        // resolve o destino e pede a confirmação (ver `apply-layout` no
+        // cockpit_cli_handler).
+        final view = session.view;
+        body = LayoutPreviewView(
+          path: widget.path,
+          source: view is FileViewText ? view.text : '',
+          hostOs: Platform.operatingSystem,
+          primary: LayoutApplyAction(
+            label: context.t.cockpit.layoutPreview.applyInCockpit,
+            onApply: () => unawaited(RunningInstance.forwardApplyLayout(
+              widget.path,
+            )),
+          ),
         );
       } else {
         body = FileViewer(session: session, onSave: _save);

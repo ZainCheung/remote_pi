@@ -236,7 +236,9 @@
       "dropHereToMove": "Drop here to move the tab",
       "dockAsTab": "Dock as tab",
       "openBrowser": "Open browser",
-      "openTerminal": "Open terminal"
+      "openTerminal": "Open terminal",
+      "openAsLayout": "Open as layout",
+      "openAsYaml": "Open as YAML"
     },
     "fileTreePanel": {
       "viewDiff": "View Diff",
@@ -344,7 +346,8 @@
       "cantOpen": "Can't open this file.",
       "couldNotLoadImage": "Could not load the image.",
       "preview": "Preview",
-      "source": "Source"
+      "source": "Source",
+      "reload": "Reload"
     },
     "workspaceSettingsDialog": {
       "choosePhotoTitle": "Choose workspace photo",
@@ -800,6 +803,24 @@
       "deleteTagConfirm": "Remove “${name}” from ${count} notes? The notes stay.",
       "showList": "Show notes list",
       "hideList": "Hide notes list"
+    },
+    "layoutPreview": {
+      "applyFailedTitle": "Could not apply the layout",
+      "applyInCockpit": "Apply in Cockpit",
+      "applyNewWorkspace": "Open as new workspace",
+      "applyTo": "Apply to ${workspace}",
+      "autorunWorktree": "autorun: worktree. This layout is also applied on its own when you create a worktree of the workspace that holds it.",
+      "command": "Command",
+      "folder": "Folder",
+      "noCommand": "no command, opens a shell",
+      "replaceConfirm": "Replace layout",
+      "replaceMessage": "${n} open tabs of this workspace will be closed, including any running work.",
+      "replaceTitle": "Replace the layout of ${workspace}?",
+      "skippedTitle": "Not created on this system",
+      "splitDown": "split down",
+      "splitRight": "split right",
+      "splitTab": "tab",
+      "subtitle": "This layout opens ${n} terminals. Read the commands before applying."
     }
   },
   "settings": {

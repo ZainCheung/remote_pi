@@ -236,7 +236,9 @@
       "dropHereToMove": "Solte aqui para mover a aba",
       "dockAsTab": "Encaixar como aba",
       "openBrowser": "Abrir navegador",
-      "openTerminal": "Abrir terminal"
+      "openTerminal": "Abrir terminal",
+      "openAsLayout": "Abrir como layout",
+      "openAsYaml": "Abrir como YAML"
     },
     "fileTreePanel": {
       "viewDiff": "Ver Diff",
@@ -344,7 +346,8 @@
       "cantOpen": "Não é possível abrir este arquivo.",
       "couldNotLoadImage": "Não foi possível carregar a imagem.",
       "preview": "Pré-visualização",
-      "source": "Código-fonte"
+      "source": "Código-fonte",
+      "reload": "Recarregar"
     },
     "workspaceSettingsDialog": {
       "choosePhotoTitle": "Escolher foto do workspace",
@@ -800,6 +803,24 @@
       "deleteTagConfirm": "Remover “${name}” de ${count} notas? As notas ficam.",
       "showList": "Mostrar lista de notas",
       "hideList": "Ocultar lista de notas"
+    },
+    "layoutPreview": {
+      "applyFailedTitle": "Não foi possível aplicar o layout",
+      "applyInCockpit": "Aplicar no Cockpit",
+      "applyNewWorkspace": "Abrir como novo workspace",
+      "applyTo": "Aplicar em ${workspace}",
+      "autorunWorktree": "autorun: worktree. Este layout também é aplicado sozinho quando você cria uma worktree do workspace onde ele está.",
+      "command": "Comando",
+      "folder": "Pasta",
+      "noCommand": "sem comando, abre um shell",
+      "replaceConfirm": "Substituir layout",
+      "replaceMessage": "${n} abas abertas deste workspace serão fechadas, inclusive as com trabalho em andamento.",
+      "replaceTitle": "Substituir o layout de ${workspace}?",
+      "skippedTitle": "Não criados neste sistema",
+      "splitDown": "divide abaixo",
+      "splitRight": "divide à direita",
+      "splitTab": "aba",
+      "subtitle": "Este layout abre ${n} terminais. Leia os comandos antes de aplicar."
     }
   },
   "settings": {
