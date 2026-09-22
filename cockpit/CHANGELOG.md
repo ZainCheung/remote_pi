@@ -24,6 +24,205 @@ As versões seguem o `version:` do `pubspec.yaml` (SSOT). O campo `notes` do
     linhas não-vazias — o começo da seção deve fazer sentido sozinho.
 -->
 
+## [2.0.0] - 2026-09-21
+
+**Cockpit is a terminal that grew an IDE around your agents.** Run Claude Code,
+Codex, Pi or anything else in real terminals, on your machine or on any host
+over SSH, with the viewer, diagnostics, git, worktrees and databases they need
+to work. This release opens Cockpit to other machines: a workspace can live on
+a server, a VPS or a Raspberry Pi, the sessions keep running there when you
+close the app, and an iPad or an Android tablet is a full client. It also turns
+the files your agents already write (notebooks, kanban boards, HTTP requests,
+SQL queries, pane layouts) into tabs you can work in.
+
+Everything released as 1.28.x since 2026-08-18 is part of this version.
+
+### Added
+
+**Remote workspaces over SSH**
+
+- Connect to a host, pick any folder on it, and work there like you do locally:
+  terminals, file tree, editor, source control and databases all run on the
+  host. The workspace shows which machine and folder it uses.
+- Sessions live on the host: closing the app, or losing the network, does not
+  kill the agent that is running there. When a host drops, Cockpit retries and
+  shows a banner; terminals freeze instead of closing and resume where they
+  stopped.
+- Any host: Linux x86_64 and ARM64, macOS, and Windows (PowerShell, or `cmd` on
+  Windows ARM), reachable from any client.
+- Remote workspaces are not a lesser version of local ones: multi-repo folders,
+  git worktrees, diffs, `.env.cockpit` and the internal CLI all work over SSH.
+- Host trust is explicit: a host you never connected to shows its fingerprint
+  and asks; a host presenting a different key than before is refused. You pick
+  the SSH private key when registering a host.
+- Databases of a remote workspace run on the host, with the password stored
+  there, next to the database it opens and never on the wire. SSH-bastion
+  tunnels are opened by the machine that can actually reach the bastion.
+
+**`cockpit-server` on a VPS**
+
+- A standalone server for headless Linux hosts (x86_64 and arm64), one command
+  away: `curl -fsSL https://remote-pi.jacobmoura.work/cockpit-server.sh | bash`.
+  No desktop, no sudo, idempotent.
+- `cockpit-server service install|uninstall|status` registers a `systemd --user`
+  unit so the host is ready at boot; without it the client starts the server on
+  demand over SSH. `cockpit-server --version` reports what is installed.
+- The server on a host updates itself when the app that connects to it is newer.
+
+**Mobile client (iPad, iPhone, Android)**
+
+- The same workspace from a tablet or a phone, as a remote client: panels become
+  drawers on narrow screens, and tabs scroll and reorder by touch.
+- A key bar with what a touch keyboard lacks (ESC, Tab, Ctrl+C, arrows,
+  F1–F12), plus copy and paste, right above the keyboard.
+- Distributed as a direct Android APK, built and signed by the release pipeline.
+  The app stores come later.
+
+**Documents that become tabs**
+
+- **Notebook (`.notebook`)**: a folder of plain markdown notes with tags,
+  `[[wiki links]]`, inline images and live formatting. Git, Obsidian and your
+  agent all read the same files. `cockpit note add` lets an agent write one.
+- **`.http` request tab**: write a request in the REST Client / JetBrains HTTP
+  Client syntax, run it with ⌘↵, read the response as JSON, headers or raw text.
+  `cockpit http list|run` gives the agent the same engine.
+- **Gallery**: a panel next to Database with one card per Cockpit document:
+  SQL query, kanban board, pane layout, HTTP requests, HTML view, tasks,
+  notebook.
+  Click and the file is created at the workspace root and opened, on local and
+  remote workspaces alike.
+- **Kanban boards** gained dependencies (`blockedBy: k1, k2`, with blocked and
+  ready filters), a title and label filter, drag and drop in list mode, markdown
+  in comments, and a hold on the advance arrow to send a card straight to the
+  last column.
+- **Mermaid diagrams** render in the markdown preview, offline, in your theme.
+- **Document window**: open a file in its own lightweight window from the app,
+  or straight from the operating system. Double-click a `.kanban`,
+  `.notebook`, `.ckp` or `.dbq` in the Finder, in Explorer or in your Linux file
+  manager and Cockpit opens it, forwarding the path to the instance you already
+  have running.
+
+**Terminals and harnesses**
+
+- **`.env.cockpit` per workspace**: a plain `KEY=VALUE` file at the workspace
+  root, injected into every terminal Cockpit opens there (every root of a
+  multi-root workspace, and on remote hosts too). Put API tokens there instead
+  of pasting them into the agent's prompt. New tabs pick up changes; the Gallery
+  creates the file and Cockpit keeps it out of git.
+- **Restart a terminal tab** in place: the process is replaced, keeping the
+  scrollback, the working directory and the tab name, and resuming the agent
+  that was running (`claude`, `codex` or `pi`). Handy to reload `.env.cockpit`
+  or unstick a shell.
+- Close the focused tab with ⌘W (Ctrl+W on Windows and Linux).
+- Optional **Neovim** as the editor (Settings → General) when it is in PATH.
+
+**Internal CLI**
+
+- `ck` is the same command as `cockpit`, shorter, and the CLI now answers in
+  remote terminals: an agent over SSH can read another tab, send text to it,
+  open files, query the workspace's databases or run a task, all handled by the
+  Cockpit you are sitting at, and always by the one that owns the tab.
+- New verbs: `close-tab`, `run-task` / `stop-task` / `restart-task` /
+  `send-task-key`, `note add|list`, `http list|run`, `new-workspace` /
+  `new-remote-workspace` / `close-workspace` / `rename-workspace`, and
+  `orchestrate --append`.
+
+**Workspaces**
+
+- Shift+Cmd+N and Shift+Cmd+M (Ctrl+Shift on Windows and Linux) move to the
+  previous or next workspace, worktrees included.
+- The "+" button opens a Local / Remote menu.
+- Each workspace remembers whether its worktree list is expanded.
+- A **Collapse all folders** button in the Files header.
+- **Swap side panels**: Appearance → Layout moves the workspaces rail to the
+  right and files/search/git/database to the left.
+
+**Security**
+
+- **Secrets stay off the screen**: values injected from `.env.cockpit` are
+  replaced by `***` in the terminal, in the saved scrollback and in
+  `cockpit read-tab`.
+- Keys that change *who runs what* are never injected (`PATH`, `SHELL`, `HOME`,
+  `ZDOTDIR`, `BASH_ENV`, `ENV`, `PROMPT_COMMAND`, `IFS`, `LD_*`, `DYLD_*`), and
+  a `.env.cockpit` that came with the repository makes new terminals print a
+  notice listing the injected key names, never the values.
+- Database passwords stored on a host are encrypted at rest (AES-GCM), and there
+  is now a single password store per machine instead of one per client.
+
+**Tasks and layouts**
+
+- `previewOpen` in `.cockpit/tasks.json` (`always` / `start` / `never`) stops a
+  restart from reopening the browser every time.
+- Structured JSON logs are colorized in the task terminal.
+
+### Changed
+
+- **Opening a `.ckp` layout replaces the current layout.** The file is validated
+  first, then the workspace tabs are closed (with a confirmation when something
+  is still running) and only then the panes are built. `cockpit orchestrate`
+  replaces without asking and spares the tab it runs from; `--append` restores
+  the previous additive behavior.
+- **"Open in new window" closes the tab** it came from (the Files pane entry
+  leaves the file where it is).
+- **The model list for commit-message automations only offers what your account
+  can actually use**, and where a harness routes automatically (Copilot, Claude
+  Code) Cockpit stops pretending you can choose.
+- **The code editor indents with Tab.** Tab and Shift+Tab indent and outdent
+  instead of moving focus, with the indent unit detected from the file and
+  multi-line selections supported.
+- Database connections are always listed alphabetically, and `databases.json` is
+  written in that order, so saving stops producing noisy diffs.
+- On Windows the app writes `~/.cockpit/status.json`, so the `cockpit` CLI works
+  outside a Cockpit tab.
+
+### Fixed
+
+- **Terminals keep draining when the window is on another macOS Space** or
+  minimized. Output used to pile up until the window came back, with the agent
+  blocked on write.
+- **Accents and dead keys compose inside Claude Code, Codex and pi.** With the
+  Kitty keyboard protocol active, `'` + `e` produced `'e` instead of `é`.
+- **Cmd+` (switch realm) no longer leaks a backtick into the terminal.**
+- **A worktree no longer opens empty.** Selecting one could give you a blank
+  pane instead of the layout you left there, and its terminals' scrollback was
+  being deleted on every launch.
+- **Creating a worktree carries your uncommitted changes over** instead of
+  leaving them behind in the original checkout.
+- **Terminals no longer mirror each other** when a workspace restores with more
+  than one pane, and splitting a pane no longer crashes the terminal view.
+- **Dropping a file into the terminal keeps the keyboard focus.**
+- **Right-click on the empty area of the Files pane** (or inside an empty
+  folder) opens the folder menu for the root, so you can paste or create at the
+  top level.
+- **Closing a tab kills the whole process tree** it started, instead of only the
+  shell.
+- **The markdown preview follows your theme**, recolors when you switch light
+  and dark, renders frontmatter as a key/value table, and no longer crashes on a
+  LaTeX formula.
+- **Selection in the browser and in the markdown/HTML preview lands where you
+  click** on macOS, and the built-in browser no longer gets the legacy version
+  of websites.
+- **Generating a commit message works on Pi, OpenCode and Copilot again**, and
+  failures reach the screen instead of vanishing.
+- Clicking a workspace no longer expands its worktrees by accident; right-click
+  opens the menu at the cursor; reordering is immediate with many workspaces.
+- Column menus on `.kanban` boards anchor to their button, and the view toggle
+  icon is visible in the light theme.
+
+### Removed
+
+- **The native Pi agent (`pi --mode rpc`) and its agent tab are gone.** With it
+  go the composer, the transcript view, the session history, the model picker
+  and the `enableAgent` setting. Agents run as processes in terminal tabs, the
+  path that has `.env.cockpit`, Restart, turn status, auto-resume and every
+  harness (Claude Code, Codex CLI, Pi, OpenCode), while the agent tab had none
+  of it. An empty pane now becomes a terminal, and saved layouts drop their
+  agent tabs when restored.
+- **The Settings tabs Connectivity, Daemon Agents and Schedules**, which drove
+  the Pi supervisor through the native agent, along with **device pairing (QR
+  code) and the relay gateway**. Remote work in Cockpit is SSH plus
+  `cockpit-server`, not the Remote Pi relay.
+
 ## [1.28.33] - 2026-09-16
 
 **Still a beta for the upcoming 2.0.0.** Windows and Linux now open files
