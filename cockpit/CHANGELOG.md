@@ -24,6 +24,54 @@ As versões seguem o `version:` do `pubspec.yaml` (SSOT). O campo `notes` do
     linhas não-vazias — o começo da seção deve fazer sentido sozinho.
 -->
 
+## [2.1.0] - 2026-09-23
+
+**Telemetry: your agents query errors instead of reading terminals.** Cockpit
+now keeps a structured, per-workspace store of what your processes print.
+Errors are grouped by fingerprint, JSON log lines keep their fields, and a new
+`cockpit telemetry` CLI answers in compact JSON: what broke, where, and whether
+it is new. Nothing leaves your machine.
+
+### Added
+
+- **Telemetry tab** in the right panel: cases grouped by project and run, with
+  counts, file:line, `new` and `regression` tags, search and filters. Clicking
+  a case opens it in the center pane with the stack (project frames
+  highlighted), the JSON log printed right before it, occurrences per run and
+  the raw context lines. Triage from either place: resolved, ignored, clear.
+- **Every task feeds it by default.** `"telemetry": false` on a task in
+  `.cockpit/tasks.json` opts out.
+- **`cockpit telemetry <cmd>`** observes anything else you run, in a terminal
+  tab or from an agent's shell, and prints a one-line summary at exit.
+- **`cockpit telemetry errors | logs | show | wait | resolve | ignore | mark |
+  replay | probes`** for agents, with windows like `--new`, `--since-edit` and
+  `--before <event>`. Replies are capped and tell the agent how to narrow.
+  Human triage is respected: resolved and ignored cases stay hidden.
+- **Agents get told.** When a run hits an error the agent in that tab has not
+  seen, Cockpit sends it one summary line as soon as its turn ends
+  (Settings, General, "Notify agents about new errors").
+- **Flutter, zero code**: the Dart VM Service is attached automatically to read
+  `dart:developer` logs and the framework's structured errors.
+- **OpenTelemetry**: observed processes get `OTEL_EXPORTER_OTLP_ENDPOINT`; a
+  local, loopback-only receiver turns OTLP logs and failed spans into cases.
+- **HTTP proxy** (`.cockpit/telemetry.json`): record request/response with
+  status, duration and redacted bodies, inject `x-request-id`, replay a marked
+  window after a fix.
+- Parser for stack traces and error blocks of Dart, Flutter, Node, Python,
+  Rust, Go and the common test runners; JSON Lines with the usual field
+  aliases (pino levels included); log prefixes from `flutter run`, logcat,
+  docker compose and concurrently are stripped.
+- The embedded `cockpit-cli` skill teaches agents the loop and how to make a
+  project emit JSON logs.
+
+### Fixed
+
+- `@` inside a SQL string literal is no longer treated as a parameter.
+- Cmd/Ctrl+click on a terminal path works in TUIs, on Windows/Linux and with
+  relative paths.
+- Document windows only for local workspaces, including notebooks; file live
+  reload goes through a single service for tabs, windows and notebooks.
+
 ## [2.0.0] - 2026-09-21
 
 **Cockpit is a terminal that grew an IDE around your agents.** Run Claude Code,
