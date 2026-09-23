@@ -101,12 +101,16 @@ import 'package:cockpit/app/cockpit/ui/session/redis_browser_session.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/task_discovery.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/task_runner_gateway.dart';
 import 'package:cockpit/app/cockpit/ui/session/task_output_session.dart';
+import 'package:cockpit/app/cockpit/ui/session/telemetry_case_session.dart';
 import 'package:cockpit/app/cockpit/ui/session/task_terminal_store.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/terminal_scrollback_store.dart';
 import 'package:cockpit/app/cockpit/domain/services/terminal_harness_monitor.dart';
 import 'package:cockpit/app/cockpit/ui/session/terminal_session.dart';
 import 'package:cockpit/app/cockpit/ui/states/pane_node.dart';
 import 'package:cockpit/app/cockpit/ui/viewmodels/cockpit_cli_handler.dart';
+import 'package:cockpit/app/cockpit/ui/viewmodels/telemetry_cli_handler.dart';
+import 'package:cockpit/app/cockpit/domain/contracts/telemetry_ingest.dart';
+import 'package:cockpit/app/cockpit/domain/contracts/telemetry_store.dart';
 import 'package:cockpit_remote/cockpit_remote.dart' show RemoteCliCommand;
 import 'package:cockpit/app/cockpit/data/filesystem/unified_diff_parser.dart';
 import 'package:cockpit/app/cockpit/domain/entities/remote_host.dart';
@@ -171,6 +175,8 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
     this.files,
     this.notifications,
     this._neovim,
+    this._telemetryStores,
+    this._telemetryIngest,
   ) {
     _fileEditorFacade = FileEditorFacade(
       FileEditorRegistry({
@@ -723,7 +729,22 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
     _taskDiscovery,
     _taskRunner,
     _taskTerminals,
+    TelemetryCliHandler(
+      _telemetryStores,
+      _telemetryIngest,
+      lastEditAt: (id) => _lastEditAt[id],
+      rootsOf: rootsOf,
+    ),
   );
+
+  // Telemetria (plano 66): stores por workspace + ingest, e o último save do
+  // editor por projeto (janela `--since-edit` da CLI).
+  final TelemetryStoreProvider _telemetryStores;
+  final TelemetryIngest _telemetryIngest;
+  final _lastEditAt = <String, DateTime>{};
+
+  /// Último save do editor no projeto (`null` = nenhum nesta sessão).
+  DateTime? lastEditAt(String projectId) => _lastEditAt[projectId];
 
   /// Roots git do projeto. Sempre não-vazio: single-root = `[path]`
   /// (comportamento histórico, N=1); multi-root = as filhas-repo derivadas.
@@ -1070,6 +1091,67 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
     final only = lf?.tabs.length == 1 ? _sessions[lf!.tabs.first] : null;
     if (lf != null && only is EmptyTab) {
       // Pane só com placeholder vazio → substitui.
+      final emptyId = lf.tabs.first;
+      _trees[projectId] = updateLeaf(
+        tree,
+        paneId,
+        (p) => p.copyWith(tabs: [session.id], active: session.id),
+      );
+      _disposeSession(emptyId);
+    } else {
+      _trees[projectId] = updateLeaf(
+        tree,
+        paneId,
+        (p) => p.copyWith(tabs: [...p.tabs, session.id], active: session.id),
+      );
+    }
+    notifyListeners();
+  }
+
+  /// `true` se há aba aberta pro caso [fingerprint] no workspace ativo.
+  bool isTelemetryCaseOpen(String fingerprint) => _sessions.values.any(
+    (s) =>
+        s is TelemetryCaseSession &&
+        s.fingerprint == fingerprint &&
+        s.projectId == _selectedProjectId,
+  );
+
+  /// Abre (ou foca) a aba de detalhe de um caso da Telemetry (plano 66).
+  /// Mesma mecânica do [openTaskOutput]: reusa a aba existente, senão cria na
+  /// pane focada (substituindo um [EmptyTab] solitário).
+  void openTelemetryCase(String fingerprint, String title) {
+    final projectId = _selectedProjectId;
+    final tree = _activeTree;
+    final paneId = projectId == null ? null : _focused[projectId];
+    if (projectId == null || tree == null || paneId == null) return;
+
+    for (final entry in _sessions.entries) {
+      final s = entry.value;
+      if (s is TelemetryCaseSession &&
+          s.fingerprint == fingerprint &&
+          s.projectId == projectId) {
+        for (final leaf in leaves(tree)) {
+          if (leaf.tabs.contains(entry.key)) {
+            selectTab(leaf.id, entry.key);
+            return;
+          }
+        }
+        break;
+      }
+    }
+
+    final session = TelemetryCaseSession(
+      id: _nid('y'),
+      projectId: projectId,
+      fingerprint: fingerprint,
+      title: title,
+      workingDirectory: selectedProject?.path ?? '',
+    );
+    _sessions[session.id] = session;
+
+    final lf = findLeaf(tree, paneId);
+    final only = lf?.tabs.length == 1 ? _sessions[lf!.tabs.first] : null;
+    if (lf != null && only is EmptyTab) {
       final emptyId = lf.tabs.first;
       _trees[projectId] = updateLeaf(
         tree,
@@ -2433,6 +2515,7 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
       final ok = await _fileReader.write(s.path, content, encoding: encoding);
       if (!ok) return false;
     }
+    _lastEditAt[s.projectId] = DateTime.now();
     final fresh = await _readFile(s.path);
     final cur = _sessions[sessionId];
     if (cur is FileViewerSession && fresh is! FileViewUnsupported) {
@@ -2850,6 +2933,7 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
     // Await: no Windows o `hookEnv` depende da porta ligada antes de spawnar abas.
     // O mesmo socket atende a CLI interna `cockpit` (`_onCockpitCommand`).
     await _statusServer.start(_onClaudeStatus, onCommand: _cli.handle);
+    _telemetryNoticeSub = _telemetryIngest.notices.listen(_onTelemetryNotice);
     // Turn-status REMOTO (plano 60, Wave G): o hook roda no host, o cockpit-
     // server o reenvia pelo protocolo, e aqui cai no MESMO caminho do local
     // (roteado por paneId → spinner/chime). Sem isso, terminal remoto não tem
@@ -5772,6 +5856,94 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
     if (s.claudeSessionId != hadSid && s.claudeSessionId != null) {
       _scheduleSave(s.projectId);
     }
+    // Turno acabou: hora de entregar o que a Telemetry enfileirou pra este
+    // agente (plano 66, passo 7). Nunca no meio do turno.
+    if (!s.isWorking) _deliverTelemetryPush(u.paneId);
+  }
+
+  // ---- Telemetry: push turn-aware (plano 66, passo 7) -----------------------
+
+  StreamSubscription<TelemetryErrorNotice>? _telemetryNoticeSub;
+
+  /// Casos pendentes por pane: fingerprint → linha de resumo.
+  final _telemetryPending = <String, Map<String, String>>{};
+  final _telemetryLastPush = <String, DateTime>{};
+  final _telemetryPushTimers = <String, Timer>{};
+  static const _telemetryPushThrottle = Duration(seconds: 30);
+
+  /// Ligado pela página a partir das Settings (`telemetryPush`).
+  bool Function() telemetryPushEnabled = () => true;
+
+  Future<void> _onTelemetryNotice(TelemetryErrorNotice n) async {
+    if (!telemetryPushEnabled()) return;
+    // Só o que é novo/regressão: a triagem e o histórico decidem.
+    final store = await _telemetryStores.forWorkspace(n.workspaceId);
+    final fresh = await store.cases(
+      TelemetryQuery(runId: n.runId, onlyNew: true, limit: 200),
+    );
+    final hits = fresh.where((c) => n.fingerprints.contains(c.fingerprint));
+    if (hits.isEmpty) return;
+
+    // Wrapper: só o pane dele. Task (sem pane): os agentes do workspace.
+    final targets = <String>{};
+    if (n.paneId != null && _sessions[n.paneId] is TerminalSession) {
+      targets.add(n.paneId!);
+    } else {
+      final ws = _workspaceIdOfTelemetry(n.workspaceId);
+      for (final s in _sessions.values) {
+        if (s is TerminalSession &&
+            s.projectId == ws &&
+            s.claudeSessionId != null) {
+          targets.add(s.id);
+        }
+      }
+    }
+    if (targets.isEmpty) return;
+    for (final pane in targets) {
+      final bucket = _telemetryPending.putIfAbsent(pane, () => {});
+      for (final c in hits) {
+        bucket[c.fingerprint] =
+            '${c.shortId} ${c.type} ×${c.count}'
+            '${c.location == null ? '' : ' ${c.location}'}'
+            '${c.isRegression ? ' (regression)' : ''}'
+            ' [${n.project} ${n.runId}]';
+      }
+      _deliverTelemetryPush(pane);
+    }
+  }
+
+  /// O id de workspace da telemetria é o id do projeto (UUID). Mantido como
+  /// função pra o dia em que fork/worktree tiver base própria.
+  String _workspaceIdOfTelemetry(String workspaceId) => workspaceId;
+
+  void _deliverTelemetryPush(String paneId) {
+    final pending = _telemetryPending[paneId];
+    if (pending == null || pending.isEmpty) return;
+    final s = _sessions[paneId];
+    if (s is! TerminalSession) {
+      _telemetryPending.remove(paneId);
+      return;
+    }
+    if (s.isWorking) return; // o fim do turno chama de novo
+    final last = _telemetryLastPush[paneId];
+    final since = last == null ? null : DateTime.now().difference(last);
+    if (since != null && since < _telemetryPushThrottle) {
+      _telemetryPushTimers[paneId]?.cancel();
+      _telemetryPushTimers[paneId] = Timer(
+        _telemetryPushThrottle - since,
+        () => _deliverTelemetryPush(paneId),
+      );
+      return;
+    }
+    final lines = pending.values.toList();
+    _telemetryPending.remove(paneId);
+    _telemetryLastPush[paneId] = DateTime.now();
+    final head = lines.length == 1
+        ? 'telemetry: 1 new case'
+        : 'telemetry: ${lines.length} new cases';
+    final shown = lines.take(5).join('; ');
+    final more = lines.length > 5 ? '; +${lines.length - 5} more' : '';
+    s.insertText('$head: $shown$more · cockpit telemetry errors --new\r');
   }
 
   /// Env de PATH escopado: prepend o diretório da CLI (onde o binário `cockpit`
@@ -6689,6 +6861,10 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
     unawaited(_remoteTurnSub?.cancel());
     unawaited(_remoteCliSub?.cancel());
     unawaited(_sidecarTurnSub?.cancel());
+    unawaited(_telemetryNoticeSub?.cancel());
+    for (final t in _telemetryPushTimers.values) {
+      t.cancel();
+    }
     // O GitController é dono dos próprios timers/watchers; o módulo o
     // descarta junto com a rota. Aqui só desligamos o repasse de notify.
     git.removeListener(_onGitNotify);

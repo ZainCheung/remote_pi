@@ -40,6 +40,7 @@ import 'package:cockpit/app/cockpit/ui/session/terminal_read_window.dart';
 import 'package:cockpit/app/cockpit/ui/session/terminal_session.dart';
 import 'package:cockpit/app/cockpit/ui/states/pane_node.dart' show SplitDir;
 import 'package:cockpit/app/cockpit/ui/viewmodels/cockpit_viewmodel.dart';
+import 'package:cockpit/app/cockpit/ui/viewmodels/telemetry_cli_handler.dart';
 
 /// Atende os comandos da CLI interna `cockpit` (mesmo socket do
 /// `TerminalStatusServer`), extraído do `CockpitViewModel` (refactor
@@ -54,9 +55,11 @@ class CockpitCliHandler {
     this._tasks,
     this._taskRuns,
     this._taskTerms,
+    this._telemetry,
   );
 
   final CockpitViewModel _vm;
+  final TelemetryCliHandler _telemetry;
   final DbQueryService _db;
   final HttpRequestRunner _http;
   final TaskDiscovery _tasks;
@@ -130,6 +133,14 @@ class CockpitCliHandler {
     if (c == null) {
       return const CockpitCommandResult.fail(
         'no focused tab (is a workspace open?)',
+      );
+    }
+    // Telemetria (plano 66): verbos `telemetry-*` têm handler próprio; o
+    // workspace é o da aba emissora (ou `--workspace`), como no `db`.
+    if (TelemetryCliHandler.handles(c.cmd)) {
+      return _projectCommand(
+        c,
+        (project, root) => _telemetry.handle(c, project, root),
       );
     }
     switch (c.cmd) {

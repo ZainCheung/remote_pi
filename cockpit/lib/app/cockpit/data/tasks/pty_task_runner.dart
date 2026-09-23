@@ -8,6 +8,7 @@ import 'package:cockpit/app/core/data/setup/remote_pi_resolver.dart';
 import 'package:cockpit/app/core/terminal/pty_output_scheduler.dart';
 import 'package:cockpit/app/core/utils/login_shell.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/task_runner_gateway.dart';
+import 'package:cockpit/app/cockpit/domain/contracts/telemetry_ingest.dart';
 import 'package:cockpit/app/cockpit/domain/entities/task_definition.dart';
 import 'package:cockpit/app/cockpit/domain/entities/task_run.dart';
 import 'package:cockpit_pty/cockpit_pty.dart';
@@ -18,6 +19,13 @@ import 'package:cockpit_pty/cockpit_pty.dart';
 /// isso o app GUI não acharia `flutter`/`npm`/`go` (PATH mínimo do Finder).
 /// Mesma razão e mesmas vars (`TERM`/`COLORTERM`) do terminal embutido.
 class PtyTaskRunner implements TaskRunnerGateway {
+  PtyTaskRunner(this._telemetry);
+
+  /// Telemetria (plano 66): toda task alimenta a Caixa Preta por padrão. A
+  /// sessão nasce antes do spawn (injeta `COCKPIT_RUN_ID`/`OTEL_*` no env),
+  /// recebe cada chunk de output e fecha com o exit code.
+  final TelemetryIngest _telemetry;
+
   // Síncrono para o TaskTerminalStore assinar o stream de output antes que o
   // primeiro byte do processo possa chegar. Evita perder o prólogo de builds
   // muito rápidas e inclui o parse do terminal no orçamento do scheduler.
@@ -73,16 +81,19 @@ class PtyTaskRunner implements TaskRunnerGateway {
     );
 
     final Pty pty;
+    TelemetryIngestSession? telemetry;
     try {
       final profile = profileName == null
           ? null
           : def.profiles.firstWhere((p) => p.name == profileName);
       final argv = [...def.resolveArgs(profile), ...adHocArgs];
       final cmdLine = _join([def.command, ...argv]);
+      telemetry = await _telemetry.openTaskRun(def, command: cmdLine);
 
       final env = {
         ...await envWithNodeOnPath(),
         if (profile != null) ...profile.env,
+        ...?telemetry?.childEnvironment,
         // TERM fora do Windows: no PowerShell nativo o TERM quebra o auto-load
         // do PSReadLine e o ConPTY já entrega o VT (ver pty_terminal_gateway).
         if (!Platform.isWindows) 'TERM': 'xterm-256color',
@@ -102,6 +113,7 @@ class PtyTaskRunner implements TaskRunnerGateway {
       );
     } catch (_) {
       _starting.remove(def.id);
+      unawaited(telemetry?.close(exitCode: -1));
       _emit(
         _lastState[def.id] = TaskRun(
           taskId: def.id,
@@ -126,8 +138,10 @@ class PtyTaskRunner implements TaskRunnerGateway {
       def,
       initial,
       isRestart: restarting,
+      telemetry: telemetry,
       onOutput: (data) {
         if (!task.out.isClosed) task.out.add(data);
+        task.telemetry?.add(data);
         _detectProgress(task, data);
         _detectPreviewUrl(task, data);
       },
@@ -317,6 +331,7 @@ class PtyTaskRunner implements TaskRunnerGateway {
       exitCode: code,
     );
     unawaited(_finishOutput(task));
+    unawaited(task.telemetry?.close(exitCode: code) ?? Future.value());
     _emit(ended);
   }
 
@@ -469,6 +484,7 @@ class _RunningTask {
     this.state, {
     required void Function(String data) onOutput,
     this.isRestart = false,
+    this.telemetry,
   }) : coalescer = PtyOutputCoalescer(
          onFlush: onOutput,
          onAcknowledge: pty.ackRead,
@@ -476,6 +492,7 @@ class _RunningTask {
 
   final Pty pty;
   final TaskDefinition def;
+  final TelemetryIngestSession? telemetry;
   // Síncrono: o trabalho do consumidor acontece dentro do slice cronometrado
   // pelo PtyOutputScheduler, não numa fila de eventos sem limite posterior.
   final out = StreamController<String>.broadcast(sync: true);

@@ -434,6 +434,14 @@ class _GeneralPanel extends StatelessWidget {
                         ),
                       ),
                       _Row(
+                        title: tr.telemetryPushTitle,
+                        description: tr.telemetryPushDesc,
+                        trailing: Switch(
+                          value: s.telemetryPush,
+                          onChanged: controller.setTelemetryPush,
+                        ),
+                      ),
+                      _Row(
                         title: tr.launchAtStartupTitle,
                         description: tr.launchAtStartupDesc,
                         trailing: Switch(

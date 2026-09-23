@@ -16,6 +16,8 @@ import 'package:cockpit/app/cockpit/ui/session/notebook_session.dart';
 import 'package:cockpit/app/cockpit/ui/session/pane_item.dart';
 import 'package:cockpit/app/cockpit/ui/session/redis_browser_session.dart';
 import 'package:cockpit/app/cockpit/ui/session/task_output_session.dart';
+import 'package:cockpit/app/cockpit/ui/session/telemetry_case_session.dart';
+import 'package:cockpit/app/cockpit/ui/widgets/telemetry_case_view.dart';
 import 'package:cockpit/app/cockpit/ui/session/terminal_session.dart';
 import 'package:cockpit/app/cockpit/ui/states/pane_node.dart';
 import 'package:cockpit/app/cockpit/ui/viewmodels/cockpit_viewmodel.dart';
@@ -170,6 +172,7 @@ IconData _tabIcon(PaneItem? item) {
   if (item is NeovimSession) return Icons.edit_note_outlined;
   if (item is TerminalSession) return Icons.terminal_outlined;
   if (item is TaskOutputSession) return Icons.play_circle_outline;
+  if (item is TelemetryCaseSession) return Icons.monitor_heart_outlined;
   if (item is FileViewerSession) return Icons.description_outlined;
   if (item is DiffViewerSession) return Icons.difference_outlined;
   if (item is RedisBrowserSession) return Icons.grid_on_outlined;
@@ -1719,6 +1722,10 @@ class _PaneBodyState extends State<_PaneBody> {
     }
 
     // Terminal: só o TerminalView (ele se atualiza sozinho pelo Terminal model).
+    if (item is TelemetryCaseSession) {
+      return TelemetryCaseView(session: item);
+    }
+
     if (item is TaskOutputSession) {
       // Aba read-only: renderiza o terminal compartilhado (dono = store), sem
       // ligar teclado/onOutput. Fechar a aba não toca no buffer nem na task.

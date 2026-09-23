@@ -184,6 +184,7 @@ class Translations$cockpit$en {
 	late final Translations$cockpit$gallery$en gallery = Translations$cockpit$gallery$en.internal(_root);
 	late final Translations$cockpit$notebook$en notebook = Translations$cockpit$notebook$en.internal(_root);
 	late final Translations$cockpit$layoutPreview$en layoutPreview = Translations$cockpit$layoutPreview$en.internal(_root);
+	late final Translations$cockpit$telemetry$en telemetry = Translations$cockpit$telemetry$en.internal(_root);
 }
 
 // Path: settings
@@ -2473,6 +2474,195 @@ class Translations$cockpit$layoutPreview$en {
 	String subtitle({required Object n}) => 'This layout opens ${n} terminals. Read the commands before applying.';
 }
 
+// Path: cockpit.telemetry
+class Translations$cockpit$telemetry$en {
+	Translations$cockpit$telemetry$en.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Telemetry'
+	String get tooltip => 'Telemetry';
+
+	/// en: 'Telemetry'
+	String get title => 'Telemetry';
+
+	/// en: '${n} live'
+	String liveRuns({required Object n}) => '${n} live';
+
+	/// en: 'Open a workspace to see its telemetry.'
+	String get noWorkspace => 'Open a workspace to see its telemetry.';
+
+	/// en: 'Nothing here yet.'
+	String get empty => 'Nothing here yet.';
+
+	/// en: 'Nothing here yet.'
+	String get emptyFiltered => 'Nothing here yet.';
+
+	/// en: 'Filter cases'
+	String get searchHint => 'Filter cases';
+
+	/// en: 'Open'
+	String get chipOpen => 'Open';
+
+	/// en: 'New'
+	String get chipNew => 'New';
+
+	/// en: 'Resolved'
+	String get chipResolved => 'Resolved';
+
+	/// en: 'Ignored'
+	String get chipIgnored => 'Ignored';
+
+	/// en: 'Warnings'
+	String get chipWarnings => 'Warnings';
+
+	/// en: 'new'
+	String get tagNew => 'new';
+
+	/// en: 'regression'
+	String get tagRegression => 'regression';
+
+	/// en: 'resolved'
+	String get tagResolved => 'resolved';
+
+	/// en: 'ignored'
+	String get tagIgnored => 'ignored';
+
+	/// en: 'task'
+	String get srcTask => 'task';
+
+	/// en: 'cockpit telemetry'
+	String get srcWrapper => 'cockpit telemetry';
+
+	/// en: 'run ${id}'
+	String run({required Object id}) => 'run ${id}';
+
+	/// en: 'Mark resolved'
+	String get resolve => 'Mark resolved';
+
+	/// en: 'Ignore (hide from agents too)'
+	String get ignore => 'Ignore (hide from agents too)';
+
+	/// en: 'Reopen'
+	String get reopen => 'Reopen';
+
+	/// en: 'Clear occurrences'
+	String get clear => 'Clear occurrences';
+
+	/// en: 'Clear this run'
+	String get clearRun => 'Clear this run';
+
+	/// en: 'Clear project'
+	String get clearProject => 'Clear project';
+
+	/// en: 'Open ${location}'
+	String openFile({required Object location}) => 'Open ${location}';
+
+	/// en: 'Show in terminal'
+	String get showInTerminal => 'Show in terminal';
+
+	/// en: 'Copy CLI command'
+	String get copyCommand => 'Copy CLI command';
+
+	/// en: 'Copied'
+	String get copied => 'Copied';
+
+	/// en: 'Open'
+	String get statusOpen => 'Open';
+
+	/// en: 'Resolved'
+	String get statusResolved => 'Resolved';
+
+	/// en: 'Ignored'
+	String get statusIgnored => 'Ignored';
+
+	/// en: 'Occurrences'
+	String get occurrences => 'Occurrences';
+
+	/// en: 'in ${n} runs'
+	String inRuns({required Object n}) => 'in ${n} runs';
+
+	/// en: 'First'
+	String get first => 'First';
+
+	/// en: 'Last'
+	String get last => 'Last';
+
+	/// en: 'Origin'
+	String get origin => 'Origin';
+
+	/// en: 'Stack'
+	String get sectionStack => 'Stack';
+
+	/// en: 'project frames highlighted · click opens the file'
+	String get stackHint => 'project frames highlighted · click opens the file';
+
+	/// en: 'Correlated log'
+	String get sectionCorrelated => 'Correlated log';
+
+	/// en: 'the closest JSON log before the error, same run'
+	String get correlatedHint => 'the closest JSON log before the error, same run';
+
+	/// en: 'none'
+	String get none => 'none';
+
+	/// en: 'Occurrences by run'
+	String get sectionRuns => 'Occurrences by run';
+
+	/// en: 'same key (cwd, command): this is how new and regression are computed'
+	String get runsHint => 'same key (cwd, command): this is how new and regression are computed';
+
+	/// en: 'Raw context'
+	String get sectionContext => 'Raw context';
+
+	/// en: 'terminal lines around the last occurrence'
+	String get contextHint => 'terminal lines around the last occurrence';
+
+	/// en: 'current'
+	String get current => 'current';
+
+	/// en: 'fingerprint = type + normalized message + ${location}'
+	String fingerprintHint({required Object location}) => 'fingerprint = type + normalized message + ${location}';
+
+	/// en: 'changed in working tree'
+	String get blameUncommitted => 'changed in working tree';
+
+	/// en: 'changed ${ago} (${sha})'
+	String blameCommit({required Object ago, required Object sha}) => 'changed ${ago} (${sha})';
+
+	/// en: 'just now'
+	String get justNow => 'just now';
+
+	/// en: '${n}m ago'
+	String minutesAgo({required Object n}) => '${n}m ago';
+
+	/// en: '${n}h ago'
+	String hoursAgo({required Object n}) => '${n}h ago';
+
+	/// en: '${n}d ago'
+	String daysAgo({required Object n}) => '${n}d ago';
+
+	/// en: 'Resolved. If it comes back in a later run it reappears as a regression.'
+	String get resolvedToast => 'Resolved. If it comes back in a later run it reappears as a regression.';
+
+	/// en: 'Ignored. Agents no longer see it (unless --include-ignored).'
+	String get ignoredToast => 'Ignored. Agents no longer see it (unless --include-ignored).';
+
+	/// en: 'Occurrences deleted. Triage rules are kept.'
+	String get clearedToast => 'Occurrences deleted. Triage rules are kept.';
+
+	/// en: 'by you'
+	String get byHuman => 'by you';
+
+	/// en: 'by agent'
+	String get byAgent => 'by agent';
+
+	/// en: '${type} · ${file}'
+	String caseTabTitle({required Object type, required Object file}) => '${type} · ${file}';
+}
+
 // Path: settings.language
 class Translations$settings$language$en {
 	Translations$settings$language$en.internal(this._root);
@@ -3111,6 +3301,12 @@ class Translations$settings$page$general$en {
 	String get checkUpdatesDesc => 'How often Cockpit should look for new versions.';
 
 	late final Translations$settings$page$general$updateFrequency$en updateFrequency = Translations$settings$page$general$updateFrequency$en.internal(_root);
+
+	/// en: 'Notify agents about new errors'
+	String get telemetryPushTitle => 'Notify agents about new errors';
+
+	/// en: 'When a task or wrapped command hits an error the agent in that tab has not seen, send it one summary line as soon as its turn ends.'
+	String get telemetryPushDesc => 'When a task or wrapped command hits an error the agent in that tab has not seen, send it one summary line as soon as its turn ends.';
 }
 
 // Path: settings.page.diagnostics
@@ -4341,6 +4537,66 @@ extension on Translations {
 			'cockpit.layoutPreview.splitRight' => 'split right',
 			'cockpit.layoutPreview.splitTab' => 'tab',
 			'cockpit.layoutPreview.subtitle' => ({required Object n}) => 'This layout opens ${n} terminals. Read the commands before applying.',
+			'cockpit.telemetry.tooltip' => 'Telemetry',
+			'cockpit.telemetry.title' => 'Telemetry',
+			'cockpit.telemetry.liveRuns' => ({required Object n}) => '${n} live',
+			'cockpit.telemetry.noWorkspace' => 'Open a workspace to see its telemetry.',
+			'cockpit.telemetry.empty' => 'Nothing here yet.',
+			'cockpit.telemetry.emptyFiltered' => 'Nothing here yet.',
+			'cockpit.telemetry.searchHint' => 'Filter cases',
+			'cockpit.telemetry.chipOpen' => 'Open',
+			'cockpit.telemetry.chipNew' => 'New',
+			'cockpit.telemetry.chipResolved' => 'Resolved',
+			'cockpit.telemetry.chipIgnored' => 'Ignored',
+			'cockpit.telemetry.chipWarnings' => 'Warnings',
+			'cockpit.telemetry.tagNew' => 'new',
+			'cockpit.telemetry.tagRegression' => 'regression',
+			'cockpit.telemetry.tagResolved' => 'resolved',
+			'cockpit.telemetry.tagIgnored' => 'ignored',
+			'cockpit.telemetry.srcTask' => 'task',
+			'cockpit.telemetry.srcWrapper' => 'cockpit telemetry',
+			'cockpit.telemetry.run' => ({required Object id}) => 'run ${id}',
+			'cockpit.telemetry.resolve' => 'Mark resolved',
+			'cockpit.telemetry.ignore' => 'Ignore (hide from agents too)',
+			'cockpit.telemetry.reopen' => 'Reopen',
+			'cockpit.telemetry.clear' => 'Clear occurrences',
+			'cockpit.telemetry.clearRun' => 'Clear this run',
+			'cockpit.telemetry.clearProject' => 'Clear project',
+			'cockpit.telemetry.openFile' => ({required Object location}) => 'Open ${location}',
+			'cockpit.telemetry.showInTerminal' => 'Show in terminal',
+			'cockpit.telemetry.copyCommand' => 'Copy CLI command',
+			'cockpit.telemetry.copied' => 'Copied',
+			'cockpit.telemetry.statusOpen' => 'Open',
+			'cockpit.telemetry.statusResolved' => 'Resolved',
+			'cockpit.telemetry.statusIgnored' => 'Ignored',
+			'cockpit.telemetry.occurrences' => 'Occurrences',
+			'cockpit.telemetry.inRuns' => ({required Object n}) => 'in ${n} runs',
+			'cockpit.telemetry.first' => 'First',
+			'cockpit.telemetry.last' => 'Last',
+			'cockpit.telemetry.origin' => 'Origin',
+			'cockpit.telemetry.sectionStack' => 'Stack',
+			'cockpit.telemetry.stackHint' => 'project frames highlighted · click opens the file',
+			'cockpit.telemetry.sectionCorrelated' => 'Correlated log',
+			'cockpit.telemetry.correlatedHint' => 'the closest JSON log before the error, same run',
+			'cockpit.telemetry.none' => 'none',
+			'cockpit.telemetry.sectionRuns' => 'Occurrences by run',
+			'cockpit.telemetry.runsHint' => 'same key (cwd, command): this is how new and regression are computed',
+			'cockpit.telemetry.sectionContext' => 'Raw context',
+			'cockpit.telemetry.contextHint' => 'terminal lines around the last occurrence',
+			'cockpit.telemetry.current' => 'current',
+			'cockpit.telemetry.fingerprintHint' => ({required Object location}) => 'fingerprint = type + normalized message + ${location}',
+			'cockpit.telemetry.blameUncommitted' => 'changed in working tree',
+			'cockpit.telemetry.blameCommit' => ({required Object ago, required Object sha}) => 'changed ${ago} (${sha})',
+			'cockpit.telemetry.justNow' => 'just now',
+			'cockpit.telemetry.minutesAgo' => ({required Object n}) => '${n}m ago',
+			'cockpit.telemetry.hoursAgo' => ({required Object n}) => '${n}h ago',
+			'cockpit.telemetry.daysAgo' => ({required Object n}) => '${n}d ago',
+			'cockpit.telemetry.resolvedToast' => 'Resolved. If it comes back in a later run it reappears as a regression.',
+			'cockpit.telemetry.ignoredToast' => 'Ignored. Agents no longer see it (unless --include-ignored).',
+			'cockpit.telemetry.clearedToast' => 'Occurrences deleted. Triage rules are kept.',
+			'cockpit.telemetry.byHuman' => 'by you',
+			'cockpit.telemetry.byAgent' => 'by agent',
+			'cockpit.telemetry.caseTabTitle' => ({required Object type, required Object file}) => '${type} · ${file}',
 			'settings.language.title' => 'Language',
 			'settings.language.system' => 'System',
 			'settings.language.english' => 'English',
@@ -4374,6 +4630,8 @@ extension on Translations {
 			'settings.page.general.updateFrequency.weekly' => 'Weekly',
 			'settings.page.general.updateFrequency.monthly' => 'Monthly',
 			'settings.page.general.updateFrequency.never' => 'Never',
+			'settings.page.general.telemetryPushTitle' => 'Notify agents about new errors',
+			'settings.page.general.telemetryPushDesc' => 'When a task or wrapped command hits an error the agent in that tab has not seen, send it one summary line as soon as its turn ends.',
 			'settings.page.diagnostics.sectionTitle' => 'Diagnostics',
 			'settings.page.diagnostics.logFileTitle' => 'Log file',
 			'settings.page.diagnostics.logFileDesc' => ({required Object days, required Object path}) => 'Errors and startup events are recorded here, kept for ${days} days.\n${path}',

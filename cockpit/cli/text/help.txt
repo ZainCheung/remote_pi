@@ -33,6 +33,7 @@ USAGE:
   cockpit rename-workspace <id|path> <name> [--json]
                                                rename a workspace in the sidebar
   cockpit db <list|schema|query|run|execute>   SQL databases (see `cockpit db --help`)
+  cockpit telemetry <cmd…> | errors | show …   run observed / query the error store (see `cockpit telemetry --help`)
   cockpit redis [browse] --db <conn> ...       Redis command / open key table
   cockpit mongo [browse] --db <conn> [--database <name>] ...
                                                MongoDB runCommand / open browser

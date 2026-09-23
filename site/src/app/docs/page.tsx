@@ -1832,6 +1832,17 @@ cockpit-server service uninstall`}
                   </li>
                   <li>
                     <Link
+                      href="/tutorials/cockpit-telemetry"
+                      className="text-accent underline"
+                    >
+                      Tutorial: telemetry for agents
+                    </Link>{" "}
+                    — the error store, the{" "}
+                    <InlineCode>cockpit telemetry</InlineCode> CLI and how to
+                    make a project speak JSON logs.
+                  </li>
+                  <li>
+                    <Link
                       href="/tutorials/cockpit-team"
                       className="text-accent underline"
                     >

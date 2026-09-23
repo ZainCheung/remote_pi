@@ -21,17 +21,24 @@ type Step = {
 const STEPS: Step[] = [
   {
     n: "1",
-    tag: "01 / 02",
+    tag: "01 / 03",
     title: "Layouts and tasks",
     href: "/tutorials/cockpit-layouts",
     desc: "Commit a .ckp layout that opens your terminals and a tasks.json that runs your dev servers, with profiles and reload on save.",
   },
   {
     n: "2",
-    tag: "02 / 02",
+    tag: "02 / 03",
     title: "An agent team",
     href: "/tutorials/cockpit-team",
     desc: "Run an orchestrator, a backend and a frontend as three agent tabs, each in its own folder, coordinated with the internal cockpit CLI.",
+  },
+  {
+    n: "3",
+    tag: "03 / 03",
+    title: "Telemetry for agents",
+    href: "/tutorials/cockpit-telemetry",
+    desc: "A per-workspace error store agents query instead of reading terminals: grouped cases, triage, one CLI.",
   },
 ];
 

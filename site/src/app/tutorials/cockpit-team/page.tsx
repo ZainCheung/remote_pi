@@ -382,7 +382,10 @@ $ cockpit read-tab Backend --lines 40
                 href: "/tutorials/cockpit-layouts",
                 label: "Layouts and tasks",
               }}
-              next={{ href: "/", label: "Meet Cockpit" }}
+              next={{
+                href: "/tutorials/cockpit-telemetry",
+                label: "Telemetry for agents",
+              }}
             />
           </div>
         </div>

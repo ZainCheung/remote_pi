@@ -100,6 +100,7 @@ class FileTreePanel extends StatefulWidget {
     this.searchPanel,
     this.databasePanel,
     this.galleryPanel,
+    this.telemetryPanel,
     this.searchFocusSignal,
     this.tasksPanel,
     this.roots = const <WorkspaceRoot>[],
@@ -216,6 +217,10 @@ class FileTreePanel extends StatefulWidget {
   /// Aba Gallery (vitrine de documentos especiais). `null` = sem aba.
   final Widget? galleryPanel;
 
+  /// Modo Telemetry (plano 66): casos agrupados do workspace. `null` = sem
+  /// workspace selecionado (ícone some).
+  final Widget? telemetryPanel;
+
   /// Painel de busca por conteúdo, fixado entre a árvore e o [footer]
   /// (Cmd+Shift+F). `null` quando não há projeto.
   final Widget? searchPanel;
@@ -328,7 +333,14 @@ class FileTreePanel extends StatefulWidget {
 /// Aba ativa do painel direito: árvore de arquivos, busca por conteúdo,
 /// source control ou conexões de banco (plano 51). Ordem visual no header:
 /// Files · Search · Source Control · Database.
-enum _RightPaneTab { files, search, sourceControl, database, gallery }
+enum _RightPaneTab {
+  files,
+  search,
+  sourceControl,
+  database,
+  gallery,
+  telemetry,
+}
 
 enum _SourceControlView { changes, history }
 
@@ -1038,10 +1050,15 @@ class _FileTreePanelState extends State<FileTreePanel> {
     if (tab == _RightPaneTab.gallery && !hasGallery) {
       tab = _RightPaneTab.files;
     }
+    final hasTelemetry = widget.telemetryPanel != null;
+    if (tab == _RightPaneTab.telemetry && !hasTelemetry) {
+      tab = _RightPaneTab.files;
+    }
     final scMode = tab == _RightPaneTab.sourceControl;
     final searchMode = tab == _RightPaneTab.search;
     final dbMode = tab == _RightPaneTab.database;
     final galleryMode = tab == _RightPaneTab.gallery;
+    final telemetryMode = tab == _RightPaneTab.telemetry;
 
     return Container(
       width: widget.width,
@@ -1089,6 +1106,14 @@ class _FileTreePanelState extends State<FileTreePanel> {
                     tooltip: context.t.cockpit.fileTreePanel.databaseTooltip,
                     selected: dbMode,
                     onTap: () => setState(() => _tab = _RightPaneTab.database),
+                  ),
+                if (hasTelemetry)
+                  _HeaderIcon(
+                    key: const ValueKey('telemetry-tab'),
+                    icon: Icons.monitor_heart_outlined,
+                    tooltip: context.t.cockpit.telemetry.tooltip,
+                    selected: telemetryMode,
+                    onTap: () => setState(() => _tab = _RightPaneTab.telemetry),
                   ),
                 if (hasGallery)
                   _HeaderIcon(
@@ -1174,6 +1199,8 @@ class _FileTreePanelState extends State<FileTreePanel> {
                 ? (widget.databasePanel ?? const SizedBox.shrink())
                 : galleryMode
                 ? (widget.galleryPanel ?? const SizedBox.shrink())
+                : telemetryMode
+                ? (widget.telemetryPanel ?? const SizedBox.shrink())
                 : scMode
                 ? _sourceControlView == _SourceControlView.history
                       ? GitHistoryPanel(

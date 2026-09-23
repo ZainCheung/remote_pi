@@ -284,7 +284,10 @@ pub fn new_workspace(args: &[String]) -> ! {
             host = Some(args[i].clone());
             i += 1;
             continue;
-        } else if let Some(v) = a.strip_prefix("--host=").or_else(|| a.strip_prefix("--remote=")) {
+        } else if let Some(v) = a
+            .strip_prefix("--host=")
+            .or_else(|| a.strip_prefix("--remote="))
+        {
             host = Some(v.to_string());
             i += 1;
             continue;
@@ -339,7 +342,10 @@ pub fn new_workspace(args: &[String]) -> ! {
 
     let raw_path = match path {
         Some(p) if !p.is_empty() => p,
-        _ => die("cockpit new-workspace: missing <path> (or --path <path>)", 2),
+        _ => die(
+            "cockpit new-workspace: missing <path> (or --path <path>)",
+            2,
+        ),
     };
 
     let target_path = if host.is_some() {
@@ -426,15 +432,12 @@ pub fn close_workspace(args: &[String]) -> ! {
 
     let mut cmd_args = Map::new();
     if let Some(t) = target.filter(|t| !t.is_empty()) {
-        let resolved = if t.starts_with('~')
-            || t.starts_with('.')
-            || t.contains('/')
-            || t.contains('\\')
-        {
-            resolve_path(&t)
-        } else {
-            t
-        };
+        let resolved =
+            if t.starts_with('~') || t.starts_with('.') || t.contains('/') || t.contains('\\') {
+                resolve_path(&t)
+            } else {
+                t
+            };
         cmd_args.insert("target".into(), json!(resolved));
     }
     let mut req = json!({"cmd": "close-workspace", "args": Value::Object(cmd_args)});
@@ -454,7 +457,8 @@ pub fn close_workspace(args: &[String]) -> ! {
     std::process::exit(0)
 }
 
-const RENAME_WORKSPACE_HELP: &str = "cockpit rename-workspace [<id|path>] <new-name> [--tab-id <id>] [--json]
+const RENAME_WORKSPACE_HELP: &str =
+    "cockpit rename-workspace [<id|path>] <new-name> [--tab-id <id>] [--json]
   Renames the display title of a workspace in Cockpit's rail.
   Target may be a workspace UUID, directory path, or unique name.
   Without target, renames the workspace owning the current tab.
@@ -512,15 +516,12 @@ pub fn rename_workspace(args: &[String]) -> ! {
 
     let mut cmd_args = Map::new();
     if let Some(t) = target_val.filter(|t| !t.is_empty()) {
-        let resolved = if t.starts_with('~')
-            || t.starts_with('.')
-            || t.contains('/')
-            || t.contains('\\')
-        {
-            resolve_path(&t)
-        } else {
-            t
-        };
+        let resolved =
+            if t.starts_with('~') || t.starts_with('.') || t.contains('/') || t.contains('\\') {
+                resolve_path(&t)
+            } else {
+                t
+            };
         cmd_args.insert("target".into(), json!(resolved));
     }
     cmd_args.insert("name".into(), json!(raw_name));
@@ -893,7 +894,10 @@ pub fn task(cmd: &str, args: &[String]) -> ! {
     if parsed.json {
         println!("{}", data);
     } else {
-        let running = data.get("running").and_then(|v| v.as_bool()).unwrap_or(false);
+        let running = data
+            .get("running")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
         println!("{target}: {}", if running { "running" } else { "stopped" });
     }
     std::process::exit(0)

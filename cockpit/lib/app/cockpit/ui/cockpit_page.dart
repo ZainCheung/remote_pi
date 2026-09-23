@@ -22,7 +22,9 @@ import 'package:cockpit/app/cockpit/data/remote/remote_db_executor.dart';
 import 'package:cockpit/app/cockpit/data/remote/remote_task_gateway.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/task_discovery.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/task_runner_gateway.dart';
+import 'package:cockpit/app/cockpit/domain/contracts/telemetry_ingest.dart';
 import 'package:cockpit/app/cockpit/ui/viewmodels/tasks_viewmodel.dart';
+import 'package:cockpit/app/cockpit/ui/widgets/telemetry_panel.dart';
 import 'package:cockpit/app/cockpit/domain/entities/db_connection.dart';
 import 'package:cockpit/app/cockpit/domain/entities/gallery_template.dart';
 import 'package:cockpit/app/core/ui/file_operation_error_message.dart';
@@ -324,7 +326,33 @@ class _CockpitPageState extends State<CockpitPage> {
     // as tasks daquele host. Mesmo cache por host do painel.
     _vm.remoteTaskContextFor = (wsId) =>
         _remoteTaskContextForHost(_vm.remoteHostForWorkspace(wsId));
+    // Telemetria (plano 66): o ingest roteia cada run pro store do workspace
+    // pelo cwd, então precisa conhecer id/nome/roots do workspace ativo.
+    _vm.telemetryPushEnabled = () =>
+        context.read<SettingsController>().settings.telemetryPush;
+    if (_telemetrySync == null) {
+      final telemetry = inject<TelemetryIngest>();
+      final vm = _vm;
+      void sync() {
+        final p = vm.selectedProject;
+        if (p == null || p.path.isEmpty) return;
+        telemetry.registerWorkspace(
+          TelemetryWorkspace(
+            id: p.id,
+            name: p.name,
+            path: p.path,
+            roots: vm.treeRoots,
+          ),
+        );
+      }
+
+      _telemetrySync = sync;
+      vm.addListener(sync);
+      sync();
+    }
   }
+
+  VoidCallback? _telemetrySync;
 
   /// Contexto de Task remoto do workspace ativo (host resolvido do projeto
   /// selecionado), cacheado por host — o runner precisa sobreviver às trocas de
@@ -534,6 +562,9 @@ class _CockpitPageState extends State<CockpitPage> {
 
   @override
   void dispose() {
+    if (_telemetrySync != null) {
+      context.read<CockpitViewModel>().removeListener(_telemetrySync!);
+    }
     // Runners de Task remotos (cacheados por host): mata as tasks e fecha os
     // streams. Não fecha a conexão SSH (compartilhada com os outros serviços).
     for (final ctx in _remoteTaskCtx.values) {
@@ -1289,6 +1320,17 @@ class _TreePanel extends StatelessWidget {
               ? null
               : GalleryPanel(
                   onCreate: (t) => _createFromGallery(context, vm, t),
+                ),
+          // Telemetry (plano 66): casos do workspace ativo. Remoto ainda não
+          // tem base no host (passo 12), então só workspace local com pasta.
+          telemetryPanel:
+              vm.selectedProject == null ||
+                  vm.selectedProject!.isRemoteTerminal ||
+                  vm.selectedProject!.path.isEmpty
+              ? null
+              : TelemetryPanel(
+                  workspaceId: vm.selectedProject!.id,
+                  roots: vm.treeRoots,
                 ),
           // Task Run funciona local E remoto: no remoto a
           // descoberta lê o tasks.json do host (RemoteTask

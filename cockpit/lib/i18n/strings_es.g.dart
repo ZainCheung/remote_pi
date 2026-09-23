@@ -136,6 +136,7 @@ class _Translations$cockpit$es extends Translations$cockpit$en {
 	@override late final _Translations$cockpit$gallery$es gallery = _Translations$cockpit$gallery$es._(_root);
 	@override late final _Translations$cockpit$notebook$es notebook = _Translations$cockpit$notebook$es._(_root);
 	@override late final _Translations$cockpit$layoutPreview$es layoutPreview = _Translations$cockpit$layoutPreview$es._(_root);
+	@override late final _Translations$cockpit$telemetry$es telemetry = _Translations$cockpit$telemetry$es._(_root);
 }
 
 // Path: settings
@@ -1193,6 +1194,75 @@ class _Translations$cockpit$layoutPreview$es extends Translations$cockpit$layout
 	@override String subtitle({required Object n}) => 'Este diseño abre ${n} terminales. Lee los comandos antes de aplicarlo.';
 }
 
+// Path: cockpit.telemetry
+class _Translations$cockpit$telemetry$es extends Translations$cockpit$telemetry$en {
+	_Translations$cockpit$telemetry$es._(TranslationsEs root) : this._root = root, super.internal(root);
+
+	final TranslationsEs _root; // ignore: unused_field
+
+	// Translations
+	@override String get tooltip => 'Telemetría';
+	@override String get title => 'Telemetría';
+	@override String liveRuns({required Object n}) => '${n} activos';
+	@override String get noWorkspace => 'Abre un workspace para ver su telemetría.';
+	@override String get empty => 'Nada por aquí todavía.';
+	@override String get emptyFiltered => 'Nada por aquí todavía.';
+	@override String get searchHint => 'Filtrar casos';
+	@override String get chipOpen => 'Abiertos';
+	@override String get chipNew => 'Nuevos';
+	@override String get chipResolved => 'Resueltos';
+	@override String get chipIgnored => 'Ignorados';
+	@override String get chipWarnings => 'Avisos';
+	@override String get tagNew => 'nuevo';
+	@override String get tagRegression => 'regresión';
+	@override String get tagResolved => 'resuelto';
+	@override String get tagIgnored => 'ignorado';
+	@override String get srcTask => 'task';
+	@override String get srcWrapper => 'cockpit telemetry';
+	@override String run({required Object id}) => 'run ${id}';
+	@override String get resolve => 'Marcar resuelto';
+	@override String get ignore => 'Ignorar (también se oculta a los agentes)';
+	@override String get reopen => 'Reabrir';
+	@override String get clear => 'Limpiar ocurrencias';
+	@override String get clearRun => 'Limpiar este run';
+	@override String get clearProject => 'Limpiar proyecto';
+	@override String openFile({required Object location}) => 'Abrir ${location}';
+	@override String get showInTerminal => 'Ver en la terminal';
+	@override String get copyCommand => 'Copiar comando de la CLI';
+	@override String get copied => 'Copiado';
+	@override String get statusOpen => 'Abierto';
+	@override String get statusResolved => 'Resuelto';
+	@override String get statusIgnored => 'Ignorado';
+	@override String get occurrences => 'Ocurrencias';
+	@override String inRuns({required Object n}) => 'en ${n} runs';
+	@override String get first => 'Primera';
+	@override String get last => 'Última';
+	@override String get origin => 'Origen';
+	@override String get sectionStack => 'Stack';
+	@override String get stackHint => 'frames del proyecto destacados · clic abre el archivo';
+	@override String get sectionCorrelated => 'Log correlacionado';
+	@override String get correlatedHint => 'el JSON más cercano antes del error, en el mismo run';
+	@override String get none => 'ninguno';
+	@override String get sectionRuns => 'Ocurrencias por run';
+	@override String get runsHint => 'misma clave (cwd, comando): así se calculan nuevo y regresión';
+	@override String get sectionContext => 'Contexto crudo';
+	@override String get contextHint => 'líneas de la terminal alrededor de la última ocurrencia';
+	@override String get current => 'actual';
+	@override String fingerprintHint({required Object location}) => 'fingerprint = tipo + mensaje normalizado + ${location}';
+	@override String get blameUncommitted => 'cambiado en el working tree';
+	@override String blameCommit({required Object ago, required Object sha}) => 'cambiado ${ago} (${sha})';
+	@override String get justNow => 'ahora';
+	@override String minutesAgo({required Object n}) => 'hace ${n} min';
+	@override String hoursAgo({required Object n}) => 'hace ${n} h';
+	@override String daysAgo({required Object n}) => 'hace ${n} d';
+	@override String get resolvedToast => 'Resuelto. Si vuelve en un run futuro, reaparece como regresión.';
+	@override String get ignoredToast => 'Ignorado. Los agentes ya no lo ven (salvo --include-ignored).';
+	@override String get clearedToast => 'Ocurrencias borradas. Las reglas de triaje se mantienen.';
+	@override String get byHuman => 'por ti';
+	@override String get byAgent => 'por el agente';
+	@override String caseTabTitle({required Object type, required Object file}) => '${type} · ${file}';
+}
+
 // Path: settings.language
 class _Translations$settings$language$es extends Translations$settings$language$en {
 	_Translations$settings$language$es._(TranslationsEs root) : this._root = root, super.internal(root);
@@ -1538,6 +1608,8 @@ class _Translations$settings$page$general$es extends Translations$settings$page$
 	@override String get checkUpdatesTitle => 'Buscar actualizaciones';
 	@override String get checkUpdatesDesc => 'Con qué frecuencia Cockpit debe buscar nuevas versiones.';
 	@override late final _Translations$settings$page$general$updateFrequency$es updateFrequency = _Translations$settings$page$general$updateFrequency$es._(_root);
+	@override String get telemetryPushTitle => 'Avisar a los agentes de errores nuevos';
+	@override String get telemetryPushDesc => 'Cuando una task o un comando observado produce un error que el agente de esa pestaña aún no vio, le envía una línea de resumen en cuanto termina su turno.';
 }
 
 // Path: settings.page.diagnostics
@@ -2468,6 +2540,66 @@ extension on TranslationsEs {
 			'cockpit.layoutPreview.splitRight' => 'divide a la derecha',
 			'cockpit.layoutPreview.splitTab' => 'pestaña',
 			'cockpit.layoutPreview.subtitle' => ({required Object n}) => 'Este diseño abre ${n} terminales. Lee los comandos antes de aplicarlo.',
+			'cockpit.telemetry.tooltip' => 'Telemetría',
+			'cockpit.telemetry.title' => 'Telemetría',
+			'cockpit.telemetry.liveRuns' => ({required Object n}) => '${n} activos',
+			'cockpit.telemetry.noWorkspace' => 'Abre un workspace para ver su telemetría.',
+			'cockpit.telemetry.empty' => 'Nada por aquí todavía.',
+			'cockpit.telemetry.emptyFiltered' => 'Nada por aquí todavía.',
+			'cockpit.telemetry.searchHint' => 'Filtrar casos',
+			'cockpit.telemetry.chipOpen' => 'Abiertos',
+			'cockpit.telemetry.chipNew' => 'Nuevos',
+			'cockpit.telemetry.chipResolved' => 'Resueltos',
+			'cockpit.telemetry.chipIgnored' => 'Ignorados',
+			'cockpit.telemetry.chipWarnings' => 'Avisos',
+			'cockpit.telemetry.tagNew' => 'nuevo',
+			'cockpit.telemetry.tagRegression' => 'regresión',
+			'cockpit.telemetry.tagResolved' => 'resuelto',
+			'cockpit.telemetry.tagIgnored' => 'ignorado',
+			'cockpit.telemetry.srcTask' => 'task',
+			'cockpit.telemetry.srcWrapper' => 'cockpit telemetry',
+			'cockpit.telemetry.run' => ({required Object id}) => 'run ${id}',
+			'cockpit.telemetry.resolve' => 'Marcar resuelto',
+			'cockpit.telemetry.ignore' => 'Ignorar (también se oculta a los agentes)',
+			'cockpit.telemetry.reopen' => 'Reabrir',
+			'cockpit.telemetry.clear' => 'Limpiar ocurrencias',
+			'cockpit.telemetry.clearRun' => 'Limpiar este run',
+			'cockpit.telemetry.clearProject' => 'Limpiar proyecto',
+			'cockpit.telemetry.openFile' => ({required Object location}) => 'Abrir ${location}',
+			'cockpit.telemetry.showInTerminal' => 'Ver en la terminal',
+			'cockpit.telemetry.copyCommand' => 'Copiar comando de la CLI',
+			'cockpit.telemetry.copied' => 'Copiado',
+			'cockpit.telemetry.statusOpen' => 'Abierto',
+			'cockpit.telemetry.statusResolved' => 'Resuelto',
+			'cockpit.telemetry.statusIgnored' => 'Ignorado',
+			'cockpit.telemetry.occurrences' => 'Ocurrencias',
+			'cockpit.telemetry.inRuns' => ({required Object n}) => 'en ${n} runs',
+			'cockpit.telemetry.first' => 'Primera',
+			'cockpit.telemetry.last' => 'Última',
+			'cockpit.telemetry.origin' => 'Origen',
+			'cockpit.telemetry.sectionStack' => 'Stack',
+			'cockpit.telemetry.stackHint' => 'frames del proyecto destacados · clic abre el archivo',
+			'cockpit.telemetry.sectionCorrelated' => 'Log correlacionado',
+			'cockpit.telemetry.correlatedHint' => 'el JSON más cercano antes del error, en el mismo run',
+			'cockpit.telemetry.none' => 'ninguno',
+			'cockpit.telemetry.sectionRuns' => 'Ocurrencias por run',
+			'cockpit.telemetry.runsHint' => 'misma clave (cwd, comando): así se calculan nuevo y regresión',
+			'cockpit.telemetry.sectionContext' => 'Contexto crudo',
+			'cockpit.telemetry.contextHint' => 'líneas de la terminal alrededor de la última ocurrencia',
+			'cockpit.telemetry.current' => 'actual',
+			'cockpit.telemetry.fingerprintHint' => ({required Object location}) => 'fingerprint = tipo + mensaje normalizado + ${location}',
+			'cockpit.telemetry.blameUncommitted' => 'cambiado en el working tree',
+			'cockpit.telemetry.blameCommit' => ({required Object ago, required Object sha}) => 'cambiado ${ago} (${sha})',
+			'cockpit.telemetry.justNow' => 'ahora',
+			'cockpit.telemetry.minutesAgo' => ({required Object n}) => 'hace ${n} min',
+			'cockpit.telemetry.hoursAgo' => ({required Object n}) => 'hace ${n} h',
+			'cockpit.telemetry.daysAgo' => ({required Object n}) => 'hace ${n} d',
+			'cockpit.telemetry.resolvedToast' => 'Resuelto. Si vuelve en un run futuro, reaparece como regresión.',
+			'cockpit.telemetry.ignoredToast' => 'Ignorado. Los agentes ya no lo ven (salvo --include-ignored).',
+			'cockpit.telemetry.clearedToast' => 'Ocurrencias borradas. Las reglas de triaje se mantienen.',
+			'cockpit.telemetry.byHuman' => 'por ti',
+			'cockpit.telemetry.byAgent' => 'por el agente',
+			'cockpit.telemetry.caseTabTitle' => ({required Object type, required Object file}) => '${type} · ${file}',
 			'settings.language.title' => 'Idioma',
 			'settings.language.system' => 'Sistema',
 			'settings.language.english' => 'Inglés',
@@ -2501,6 +2633,8 @@ extension on TranslationsEs {
 			'settings.page.general.updateFrequency.weekly' => 'Semanalmente',
 			'settings.page.general.updateFrequency.monthly' => 'Mensualmente',
 			'settings.page.general.updateFrequency.never' => 'Nunca',
+			'settings.page.general.telemetryPushTitle' => 'Avisar a los agentes de errores nuevos',
+			'settings.page.general.telemetryPushDesc' => 'Cuando una task o un comando observado produce un error que el agente de esa pestaña aún no vio, le envía una línea de resumen en cuanto termina su turno.',
 			'settings.page.diagnostics.sectionTitle' => 'Diagnóstico',
 			'settings.page.diagnostics.logFileTitle' => 'Archivo de registro',
 			'settings.page.diagnostics.logFileDesc' => ({required Object days, required Object path}) => 'Los errores y eventos de inicio se registran aquí, y se conservan durante ${days} días.\n${path}',

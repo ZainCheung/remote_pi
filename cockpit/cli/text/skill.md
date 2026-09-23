@@ -411,6 +411,89 @@ Rules that matter:
   renders as a diagram in the app's markdown preview, in notes and in any
   `.md` file. Prefer it over ASCII art when explaining a flow.
 
+## Telemetry (the error store) — query it instead of reading terminals
+
+The app keeps a structured, per-workspace store of what the workspace's
+processes print: errors grouped by fingerprint (type + normalized message +
+first project frame), JSON log lines with their fields, and raw lines with a
+guessed level. **Every task the app runs feeds it by default.** Anything you
+run yourself enters it only through the wrapper.
+
+### Rule of thumb
+
+- If a task exists for what you want to run: `cockpit run-task <id>` (already
+  observed). Otherwise **prefix the command**: `cockpit telemetry flutter test`,
+  `cockpit telemetry --name api npm run dev`. Works from your own shell
+  (pipes) and from a terminal tab (nested PTY, keys and colors preserved).
+- Never `read-tab` thousands of lines when a run exists. The wrapper prints a
+  summary line at exit; follow it:
+
+  ```
+  telemetry: run r_42 · 3 errors · 12 warnings · cockpit telemetry errors --run r_42
+  ```
+
+### The loop
+
+```sh
+cockpit telemetry flutter test            # run → summary line
+cockpit telemetry errors --run r_42       # grouped cases, ids e_xxxx
+cockpit telemetry show e_3f2a             # stack (project frames flagged), the
+                                          # JSON log right before it, context lines
+# fix the code, then either run again, or on a dev server with hot reload:
+cockpit telemetry wait --fingerprint e_3f2a --absent 30s   # ok | hit | inconclusive
+cockpit telemetry resolve e_3f2a --reason "off-by-one in CartService.add"
+```
+
+Useful filters: `--new` (never seen in earlier runs of the same command),
+`--since-edit` (since the human's last editor save), `--since 10m`,
+`--before ev_xxxx --window 5s`, `--project <root>`, `--text <words>`,
+`--probe <name>`. Replies are capped: `"truncated": true` comes with a `hint`.
+Human triage is respected: resolved/ignored cases are hidden unless you pass
+`--include-resolved` / `--include-ignored`. A resolved case that comes back is
+flagged `"regression": true`.
+
+### Make the project speak telemetry (permanent instrumentation)
+
+One rule: **the project's logger emits JSON Lines to stdout**. No SDK.
+
+| Stack | Recipe |
+|---|---|
+| Flutter / Dart | `logging` package with a listener doing `print(jsonEncode({...}))`; also `FlutterError.onError` and `PlatformDispatcher.instance.onError` printing `{"level":"error","msg":..., "err":{"type":..., "message":..., "stack":...}}` |
+| Node / TS | `pino` (JSON by default) or `console.log(JSON.stringify({...}))` |
+| Python | `structlog` with `JSONRenderer`, or `python-json-logger` |
+| Rust | `tracing-subscriber` with `.json()` |
+| Go | `slog.NewJSONHandler(os.Stdout, nil)` |
+
+Canonical shape (aliases accepted: `severity`/`lvl`, `message`, `ts`/`timestamp`,
+`error`/`stack`; pino's numeric levels work):
+
+```json
+{"level":"error","msg":"cart add failed","err":{"type":"RangeError","message":"index 3 of 2","stack":"#0 ..."},"itemId":"abc","total":42}
+```
+
+**Write messages that group well**: keep `msg` fixed and put variable data in
+fields. `"msg":"order failed","orderId":"91c"` is one case; `"msg":"order 91c
+failed"` becomes one case per order.
+
+Do **not** gate logs on `COCKPIT_*` env vars: the app must behave the same
+inside and outside Cockpit (the vars never reach a phone or a container
+anyway). Control verbosity with the project's own knob (`LOG_LEVEL`,
+`kReleaseMode`), set per task via `env` in `.cockpit/tasks.json`.
+
+### Temporary probes while investigating
+
+Sprinkle JSON prints with a `probe` field, e.g.
+`print(jsonEncode({'probe':'cart','items':cart.length}))`, then filter with
+`cockpit telemetry logs --probe cart`. **Never commit a probe**:
+`cockpit telemetry probes` lists added lines in the working tree that still
+carry one; remove them before committing.
+
+### Per-task opt-out and config
+
+`"telemetry": false` on a task in `.cockpit/tasks.json` keeps that task out.
+`.cockpit/telemetry.json` (optional, versioned) can add `unwrap` regexes for
+odd log prefixes and `ignore` patterns.
+
 ## Target (--tab-id)
 
 Without `--tab-id`, the command acts on **your own tab** (via `$COCKPIT_TAB_ID`,
