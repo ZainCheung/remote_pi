@@ -69,6 +69,15 @@ class FileViewerSession extends PaneItem {
   /// (file watcher — plan/42 follow-up), e o `notifyListeners` reconstrói a aba.
   FileView view;
 
+  /// Adota [fresh], relido do disco, e avisa quem escuta a sessão. É o único
+  /// caminho para uma mudança EXTERNA: o quadro do `.kanban` só reprocessa o
+  /// conteúdo no listener da sessão, então trocar [view] sem notificar deixava
+  /// o quadro congelado (foi o bug da janela de documento).
+  void adoptDisk(FileView fresh) {
+    view = fresh;
+    notifyListeners();
+  }
+
   /// `true` quando o editor tem alterações não gravadas. Dirige o indicador da
   /// aba (bolinha no lugar do X) e o dialog de "fechar sem salvar". O `FileViewer`
   /// atualiza via [setDirty]; a aba escuta esta sessão (ChangeNotifier).

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:cockpit/app/cockpit/data/filesystem/disk_file_change_watcher.dart';
 import 'package:cockpit/app/cockpit/data/filesystem/file_reader_impl.dart';
 import 'package:cockpit/app/cockpit/domain/entities/file_view.dart';
 import 'package:cockpit/app/cockpit/ui/document/document_windows.dart';
@@ -223,26 +224,25 @@ class DocumentScreen extends StatefulWidget {
 class _DocumentScreenState extends State<DocumentScreen>
     with WidgetsBindingObserver {
   static const _reader = FileReaderImpl();
+  static const _changes = DiskFileChangeWatcher();
 
   late final StandaloneDocumentHost _host = StandaloneDocumentHost(
     workspaceRoot: StandaloneDocumentHost.findWorkspaceRoot(widget.path),
+    changes: _changes,
   );
   FileViewerSession? _session;
   NotebookSession? _notebook;
   bool _missing = false;
-  StreamSubscription<FileSystemEvent>? _watch;
-  Timer? _debounce;
 
-  /// mtime do arquivo na última leitura. É o que permite conferir, ao voltar
-  /// à vista, se perdemos alguma mudança enquanto a janela estava oculta.
+  /// Live-reload do arquivo (o caderno vigia a própria pasta pelo host).
+  /// Rename atômico, rajada de eventos e stream do SO que morre ficam com o
+  /// [_changes]; o poll de `stat` dele também cobre a janela oculta, cujo
+  /// engine para os frames (numa outra mesa do macOS ou toda coberta).
+  StreamSubscription<void>? _watch;
+
+  /// mtime do arquivo na última leitura: ao voltar à vista, confere se algo
+  /// mudou enquanto a janela estava oculta.
   DateTime? _loadedAt;
-
-  /// Enquanto a janela está numa outra mesa do macOS (ou totalmente coberta)
-  /// o engine dela recebe `hidden` e o Flutter DESLIGA os frames: o watcher
-  /// até dispara e o `setState` até roda, mas nada pinta até a janela voltar.
-  /// Este poll confere o mtime a cada 2 s enquanto oculta e força a releitura
-  /// ao voltar, pra janela nunca reaparecer com conteúdo velho.
-  Timer? _hiddenPoll;
 
   bool get _isNotebook =>
       widget.path.toLowerCase().endsWith('.notebook') &&
@@ -256,7 +256,7 @@ class _DocumentScreenState extends State<DocumentScreen>
       _notebook = NotebookSession(id: 'doc', projectId: '', path: widget.path);
     } else {
       unawaited(_load());
-      _watchFile();
+      _watch = _changes.watchFile(widget.path).listen((_) => _load());
     }
   }
 
@@ -268,35 +268,23 @@ class _DocumentScreenState extends State<DocumentScreen>
     final view = await _reader.read(widget.path);
     _loadedAt = _mtime();
     if (!mounted) return;
+    final current = _session;
+    if (current != null) {
+      // `adoptDisk` notifica a sessão: o quadro do `.kanban` só reprocessa no
+      // listener dela, e um `setState` aqui em cima não chega até ele.
+      current.adoptDisk(view);
+      if (_missing) setState(() => _missing = false);
+      return;
+    }
     setState(() {
       _missing = false;
-      final current = _session;
-      if (current == null) {
-        _session = FileViewerSession(
-          id: 'doc',
-          projectId: '',
-          path: widget.path,
-          view: view,
-        );
-      } else {
-        current.view = view;
-      }
+      _session = FileViewerSession(
+        id: 'doc',
+        projectId: '',
+        path: widget.path,
+        view: view,
+      );
     });
-  }
-
-  /// Observa a PASTA do arquivo (evento por nome): mais barato e robusto que
-  /// observar o arquivo, que some/renasce em editores que gravam por rename.
-  void _watchFile() {
-    final dir = File(widget.path).parent;
-    try {
-      _watch = dir.watch().listen((event) {
-        if (event.path != widget.path) return;
-        _debounce?.cancel();
-        _debounce = Timer(const Duration(milliseconds: 150), _load);
-      });
-    } on FileSystemException {
-      // sem watcher (fs exótico): a janela mostra o que leu ao abrir
-    }
   }
 
   DateTime? _mtime() {
@@ -307,9 +295,13 @@ class _DocumentScreenState extends State<DocumentScreen>
     }
   }
 
-  /// Relê se o arquivo mudou desde a última leitura (mtime diferente).
+  /// Relê se o arquivo mudou desde a última leitura (mtime diferente). O
+  /// caderno não tem um mtime só: pede a recarga dele inteiro.
   void _reloadIfChanged() {
-    if (_isNotebook) return;
+    if (_notebook case final notebook?) {
+      notebook.requestReload();
+      return;
+    }
     final now = _mtime();
     if (now == null || now == _loadedAt) return;
     unawaited(_load());
@@ -317,19 +309,11 @@ class _DocumentScreenState extends State<DocumentScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    switch (state) {
-      case AppLifecycleState.hidden:
-      case AppLifecycleState.paused:
-        _hiddenPoll ??= Timer.periodic(
-          const Duration(seconds: 2),
-          (_) => _reloadIfChanged(),
-        );
-      case AppLifecycleState.resumed:
-      case AppLifecycleState.inactive:
-      case AppLifecycleState.detached:
-        _hiddenPoll?.cancel();
-        _hiddenPoll = null;
-        _reloadIfChanged();
+    // Voltou à vista (com foco = resumed, sem foco = inactive): garante o
+    // conteúdo atual antes do primeiro frame, sem esperar o poll do watcher.
+    if (state == AppLifecycleState.resumed ||
+        state == AppLifecycleState.inactive) {
+      _reloadIfChanged();
     }
   }
 
@@ -342,8 +326,6 @@ class _DocumentScreenState extends State<DocumentScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _hiddenPoll?.cancel();
-    _debounce?.cancel();
     unawaited(_watch?.cancel());
     _session?.dispose();
     _notebook?.dispose();
@@ -400,9 +382,8 @@ class _DocumentScreenState extends State<DocumentScreen>
           hostOs: Platform.operatingSystem,
           primary: LayoutApplyAction(
             label: context.t.cockpit.layoutPreview.applyInCockpit,
-            onApply: () => unawaited(RunningInstance.forwardApplyLayout(
-              widget.path,
-            )),
+            onApply: () =>
+                unawaited(RunningInstance.forwardApplyLayout(widget.path)),
           ),
         );
       } else {

@@ -19,6 +19,7 @@ import 'package:window_manager/window_manager.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/app_launcher.dart';
 import 'package:cockpit/app/cockpit/domain/services/db_query_service.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/content_searcher.dart';
+import 'package:cockpit/app/cockpit/domain/contracts/file_change_watcher.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/file_reader.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/file_searcher.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/file_system_reader.dart';
@@ -139,6 +140,7 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
     this._sidecar,
     this._terminalProfiles,
     this._fileReader,
+    this._fileChanges,
     this._layoutStore,
     this.git,
     this._fileSearcher,
@@ -285,6 +287,9 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
   final TurnStatusSource _sidecar;
   final TerminalProfileResolver _terminalProfiles;
   final FileReader _fileReader;
+
+  /// Live-reload de abas de arquivo e cadernos (rename atômico, re-arm, poll).
+  final FileChangeWatcher _fileChanges;
   final WorkspaceLayoutStore _layoutStore;
 
   /// Estado git extraído (info/roots/watcher/poll/comandos). O VM delega as
@@ -390,10 +395,13 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
 
   /// Watcher por aba de arquivo: relê o conteúdo ao vivo quando o disco muda
   /// (o agente edita o arquivo). Chaveado pelo id da sessão; cancelado no
-  /// `_disposeSession`. O [_fileWatchDebounce] junta rajadas de eventos do editor.
+  /// `_disposeSession`. O debounce da rajada de eventos é do [_fileChanges].
   final Map<String, StreamSubscription<void>> _fileWatchers =
       <String, StreamSubscription<void>>{};
-  final Map<String, Timer> _fileWatchDebounce = <String, Timer>{};
+
+  /// Leitura mais recente disparada por aba: duas mudanças seguidas geram
+  /// duas leituras concorrentes, e só a última pode ser adotada.
+  final Map<String, int> _fileWatchSeq = <String, int>{};
 
   /// Árvore de splits por projeto (workspace).
   final Map<String, PaneNode> _trees = <String, PaneNode>{};
@@ -1827,18 +1835,14 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
     };
   }
 
-  /// Eventos de mudança numa pasta (caderno). Local = `Directory.watch`;
+  /// Eventos de mudança numa pasta (caderno). Local = [_fileChanges];
   /// remoto = vazio (o painel tem "recarregar"; plano 58 não tem fs.watch).
   @override
   Stream<void> watchFolder(String path) {
     if (_activeRemoteHost() != null || path.isEmpty) {
       return const Stream<void>.empty();
     }
-    try {
-      return Directory(path).watch().map((_) {});
-    } catch (_) {
-      return const Stream<void>.empty();
-    }
+    return _fileChanges.watchFolder(path);
   }
 
   /// Sessão de caderno aberta para [folderPath], se houver.
@@ -2774,7 +2778,7 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
           : '$to${s.path.substring(from.length)}';
       s.retarget(newPath);
       final fresh = await _fileReader.read(newPath);
-      if (fresh is! FileViewUnsupported) s.view = fresh;
+      if (fresh is! FileViewUnsupported) s.adoptDisk(fresh);
       _fileWatchers.remove(s.id)?.cancel();
       _watchFileViewer(s);
     }
@@ -5867,7 +5871,7 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
   /// devolve, sem destruir.
   PaneItem? _detachSession(String id) {
     _fileWatchers.remove(id)?.cancel();
-    _fileWatchDebounce.remove(id)?.cancel();
+    _fileWatchSeq.remove(id);
     final s = _sessions.remove(id);
     // Aba fechada explicitamente → descarta o scrollback persistido (só abas de
     // terminal têm). O app-quit NÃO passa por aqui (chama `s.dispose()` direto em
@@ -5879,41 +5883,37 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
   }
 
   /// Observa o arquivo de uma aba de viewer e relê o conteúdo ao vivo quando ele
-  /// muda no disco (decisão de UX — antes a aba congelava até fechar/reabrir). O
-  /// debounce junta a rajada de eventos que um editor dispara num save; o re-read
-  /// que volta `FileViewUnsupported` (sumiu/binário transitório) é ignorado pra
-  /// não piscar. Tudo guardado por id de sessão e cancelado no `_disposeSession`.
+  /// muda no disco (decisão de UX — antes a aba congelava até fechar/reabrir).
+  /// Rename atômico, rajada de eventos e stream do SO que morre são problema do
+  /// [_fileChanges]; aqui só se relê. O re-read que volta `FileViewUnsupported`
+  /// (sumiu/binário transitório) é ignorado pra não piscar. Tudo guardado por
+  /// id de sessão e cancelado no `_disposeSession`.
   void _watchFileViewer(FileViewerSession viewer) {
+    final id = viewer.id;
+    _fileWatchers.remove(id)?.cancel();
     // A/V: live-reload desligado (plano 46). Recarregar recriaria o player no
     // meio da reprodução; mídia raramente é reescrita em disco.
     if (viewer.view is FileViewAudio || viewer.view is FileViewVideo) return;
-    final id = viewer.id;
-    _fileWatchers.remove(id)?.cancel();
-    _fileWatchers[id] = _fileReader.watch(viewer.path).listen(
-      (_) {
-        _fileWatchDebounce[id]?.cancel();
-        _fileWatchDebounce[id] = Timer(
-          const Duration(milliseconds: 120),
-          () async {
-            _fileWatchDebounce.remove(id);
-            if (_sessions[id] is! FileViewerSession) return; // aba fechou
-            final fresh = await _fileReader.read(viewer.path);
-            if (fresh is FileViewUnsupported) return;
-            final s = _sessions[id];
-            if (s is! FileViewerSession) return; // fechou durante o read
-            s.view = fresh;
-            _applyKanbanBoardTitle(s);
-            // A ABA é quem escuta a sessão (o viewer e o quadro se reconstroem
-            // pelo `_onSession` dela). Sem este notify, uma edição externa —
-            // um agente escrevendo o markdown, que é o caso comum — só
-            // aparecia depois de apertar "atualizar".
-            s.notifyListeners();
-            notifyListeners();
-          },
-        );
-      },
-      onError: (_) {}, // watch falhou (sandbox, rename) → sem live-reload
-    );
+    // Remoto: o caminho é do host, não deste disco (o `cockpit-server` não tem
+    // fs.watch). Vigiar aqui leria um arquivo local homônimo, se existisse.
+    if (_isRemote(viewer.projectId)) return;
+    _fileWatchers[id] = _fileChanges.watchFile(viewer.path).listen((_) async {
+      if (_sessions[id] is! FileViewerSession) return; // aba fechou
+      final seq = (_fileWatchSeq[id] ?? 0) + 1;
+      _fileWatchSeq[id] = seq;
+      final fresh = await _fileReader.read(viewer.path);
+      if (_fileWatchSeq[id] != seq) return; // leitura mais nova a caminho
+      if (fresh is FileViewUnsupported) return;
+      final s = _sessions[id];
+      if (s is! FileViewerSession) return; // fechou durante o read
+      // A ABA é quem escuta a sessão (o viewer e o quadro se reconstroem pelo
+      // `_onSession` dela): `adoptDisk` notifica. Sem isso, uma edição
+      // externa — um agente escrevendo o markdown, que é o caso comum — só
+      // aparecia depois de apertar "atualizar".
+      s.adoptDisk(fresh);
+      _applyKanbanBoardTitle(s);
+      notifyListeners();
+    });
   }
 
   // ---- persistência do layout ----------------------------------------------
@@ -6722,10 +6722,6 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
       w.cancel();
     }
     _fileWatchers.clear();
-    for (final t in _fileWatchDebounce.values) {
-      t.cancel();
-    }
-    _fileWatchDebounce.clear();
     // Grava o output pendente das tasks antes de sair (o debounce de 1s do
     // `TaskTerminalStore` pode não ter disparado) → o restore reabre a aba.
     unawaited(_taskTerminals.flushAll());

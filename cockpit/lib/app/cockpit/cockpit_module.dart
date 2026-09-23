@@ -14,6 +14,7 @@ import 'package:cockpit/app/cockpit/data/db/json_ssh_host_key_store.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/mongo_database_store.dart';
 import 'package:cockpit/app/cockpit/data/filesystem/app_launcher_impl.dart';
 import 'package:cockpit/app/cockpit/data/filesystem/content_searcher_impl.dart';
+import 'package:cockpit/app/cockpit/data/filesystem/disk_file_change_watcher.dart';
 import 'package:cockpit/app/cockpit/data/filesystem/file_reader_impl.dart';
 import 'package:cockpit/app/cockpit/data/filesystem/file_searcher_impl.dart';
 import 'package:cockpit/app/cockpit/data/filesystem/file_system_mutator_impl.dart';
@@ -53,6 +54,7 @@ import 'package:cockpit/app/cockpit/data/update/url_opener_impl.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/app_launcher.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/content_searcher.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/dismissed_update_store.dart';
+import 'package:cockpit/app/cockpit/domain/contracts/file_change_watcher.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/file_reader.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/file_searcher.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/file_system_mutator.dart';
@@ -173,6 +175,7 @@ Future<Module> buildCockpitModule({
         ..addInstance<FileSystemReader>(const FileSystemReaderImpl())
         ..addInstance<FileSystemMutator>(const FileSystemMutatorImpl())
         ..addInstance<FileReader>(const FileReaderImpl())
+        ..addInstance<FileChangeWatcher>(const DiskFileChangeWatcher())
         // DB tab (plano 51): conexões por workspace + drivers + motor
         // compartilhado tab/CLI.
         ..addInstance<DbConnectionStore>(const DbConnectionStoreImpl())
