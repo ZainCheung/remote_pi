@@ -364,6 +364,10 @@ dependency_overrides:
   # delta desincroniza do sentinel — no iOS, digitar um acento congelava toda a
   # digitacao (setEditingState ignorado -> delta.apply estoura -> canal morre).
   #
+  # Tag cockpit-pin-flterm-link-click (891b2af): Cmd/Ctrl+clique num link abre
+  # mesmo quando a TUI liga mouse tracking (Claude Code, vim). Antes o clique
+  # ia pro app e o link so realcava. Clique sem modificador segue indo pro app.
+  #
   # ATENCAO CI: ao trocar esta ref muda o ghostty.version; o cache de native
   # asset (.dart_tool/hooks_runner, build/native_assets) precisa ser invalidado,
   # senao a dylib velha crasha o processo (exit -10) ao carregar os bindings novos.
@@ -373,10 +377,10 @@ dependency_overrides:
   flterm:
     git:
       url: https://github.com/jacobaraujo7/libghostty.git
-      ref: cockpit-pin-flterm-super-keys
+      ref: cockpit-pin-flterm-link-click
       path: packages/flterm
   libghostty:
     git:
       url: https://github.com/jacobaraujo7/libghostty.git
-      ref: cockpit-pin-flterm-super-keys
+      ref: cockpit-pin-flterm-link-click
       path: packages/libghostty

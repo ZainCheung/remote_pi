@@ -6,6 +6,7 @@ import 'dart:io'
         File,
         FileMode,
         FileSystemEntity,
+        FileSystemEntityType,
         FileSystemException,
         Platform;
 import 'dart:math' show max;
@@ -17,6 +18,7 @@ import 'package:url_launcher/url_launcher.dart' as url_launcher;
 import 'package:window_manager/window_manager.dart';
 
 import 'package:cockpit/app/cockpit/domain/contracts/app_launcher.dart';
+import 'package:cockpit/app/cockpit/domain/services/terminal_path_resolver.dart';
 import 'package:cockpit/app/cockpit/domain/services/db_query_service.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/content_searcher.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/file_change_watcher.dart';
@@ -2342,49 +2344,23 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
   /// aba normal e revela [line] (base 1) quando informada. Sem-op se o token não
   /// resolve. O FileViewer trata caminho inexistente por conta própria.
   Future<void> openTerminalPath(String token, {String? cwd, int? line}) async {
-    final abs = _resolveTerminalPath(token, cwd);
+    final projectId = _selectedProjectId;
+    // Remoto: o disco é do host, não dá pra conferir daqui qual pasta tem o
+    // arquivo — fica o cwd + caminho.
+    final local = projectId != null && !_isRemote(projectId);
+    final abs = TerminalPathResolver.resolve(
+      token,
+      cwd: cwd,
+      home: userHome(),
+      roots: local
+          ? {?projectRootOf(projectId), ...rootsOf(projectId)}.toList()
+          : const [],
+      exists: local
+          ? (p) => FileSystemEntity.typeSync(p) != FileSystemEntityType.notFound
+          : null,
+    );
     if (abs == null) return;
     await openFile(abs, isPreview: false, revealLine: line);
-  }
-
-  /// Resolve um token de caminho do terminal para absoluto: expande `~`, junta
-  /// com [cwd] se relativo, e normaliza `.`/`..`. `null` se não dá pra resolver.
-  String? _resolveTerminalPath(String token, String? cwd) {
-    var t = token.trim();
-    if (t.isEmpty) return null;
-    if (t == '~' || t.startsWith('~/')) {
-      final home = userHome();
-      if (home == null) return null;
-      t = t == '~' ? home : '$home/${t.substring(2)}';
-    }
-    final isAbsolute =
-        t.startsWith('/') ||
-        (Platform.isWindows && RegExp(r'^[a-zA-Z]:[\\/]').hasMatch(t));
-    if (!isAbsolute) {
-      if (cwd == null || cwd.isEmpty) return null;
-      t = '$cwd/$t';
-    }
-    return _normalizePath(t);
-  }
-
-  /// Colapsa segmentos `.` e `..` de um caminho POSIX-ish (mantém a raiz `/`).
-  String _normalizePath(String path) {
-    final isAbs = path.startsWith('/');
-    final out = <String>[];
-    for (final part in path.split('/')) {
-      if (part.isEmpty || part == '.') continue;
-      if (part == '..') {
-        if (out.isNotEmpty && out.last != '..') {
-          out.removeLast();
-        } else if (!isAbs) {
-          out.add('..');
-        }
-      } else {
-        out.add(part);
-      }
-    }
-    final joined = out.join('/');
-    return isAbs ? '/$joined' : joined;
   }
 
   /// Abre um arquivo do projeto **por caminho relativo** (palette Cmd+P). Aba

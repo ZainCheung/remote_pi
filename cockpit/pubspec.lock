@@ -424,8 +424,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/flterm"
-      ref: cockpit-pin-flterm-super-keys
-      resolved-ref: "013679291a619f028efb9b66d3a2f8f172814db7"
+      ref: cockpit-pin-flterm-link-click
+      resolved-ref: "891b2af4199fed478e76137feedeefae7cd38026"
       url: "https://github.com/jacobaraujo7/libghostty.git"
     source: git
     version: "0.0.5"
@@ -829,8 +829,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/libghostty"
-      ref: cockpit-pin-flterm-super-keys
-      resolved-ref: "013679291a619f028efb9b66d3a2f8f172814db7"
+      ref: cockpit-pin-flterm-link-click
+      resolved-ref: "891b2af4199fed478e76137feedeefae7cd38026"
       url: "https://github.com/jacobaraujo7/libghostty.git"
     source: git
     version: "0.0.12"
