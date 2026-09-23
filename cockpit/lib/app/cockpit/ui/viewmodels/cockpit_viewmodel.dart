@@ -738,6 +738,12 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
   bool _isRemote(String projectId) =>
       projectById(projectId)?.isRemoteTerminal ?? false;
 
+  /// Arquivo do projeto pode ir para uma janela de documento? A janela lê o
+  /// caminho do disco LOCAL; num workspace remoto ela abriria "arquivo não
+  /// encontrado" (ou, pior, um arquivo local homônimo). Fica de fora até a
+  /// janela saber ler do host.
+  bool canOpenInWindow(String projectId) => !_isRemote(projectId);
+
   /// Estado git de uma **root** específica ([rootPath] absoluto) do workspace
   /// ativo. Para perguntar por outro workspace (badge do rail), use
   /// [gitInfoForRootIn] — no remoto a mesma root só faz sentido dentro do seu

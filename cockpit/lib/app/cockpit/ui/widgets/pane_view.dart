@@ -721,8 +721,13 @@ class _TabState extends State<_Tab> {
     final s = widget.item;
     if (s == null) return;
     final viewer = s is FileViewerSession ? s : null;
+    final notebook = s is NotebookSession ? s : null;
     final isPreview = viewer?.isPreview ?? false;
     final terminal = s is TerminalSession ? s : null;
+    // Janela de documento: desktop e workspace local (ver `canOpenInWindow`).
+    final canOpenWindow =
+        !isMobilePlatform &&
+        context.read<CockpitViewModel>().canOpenInWindow(s.projectId);
 
     final tr = context.t.cockpit.paneView;
     final value = await showAppMenu<String>(
@@ -741,7 +746,7 @@ class _TabState extends State<_Tab> {
         if (viewer != null) ...[
           // Move o arquivo pra uma janela de documento: a aba daqui fecha
           // (com a mesma confirmação de edição não salva do ⌘W).
-          if (!isMobilePlatform && !viewer.scratch)
+          if (canOpenWindow && !viewer.scratch)
             AppMenuItem(
               value: 'open-window',
               label: tr.openInNewWindow,
@@ -807,6 +812,13 @@ class _TabState extends State<_Tab> {
             icon: Icons.refresh,
           ),
         ],
+        // Caderno também sai pra uma janela própria (a pasta inteira).
+        if (notebook != null && canOpenWindow)
+          AppMenuItem(
+            value: 'open-window',
+            label: tr.openInNewWindow,
+            icon: Icons.open_in_browser,
+          ),
         AppMenuItem(value: 'close', label: tr.close, icon: Icons.close),
         if (widget.onCloseOthers != null)
           AppMenuItem(
@@ -833,8 +845,9 @@ class _TabState extends State<_Tab> {
       case 'pin':
         if (viewer != null) viewer.pin();
       case 'open-window':
-        if (viewer != null) {
-          unawaited(DocumentWindows.open(viewer.path));
+        final path = viewer?.path ?? notebook?.path;
+        if (path != null) {
+          unawaited(DocumentWindows.open(path));
           await _requestClose();
         }
       case 'copy-id':

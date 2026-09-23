@@ -1223,8 +1223,13 @@ class _TreePanel extends StatelessWidget {
           stagedPaths: vm.stagedAbsolutePaths(),
           unstagedPaths: vm.unstagedAbsolutePaths(),
           onOpenWith: vm.openWithDefaultApp,
-          // Janela de documento própria: só no desktop (engine extra por janela).
-          onOpenInWindow: isMobilePlatform ? null : DocumentWindows.open,
+          // Janela de documento própria: só no desktop (engine extra por
+          // janela) e em workspace local (a janela lê do disco daqui).
+          onOpenInWindow:
+              !isMobilePlatform &&
+                  vm.canOpenInWindow(vm.selectedProject?.id ?? '')
+              ? DocumentWindows.open
+              : null,
           onOpenAsSource: vm.openFileAsSource,
           onOpenLayout: (path) async {
             // Abrir um layout = "vire este layout": as abas atuais fecham
