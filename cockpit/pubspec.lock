@@ -21,18 +21,18 @@ packages:
     dependency: "direct main"
     description:
       name: anaki_mssql
-      sha256: "23a6a16f69f4da718254ac8a4c262b56698b23680e44ef5aa914ade3f969eedd"
+      sha256: b0ba134072359a5fef2760eba6719dc4fac2e99d978cd2cb3e5f290e79dcda4b
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.6"
+    version: "0.1.7"
   anaki_mysql:
     dependency: "direct main"
     description:
       name: anaki_mysql
-      sha256: "4441db23899855e4b5cffb8a8c85f38cc9586e4da6e8b35b0afc81aef086dbce"
+      sha256: "8e4886b47bb3e3af14a9ff4782413a640cab0fc9b033e8fd62624730abe8b680"
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.8"
+    version: "0.1.9"
   anaki_orm:
     dependency: "direct main"
     description:
@@ -45,10 +45,10 @@ packages:
     dependency: "direct main"
     description:
       name: anaki_postgres
-      sha256: "1bba18d3a3ba092b40ee21a91878976216105259f90f86b4d3678deb9e9d42c1"
+      sha256: "4354e33a4fced0ab8a202f1f6641ecd5b675ae421d7c507a32e979f7d7d5002c"
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.7"
+    version: "0.1.8"
   anaki_redis:
     dependency: "direct main"
     description:
@@ -61,10 +61,10 @@ packages:
     dependency: "direct main"
     description:
       name: anaki_sqlite
-      sha256: d67b2d6c7f8aa87a5a1bfa24cb713d79216df55ab6e0f23f3aad6ec7860454b2
+      sha256: c9c1e2b15e085102935f071275c379c14556a40a7b85ad5c87672a5f0396fbe5
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.5"
+    version: "0.1.6"
   analyzer:
     dependency: transitive
     description:
