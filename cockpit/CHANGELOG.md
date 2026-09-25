@@ -24,6 +24,23 @@ As versões seguem o `version:` do `pubspec.yaml` (SSOT). O campo `notes` do
     linhas não-vazias — o começo da seção deve fazer sentido sozinho.
 -->
 
+## [2.1.1] - 2026-09-25
+
+Every 2.x release is a beta of 2.0.0 until the consolidated notes ship.
+
+**Windows builds are now code signed.** The installer and the executables
+inside it (app, CLI, hook helper and the bundled cockpit-server) are signed
+through the SignPath Foundation open source program, in the release pipeline
+only. This first build uses the test certificate to validate the pipeline; the
+SmartScreen warning goes away once the release certificate is issued and the
+next build ships with it.
+
+### Changed
+
+- **Windows installer and binaries carry an Authenticode signature.** The
+  update signature (WinSparkle) is applied on top of the signed installer, so
+  in-app updates keep working as before.
+
 ## [2.1.0] - 2026-09-23
 
 **Telemetry: your agents query errors instead of reading terminals.** Cockpit
