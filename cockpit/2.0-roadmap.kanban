@@ -6,8 +6,6 @@ labels: {bug: red, cd: orange, mobile: blue, docs: green, feature: purple, secur
 
 ## Backlog
 
-- [ ] Windows code signing via SignPath OSS <!-- id: k3 labels: cd -->
-      Application submitted on signpath.org (MIT license added 2026-07-30). Once approved, integrate signing into the windows job of cockpit-release.yml. Unsigned builds keep triggering SmartScreen.
 
 
 
@@ -86,6 +84,9 @@ labels: {bug: red, cd: orange, mobile: blue, docs: green, feature: purple, secur
       The decision the card needs: should deleting `.cockpit` be allowed at all? Options: warn when the folder holds registered worktrees and list what will be lost; refuse and point at the "Remove worktree" action, which already prunes properly; or allow it and reconcile afterwards (honour `prunable` in the parser and drop those forks from the rail). Honouring `prunable` is worth doing regardless of what is decided about the delete, since a worktree can also disappear from outside the app.
 
 ## Doing
+
+- [ ] Windows code signing via SignPath OSS <!-- id: k3 labels: cd -->
+      Approved 2026-09-25: org 3058aab6, project `remote_pi`, artifact config `installer` (zip of *.exe), CI user `CI builds` with Submitter on both policies, secret SIGNPATH_API_TOKEN set. Workflow integrated in two stages (inner exes before Inno Setup, installer after) behind `if: env.SIGNPATH_API_TOKEN != ''`. Pointing at `test-signing` until the Foundation issues the release certificate (`release-signing` shows INVALID / CSR PENDING). Remaining: run a test release, then flip SIGNPATH_POLICY_SLUG to `release-signing` once the cert is valid.
 - [ ] Publish on the App Store <!-- id: k12 labels: cd, mobile blockedBy: k9, k16 -->
 - [ ] Publish on Google Play <!-- id: k11 labels: cd, mobile blockedBy: k8, k16 -->
 
