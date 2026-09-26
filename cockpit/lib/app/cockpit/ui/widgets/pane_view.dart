@@ -33,6 +33,7 @@ import 'package:cockpit/app/cockpit/ui/widgets/diff_viewer.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/file_viewer.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/http_request_view.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/kanban_board_view.dart';
+import 'package:cockpit/app/cockpit/ui/widgets/panel_view.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/layout_preview_tab.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/notebook_view.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/pane_tab_leading.dart';
@@ -785,6 +786,15 @@ class _TabState extends State<_Tab> {
               icon: viewer.rawSource
                   ? Icons.dashboard_outlined
                   : Icons.notes_outlined,
+            ),
+          // E no `.panel`: ver/editar o HTML em vez da página viva.
+          if (viewer.path.toLowerCase().endsWith('.panel'))
+            AppMenuItem(
+              value: 'raw-source',
+              label: viewer.rawSource ? tr.openAsPanel : tr.openAsHtml,
+              icon: viewer.rawSource
+                  ? Icons.web_asset_outlined
+                  : Icons.code_outlined,
             ),
         ],
         // Só em abas de terminal: o id (pane id) copiável pra usar na CLI
@@ -1692,6 +1702,29 @@ class _PaneBodyState extends State<_PaneBody> {
                 onSave: (content) => vm.saveFile(item.id, content),
               )
             : LayoutPreviewTab(session: item),
+      );
+    }
+
+    // Tab de painel `.panel` (plano 67): HTML vivo numa webview com a ponte
+    // `window.cockpit(line)` → `cockpit <line>` na máquina. `rawSource` (menu
+    // da aba) cai no editor de texto, igual ao `.kanban`/`.ckp`.
+    if (item is FileViewerSession &&
+        item.path.toLowerCase().endsWith('.panel')) {
+      final vm = context.read<CockpitViewModel>();
+      return ListenableBuilder(
+        listenable: item,
+        builder: (context, _) => item.rawSource
+            ? FileViewer(
+                session: item,
+                active: widget.active,
+                focused: widget.focused,
+                onSave: (content) => vm.saveFile(item.id, content),
+              )
+            : PanelView(
+                session: item,
+                onCall: (line, cwd) =>
+                    vm.runPanelCommand(line, sessionId: item.id, cwd: cwd),
+              ),
       );
     }
 

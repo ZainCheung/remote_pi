@@ -48,10 +48,21 @@ class FileViewerSession extends PaneItem {
   String path;
 
   // Título e cwd derivam do path → seguem o rename automaticamente.
+  /// Título vindo do próprio documento (front-matter `title:` de um `.panel`).
+  /// `null` = nome do arquivo. Quem parseia o arquivo o define via
+  /// [setDocumentTitle]; muda com o conteúdo, então segue o watcher.
+  String? documentTitle;
+
+  void setDocumentTitle(String? value) {
+    if (value == documentTitle) return;
+    documentTitle = value;
+    notifyListeners();
+  }
+
   @override
   String get title => scratch
       ? (scratchTitle ?? 'Untitled')
-      : path.split('/').where((p) => p.isNotEmpty).last;
+      : (documentTitle ?? path.split('/').where((p) => p.isNotEmpty).last);
   @override
   String get workingDirectory =>
       path.contains('/') ? path.substring(0, path.lastIndexOf('/')) : path;

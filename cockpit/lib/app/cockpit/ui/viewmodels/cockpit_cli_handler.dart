@@ -25,6 +25,7 @@ import 'package:cockpit/app/cockpit/domain/services/mongo_browse_service.dart';
 import 'package:cockpit/app/cockpit/domain/entities/browser_capability.dart';
 import 'package:cockpit/app/core/domain/result.dart';
 import 'package:cockpit/app/core/utils/path_utils.dart';
+import 'package:cockpit/app/core/utils/shell_command.dart';
 import 'package:cockpit/app/cockpit/ui/document/document_windows.dart';
 import 'package:cockpit/app/cockpit/ui/session/empty_tab.dart';
 import 'package:cockpit/app/cockpit/ui/session/browser_session.dart';
@@ -716,6 +717,30 @@ class CockpitCliHandler {
           );
         }
         return CockpitCommandResult.ok(readTerminalWindow(term, c.args));
+
+      // `cockpit exec <command...>` (plano 67) — roda uma linha de shell na
+      // máquina do app (shell de login, `-lc`) e devolve stdout/stderr/exit
+      // code. É o que os botões de um `.panel` usam por baixo; o env leva o
+      // roteamento da CLI (`COCKPIT_TAB_ID`, socket, PATH do `cockpit`), então
+      // o comando pode chamar `cockpit` de volta.
+      case 'exec':
+        final command = (c.args['command'] ?? '').toString();
+        if (command.trim().isEmpty) {
+          return const CockpitCommandResult.fail('missing command');
+        }
+        final cwd = (c.args['cwd'] ?? '').toString();
+        final timeoutRaw = c.args['timeout'];
+        final timeout = timeoutRaw is num ? timeoutRaw.toInt() : 60;
+        if (cwd.isNotEmpty && !await Directory(cwd).exists()) {
+          return CockpitCommandResult.fail('cwd not found: "$cwd"');
+        }
+        final result = await runShellCommand(
+          command,
+          cwd: cwd.isEmpty ? null : cwd,
+          environment: _vm.cliEnvironment(tabId: c.tabId),
+          timeout: Duration(seconds: timeout <= 0 ? 60 : timeout),
+        );
+        return CockpitCommandResult.ok(result.toJson());
 
       // `cockpit list-tasks` — tasks do workspace do pane emissor (tabId,
       // default da CLI = a própria tab; fallback: workspace selecionado).

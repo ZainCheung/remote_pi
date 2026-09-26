@@ -238,7 +238,9 @@
       "openBrowser": "Abrir navegador",
       "openTerminal": "Abrir terminal",
       "openAsLayout": "Abrir como diseño",
-      "openAsYaml": "Abrir como YAML"
+      "openAsYaml": "Abrir como YAML",
+      "openAsPanel": "Abrir como panel",
+      "openAsHtml": "Abrir como HTML"
     },
     "fileTreePanel": {
       "viewDiff": "Ver Diff",
@@ -340,7 +342,8 @@
       "diffNoChanges": "Sin cambios.",
       "diffError": "No se pudo leer el diff: ${detail}",
       "galleryTooltip": "Galería",
-      "sectionGallery": "GALERÍA"
+      "sectionGallery": "GALERÍA",
+      "openAsHtml": "Abrir como HTML"
     },
     "fileViewer": {
       "cantOpen": "No se puede abrir este archivo.",
@@ -760,6 +763,10 @@
       "diagram": {
         "title": "Diagrama",
         "description": "Un markdown con un diagrama Mermaid: diagramas de flujo, secuencia, clases y Gantt, renderizados en la vista previa."
+      },
+      "panel": {
+        "title": "Panel",
+        "description": "Una página HTML con puente a la app: sus botones ejecutan comandos de la CLI de Cockpit y del shell en esta máquina. Un playground para dashboards rápidos."
       }
     },
     "notebook": {
@@ -883,6 +890,11 @@
       "byHuman": "por ti",
       "byAgent": "por el agente",
       "caseTabTitle": "${type} · ${file}"
+    },
+    "panelView": {
+      "unavailable": "Los paneles necesitan la web view integrada, que todavía no existe en Linux.",
+      "openInBrowser": "Abrir en el navegador",
+      "openAsHtml": "Abrir como HTML"
     }
   },
   "settings": {

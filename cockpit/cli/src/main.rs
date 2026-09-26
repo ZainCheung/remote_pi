@@ -74,6 +74,7 @@ fn main() {
         }
         "close-workspace" => commands::close_workspace(args),
         "rename-workspace" => commands::rename_workspace(args),
+        "exec" => commands::exec(args),
         "browse" => commands::browse_url(args),
         "orchestrate" => commands::orchestrate(args),
         "note" => commands::note(args),

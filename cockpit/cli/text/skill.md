@@ -54,6 +54,13 @@ Cockpit tabs (it is not on the global PATH).
   (tab next to the terminal). `cockpit <file>` is the shortcut. The path is
   resolved against the tab cwd (relative, `~` and absolute all work). Any type
   opens as text — including extensionless ones (`.zprofile`, `Makefile`).
+- `cockpit exec [--cwd <dir>] [--timeout <s>] [--json] [--] <command...>` —
+  run a shell line through the app (login shell, so your PATH applies) and
+  print its output; the exit code is the command's. `--json` prints
+  `{ok, code, stdout, stderr, timedOut}` on one line. This is what `.panel`
+  buttons use under the hood; from a terminal you already have a shell, so
+  prefer it only when you want the app's environment (`cockpit` on PATH,
+  `COCKPIT_TAB_ID` set) from outside a Cockpit tab.
 - `cockpit browse <url> [--json]` — open the app's built-in **browser tab** at
   `<url>` (e.g. a dev server you just started: `cockpit browse
   http://localhost:3000`). A browser tab already open on the same host:port is
@@ -354,6 +361,53 @@ Two things to prefer:
   able to follow it later: the board is a file they can open, drag and commit.
 - Editing the file beats driving the UI. Keep the diff small (the app does the
   same — a card move is a three-line diff), and never reformat the whole file.
+
+## Panel files (`*.panel`)
+
+A `.panel` file is a **live HTML page** with a bridge to the app: the tab runs
+the page in a web view and injects `window.cockpit`, so buttons and scripts in
+it can run Cockpit CLI verbs and shell commands on this machine. Use it as a
+playground: a quick dashboard to validate something, a form that triggers a
+task, a status board that polls `git`/`db`. One file, no server, no ports.
+
+Write it with your normal file tools (`cockpit open x.panel` puts it in front
+of the human). The open tab reloads by itself when you save. The file is a
+plain HTML document with an optional YAML frontmatter on top:
+
+```html
+---
+title: Repo status     # tab label (default: file name)
+reload: true           # reload the page when the file changes (default true)
+cwd: .                 # working dir for exec/CLI calls, relative to this file
+---
+<!doctype html>
+<meta charset="utf-8">
+<style>body { background: var(--ckp-bg); color: var(--ckp-text) }</style>
+<button onclick="run()">git status</button>
+<pre id="out"></pre>
+<script>
+async function run() {
+  const r = await cockpit("exec git status --short");
+  document.getElementById("out").textContent = r.ok ? r.stdout : r.error;
+}
+</script>
+```
+
+The bridge is one function. `await cockpit("<line>")` runs `cockpit <line>`
+exactly as you would type it in a tab, and resolves to
+`{ok, code, stdout, stderr, json, error}`: `json` is the parsed stdout when
+the verb printed JSON (`list-tabs --json`, `db query`, `exec --json`),
+`error` is the stderr (or the exit code) when `ok` is false. Anything the CLI
+can do, a panel can do: `db query main 'select ...'`, `exec npm test`,
+`send --tab-id t3 --enter 'make'`, `run-task npm:dev`, `note add ...`.
+`cockpit.on("theme", vars => ...)` fires when the app theme changes;
+`cockpit.theme` holds the current `--ckp-*` CSS variables (`--ckp-bg`,
+`--ckp-text`, `--ckp-text-muted`, `--ckp-border`, `--ckp-code-bg`,
+`--ckp-link`, `--ckp-accent`), already set on `:root` so plain CSS can use
+them. Relative assets (`<img src="chart.png">`, `<script src="app.js">`)
+resolve inside the file's folder only. External links open in the OS browser.
+There is no allowlist: a panel can run anything the human could run in a tab,
+so only put in it what you would type yourself.
 
 ## Notebooks (`*.notebook`)
 

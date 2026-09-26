@@ -1853,7 +1853,8 @@ class _DirViewState extends State<_DirView> {
                       : () => edit.onOpenLayout!(node.path),
                   onOpenAsSource:
                       edit.onOpenAsSource == null ||
-                          !node.name.toLowerCase().endsWith('.kanban')
+                          !(node.name.toLowerCase().endsWith('.kanban') ||
+                              node.name.toLowerCase().endsWith('.panel'))
                       ? null
                       : () => edit.onOpenAsSource!(node.path),
                   onStartRename: () => edit.onStartRename(node.path),
@@ -2122,11 +2123,14 @@ void _showNodeMenu(BuildContext context, Offset globalPosition, _Row widget) {
             label: tr.openInNewWindow,
             icon: Icons.open_in_browser,
           ),
-        // Só arquivos `.kanban`: escapa do quadro e edita o markdown cru.
+        // Só `.kanban` (markdown cru) e `.panel` (HTML cru): escapa do
+        // renderizador próprio e edita a fonte.
         if (widget.onOpenAsSource != null)
           AppMenuItem(
             value: 'as-source',
-            label: tr.openAsMarkdown,
+            label: widget.name.toLowerCase().endsWith('.panel')
+                ? tr.openAsHtml
+                : tr.openAsMarkdown,
             icon: Icons.notes_outlined,
           ),
         // Só arquivos `.ckp`: aplica o layout de orquestração de panes.

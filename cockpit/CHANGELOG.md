@@ -24,6 +24,32 @@ As versões seguem o `version:` do `pubspec.yaml` (SSOT). O campo `notes` do
     linhas não-vazias — o começo da seção deve fazer sentido sozinho.
 -->
 
+## [2.1.2] - 2026-09-26
+
+Every 2.x release is a beta of 2.0.0 until the consolidated notes ship.
+
+**Panels: a live HTML page whose buttons run things on your machine.** A new
+`.panel` file type opens as a web view with `window.cockpit` injected: any
+script in the page can call `await cockpit("exec git status")`,
+`cockpit("db query main 'select ...'")` or any other CLI verb and get the
+result back as `{ok, code, stdout, stderr, json}`. No server, no ports: each
+call runs the internal CLI on this machine, so what works in a tab works in
+the page. Ask the agent for a quick dashboard, a status board or a form that
+triggers a task, and open it from the Gallery.
+
+### Added
+
+- **`.panel` files**: HTML with an optional YAML frontmatter (`title`,
+  `reload`, `cwd`). The tab reloads when the file changes, takes the app
+  theme as `--ckp-*` CSS variables, serves relative assets from the file's
+  folder and opens external links in the OS browser. Right-click offers
+  "Open as HTML" to edit the source (with HTML highlighting).
+- **`cockpit exec`**: run a shell line through the app (login shell) and get
+  its output and exit code; `--json`, `--cwd` and `--timeout` supported. It
+  is what panel buttons use under the hood.
+- Gallery card and file icon for panels; the agent skill documents the
+  format and the bridge.
+
 ## [2.1.1] - 2026-09-25
 
 Every 2.x release is a beta of 2.0.0 until the consolidated notes ship.

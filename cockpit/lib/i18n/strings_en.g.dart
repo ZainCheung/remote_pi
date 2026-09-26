@@ -185,6 +185,7 @@ class Translations$cockpit$en {
 	late final Translations$cockpit$notebook$en notebook = Translations$cockpit$notebook$en.internal(_root);
 	late final Translations$cockpit$layoutPreview$en layoutPreview = Translations$cockpit$layoutPreview$en.internal(_root);
 	late final Translations$cockpit$telemetry$en telemetry = Translations$cockpit$telemetry$en.internal(_root);
+	late final Translations$cockpit$panelView$en panelView = Translations$cockpit$panelView$en.internal(_root);
 }
 
 // Path: settings
@@ -905,6 +906,12 @@ class Translations$cockpit$paneView$en {
 
 	/// en: 'Open as YAML'
 	String get openAsYaml => 'Open as YAML';
+
+	/// en: 'Open as panel'
+	String get openAsPanel => 'Open as panel';
+
+	/// en: 'Open as HTML'
+	String get openAsHtml => 'Open as HTML';
 }
 
 // Path: cockpit.fileTreePanel
@@ -1214,6 +1221,9 @@ class Translations$cockpit$fileTreePanel$en {
 
 	/// en: 'GALLERY'
 	String get sectionGallery => 'GALLERY';
+
+	/// en: 'Open as HTML'
+	String get openAsHtml => 'Open as HTML';
 }
 
 // Path: cockpit.fileViewer
@@ -2341,6 +2351,7 @@ class Translations$cockpit$gallery$en {
 	late final Translations$cockpit$gallery$notebook$en notebook = Translations$cockpit$gallery$notebook$en.internal(_root);
 	late final Translations$cockpit$gallery$workspaceEnv$en workspaceEnv = Translations$cockpit$gallery$workspaceEnv$en.internal(_root);
 	late final Translations$cockpit$gallery$diagram$en diagram = Translations$cockpit$gallery$diagram$en.internal(_root);
+	late final Translations$cockpit$gallery$panel$en panel = Translations$cockpit$gallery$panel$en.internal(_root);
 }
 
 // Path: cockpit.notebook
@@ -2661,6 +2672,24 @@ class Translations$cockpit$telemetry$en {
 
 	/// en: '${type} · ${file}'
 	String caseTabTitle({required Object type, required Object file}) => '${type} · ${file}';
+}
+
+// Path: cockpit.panelView
+class Translations$cockpit$panelView$en {
+	Translations$cockpit$panelView$en.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Panels need the embedded web view, which is not available on Linux yet.'
+	String get unavailable => 'Panels need the embedded web view, which is not available on Linux yet.';
+
+	/// en: 'Open in browser'
+	String get openInBrowser => 'Open in browser';
+
+	/// en: 'Open as HTML'
+	String get openAsHtml => 'Open as HTML';
 }
 
 // Path: settings.language
@@ -3140,6 +3169,21 @@ class Translations$cockpit$gallery$diagram$en {
 
 	/// en: 'A markdown file with a Mermaid diagram: flowcharts, sequences, class models and Gantt charts, rendered in the preview.'
 	String get description => 'A markdown file with a Mermaid diagram: flowcharts, sequences, class models and Gantt charts, rendered in the preview.';
+}
+
+// Path: cockpit.gallery.panel
+class Translations$cockpit$gallery$panel$en {
+	Translations$cockpit$gallery$panel$en.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Panel'
+	String get title => 'Panel';
+
+	/// en: 'An HTML page with a bridge to the app: its buttons run Cockpit CLI and shell commands on this machine. A playground for quick dashboards.'
+	String get description => 'An HTML page with a bridge to the app: its buttons run Cockpit CLI and shell commands on this machine. A playground for quick dashboards.';
 }
 
 // Path: cockpit.notebook.format
@@ -4051,6 +4095,8 @@ extension on Translations {
 			'cockpit.paneView.openTerminal' => 'Open terminal',
 			'cockpit.paneView.openAsLayout' => 'Open as layout',
 			'cockpit.paneView.openAsYaml' => 'Open as YAML',
+			'cockpit.paneView.openAsPanel' => 'Open as panel',
+			'cockpit.paneView.openAsHtml' => 'Open as HTML',
 			'cockpit.fileTreePanel.viewDiff' => 'View Diff',
 			'cockpit.fileTreePanel.commit' => 'Commit',
 			'cockpit.fileTreePanel.stageAndCommit' => 'Stage and Commit',
@@ -4151,6 +4197,7 @@ extension on Translations {
 			'cockpit.fileTreePanel.diffError' => ({required Object detail}) => 'Could not read the diff: ${detail}',
 			'cockpit.fileTreePanel.galleryTooltip' => 'Gallery',
 			'cockpit.fileTreePanel.sectionGallery' => 'GALLERY',
+			'cockpit.fileTreePanel.openAsHtml' => 'Open as HTML',
 			'cockpit.fileViewer.cantOpen' => 'Can\'t open this file.',
 			'cockpit.fileViewer.couldNotLoadImage' => 'Could not load the image.',
 			'cockpit.fileViewer.preview' => 'Preview',
@@ -4357,11 +4404,11 @@ extension on Translations {
 			'cockpit.projectsRail.settings' => 'Settings',
 			'cockpit.projectsRail.mergeToParent' => 'Merge to Parent',
 			'cockpit.projectsRail.updateFromParent' => 'Update from Parent',
+			_ => null,
+		} ?? switch (path) {
 			'cockpit.projectsRail.forkWorktree' => 'Fork Worktree',
 			'cockpit.projectsRail.copyBranch' => 'Copy branch',
 			'cockpit.projectsRail.remove' => 'Remove',
-			_ => null,
-		} ?? switch (path) {
 			'cockpit.projectsRail.moveToRealm' => 'Move to realm',
 			'cockpit.projectsRail.copyWorkspaceId' => 'Copy workspace id',
 			'cockpit.projectsRail.rename' => 'Rename',
@@ -4483,6 +4530,8 @@ extension on Translations {
 			'cockpit.gallery.workspaceEnv.description' => 'Variables injected into every terminal of this workspace. Put API tokens or logins here instead of pasting them into the agent\'s prompt. Kept out of git.',
 			'cockpit.gallery.diagram.title' => 'Diagram',
 			'cockpit.gallery.diagram.description' => 'A markdown file with a Mermaid diagram: flowcharts, sequences, class models and Gantt charts, rendered in the preview.',
+			'cockpit.gallery.panel.title' => 'Panel',
+			'cockpit.gallery.panel.description' => 'An HTML page with a bridge to the app: its buttons run Cockpit CLI and shell commands on this machine. A playground for quick dashboards.',
 			'cockpit.notebook.notes' => 'Notes',
 			'cockpit.notebook.newNote' => 'New note',
 			'cockpit.notebook.searchPlaceholder' => 'Search notes',
@@ -4597,6 +4646,9 @@ extension on Translations {
 			'cockpit.telemetry.byHuman' => 'by you',
 			'cockpit.telemetry.byAgent' => 'by agent',
 			'cockpit.telemetry.caseTabTitle' => ({required Object type, required Object file}) => '${type} · ${file}',
+			'cockpit.panelView.unavailable' => 'Panels need the embedded web view, which is not available on Linux yet.',
+			'cockpit.panelView.openInBrowser' => 'Open in browser',
+			'cockpit.panelView.openAsHtml' => 'Open as HTML',
 			'settings.language.title' => 'Language',
 			'settings.language.system' => 'System',
 			'settings.language.english' => 'English',

@@ -137,6 +137,7 @@ class _Translations$cockpit$pt_BR extends Translations$cockpit$en {
 	@override late final _Translations$cockpit$notebook$pt_BR notebook = _Translations$cockpit$notebook$pt_BR._(_root);
 	@override late final _Translations$cockpit$layoutPreview$pt_BR layoutPreview = _Translations$cockpit$layoutPreview$pt_BR._(_root);
 	@override late final _Translations$cockpit$telemetry$pt_BR telemetry = _Translations$cockpit$telemetry$pt_BR._(_root);
+	@override late final _Translations$cockpit$panelView$pt_BR panelView = _Translations$cockpit$panelView$pt_BR._(_root);
 }
 
 // Path: settings
@@ -497,6 +498,8 @@ class _Translations$cockpit$paneView$pt_BR extends Translations$cockpit$paneView
 	@override String get openTerminal => 'Abrir terminal';
 	@override String get openAsLayout => 'Abrir como layout';
 	@override String get openAsYaml => 'Abrir como YAML';
+	@override String get openAsPanel => 'Abrir como painel';
+	@override String get openAsHtml => 'Abrir como HTML';
 }
 
 // Path: cockpit.fileTreePanel
@@ -606,6 +609,7 @@ class _Translations$cockpit$fileTreePanel$pt_BR extends Translations$cockpit$fil
 	@override String diffError({required Object detail}) => 'Não foi possível ler o diff: ${detail}';
 	@override String get galleryTooltip => 'Galeria';
 	@override String get sectionGallery => 'GALERIA';
+	@override String get openAsHtml => 'Abrir como HTML';
 }
 
 // Path: cockpit.fileViewer
@@ -1136,6 +1140,7 @@ class _Translations$cockpit$gallery$pt_BR extends Translations$cockpit$gallery$e
 	@override late final _Translations$cockpit$gallery$notebook$pt_BR notebook = _Translations$cockpit$gallery$notebook$pt_BR._(_root);
 	@override late final _Translations$cockpit$gallery$workspaceEnv$pt_BR workspaceEnv = _Translations$cockpit$gallery$workspaceEnv$pt_BR._(_root);
 	@override late final _Translations$cockpit$gallery$diagram$pt_BR diagram = _Translations$cockpit$gallery$diagram$pt_BR._(_root);
+	@override late final _Translations$cockpit$gallery$panel$pt_BR panel = _Translations$cockpit$gallery$panel$pt_BR._(_root);
 }
 
 // Path: cockpit.notebook
@@ -1261,6 +1266,18 @@ class _Translations$cockpit$telemetry$pt_BR extends Translations$cockpit$telemet
 	@override String get byHuman => 'por você';
 	@override String get byAgent => 'pelo agente';
 	@override String caseTabTitle({required Object type, required Object file}) => '${type} · ${file}';
+}
+
+// Path: cockpit.panelView
+class _Translations$cockpit$panelView$pt_BR extends Translations$cockpit$panelView$en {
+	_Translations$cockpit$panelView$pt_BR._(TranslationsPtBr root) : this._root = root, super.internal(root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get unavailable => 'Painéis precisam da web view embutida, que ainda não existe no Linux.';
+	@override String get openInBrowser => 'Abrir no navegador';
+	@override String get openAsHtml => 'Abrir como HTML';
 }
 
 // Path: settings.language
@@ -1530,6 +1547,17 @@ class _Translations$cockpit$gallery$diagram$pt_BR extends Translations$cockpit$g
 	// Translations
 	@override String get title => 'Diagrama';
 	@override String get description => 'Um markdown com um diagrama Mermaid: fluxogramas, sequências, modelos de classe e Gantt, renderizados no preview.';
+}
+
+// Path: cockpit.gallery.panel
+class _Translations$cockpit$gallery$panel$pt_BR extends Translations$cockpit$gallery$panel$en {
+	_Translations$cockpit$gallery$panel$pt_BR._(TranslationsPtBr root) : this._root = root, super.internal(root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Painel';
+	@override String get description => 'Uma página HTML com ponte para o app: os botões rodam comandos da CLI do Cockpit e do shell nesta máquina. Um playground para dashboards rápidos.';
 }
 
 // Path: cockpit.notebook.format
@@ -2054,6 +2082,8 @@ extension on TranslationsPtBr {
 			'cockpit.paneView.openTerminal' => 'Abrir terminal',
 			'cockpit.paneView.openAsLayout' => 'Abrir como layout',
 			'cockpit.paneView.openAsYaml' => 'Abrir como YAML',
+			'cockpit.paneView.openAsPanel' => 'Abrir como painel',
+			'cockpit.paneView.openAsHtml' => 'Abrir como HTML',
 			'cockpit.fileTreePanel.viewDiff' => 'Ver Diff',
 			'cockpit.fileTreePanel.commit' => 'Commit',
 			'cockpit.fileTreePanel.stageAndCommit' => 'Stage e Commit',
@@ -2154,6 +2184,7 @@ extension on TranslationsPtBr {
 			'cockpit.fileTreePanel.diffError' => ({required Object detail}) => 'Não foi possível ler o diff: ${detail}',
 			'cockpit.fileTreePanel.galleryTooltip' => 'Galeria',
 			'cockpit.fileTreePanel.sectionGallery' => 'GALERIA',
+			'cockpit.fileTreePanel.openAsHtml' => 'Abrir como HTML',
 			'cockpit.fileViewer.cantOpen' => 'Não é possível abrir este arquivo.',
 			'cockpit.fileViewer.couldNotLoadImage' => 'Não foi possível carregar a imagem.',
 			'cockpit.fileViewer.preview' => 'Pré-visualização',
@@ -2360,11 +2391,11 @@ extension on TranslationsPtBr {
 			'cockpit.projectsRail.settings' => 'Configurações',
 			'cockpit.projectsRail.mergeToParent' => 'Mesclar no pai',
 			'cockpit.projectsRail.updateFromParent' => 'Atualizar a partir do pai',
+			_ => null,
+		} ?? switch (path) {
 			'cockpit.projectsRail.forkWorktree' => 'Criar worktree derivada',
 			'cockpit.projectsRail.copyBranch' => 'Copiar branch',
 			'cockpit.projectsRail.remove' => 'Remover',
-			_ => null,
-		} ?? switch (path) {
 			'cockpit.projectsRail.moveToRealm' => 'Mover para realm',
 			'cockpit.projectsRail.copyWorkspaceId' => 'Copiar id do workspace',
 			'cockpit.projectsRail.rename' => 'Renomear',
@@ -2486,6 +2517,8 @@ extension on TranslationsPtBr {
 			'cockpit.gallery.workspaceEnv.description' => 'Variáveis injetadas em todo terminal deste workspace. Coloque tokens ou logins de API aqui em vez de colar no prompt do agente. Fica fora do git.',
 			'cockpit.gallery.diagram.title' => 'Diagrama',
 			'cockpit.gallery.diagram.description' => 'Um markdown com um diagrama Mermaid: fluxogramas, sequências, modelos de classe e Gantt, renderizados no preview.',
+			'cockpit.gallery.panel.title' => 'Painel',
+			'cockpit.gallery.panel.description' => 'Uma página HTML com ponte para o app: os botões rodam comandos da CLI do Cockpit e do shell nesta máquina. Um playground para dashboards rápidos.',
 			'cockpit.notebook.notes' => 'Notas',
 			'cockpit.notebook.newNote' => 'Nova nota',
 			'cockpit.notebook.searchPlaceholder' => 'Buscar notas',
@@ -2600,6 +2633,9 @@ extension on TranslationsPtBr {
 			'cockpit.telemetry.byHuman' => 'por você',
 			'cockpit.telemetry.byAgent' => 'pelo agente',
 			'cockpit.telemetry.caseTabTitle' => ({required Object type, required Object file}) => '${type} · ${file}',
+			'cockpit.panelView.unavailable' => 'Painéis precisam da web view embutida, que ainda não existe no Linux.',
+			'cockpit.panelView.openInBrowser' => 'Abrir no navegador',
+			'cockpit.panelView.openAsHtml' => 'Abrir como HTML',
 			'settings.language.title' => 'Idioma',
 			'settings.language.system' => 'Sistema',
 			'settings.language.english' => 'Inglês',
