@@ -12,7 +12,7 @@ import 'package:cockpit/app/cockpit/ui/widgets/webview_chrome.dart';
 import 'package:cockpit/app/core/ui/themes/themes.dart';
 import 'package:cockpit/app/core/ui/widgets/unzoomed_native_view.dart';
 import 'package:cockpit/i18n/strings.g.dart';
-import 'package:flutter/foundation.dart' show mapEquals;
+import 'package:flutter/foundation.dart' show FlutterError, mapEquals;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
@@ -27,6 +27,9 @@ import 'package:url_launcher/url_launcher.dart' as launcher;
 /// scheme `ckp-panel://<sessão>/`, servido só de dentro da pasta do arquivo.
 /// O tema do app entra como CSS variables `--ckp-*` no `:root`, re-injetadas
 /// na troca de tema; a página as usa se quiser.
+/// Prefixo reservado da URL virtual das libs embarcadas (`/__cockpit__/x.js`).
+const kPanelLibPrefix = '__cockpit__/';
+
 class PanelView extends StatefulWidget {
   const PanelView({super.key, required this.session, required this.onCall});
 
@@ -162,12 +165,20 @@ class _PanelViewState extends State<PanelView> {
         '#${(c.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
     return {
       '--ckp-bg': hex(colors.panel),
+      '--ckp-bg-raised': hex(colors.panel2),
       '--ckp-text': hex(colors.text),
+      '--ckp-text-secondary': hex(colors.text2),
       '--ckp-text-muted': hex(colors.text3),
       '--ckp-border': hex(colors.border),
+      '--ckp-border-strong': hex(colors.border2),
       '--ckp-code-bg': hex(colors.panel3),
       '--ckp-link': hex(colors.accent),
       '--ckp-accent': hex(colors.accent),
+      '--ckp-accent-soft': hex(colors.accentSoft),
+      '--ckp-accent-text': hex(colors.accentText),
+      '--ckp-ok': hex(colors.ok),
+      '--ckp-warn': hex(colors.warn),
+      '--ckp-error': hex(colors.error),
     };
   }
 
@@ -181,6 +192,7 @@ class _PanelViewState extends State<PanelView> {
     if (uri.scheme != 'ckp-panel') return null;
     final rel = Uri.decodeComponent(uri.path).replaceFirst(RegExp(r'^/+'), '');
     if (rel.isEmpty) return null;
+    if (rel.startsWith(kPanelLibPrefix)) return _serveBundled(rel);
     final root = Directory(_docDir).absolute.path;
     final file = File('$root/$rel').absolute;
     final canonical = file.path;
@@ -192,6 +204,25 @@ class _PanelViewState extends State<PanelView> {
       contentType: _mimeOf(canonical),
       contentEncoding: 'utf-8',
     );
+  }
+
+  /// Serve `/__cockpit__/<lib>` a partir dos assets do app (`assets/panel/lib/`):
+  /// libs embarcadas (petite-vue, chart.js, marked, tailwind, cockpit.css)
+  /// para o `.panel` funcionar sem rede e com versão única por release. O
+  /// prefixo é reservado: ganha de qualquer pasta homônima ao lado do arquivo.
+  Future<CustomSchemeResponse?> _serveBundled(String rel) async {
+    final name = rel.substring(kPanelLibPrefix.length);
+    if (name.isEmpty || name.contains('/') || name.contains('..')) return null;
+    try {
+      final data = await rootBundle.load('assets/panel/lib/$name');
+      return CustomSchemeResponse(
+        data: data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
+        contentType: _mimeOf(name),
+        contentEncoding: 'utf-8',
+      );
+    } on FlutterError {
+      return null;
+    }
   }
 
   static String _mimeOf(String path) {

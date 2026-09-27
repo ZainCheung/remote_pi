@@ -131,3 +131,35 @@ Implementado no pane Cockpit em sessão solo (sem commit). Pendente: E2E no app 
 
 - Backend próprio por painel (CGI / socket Unix) se um dia o `exec` não bastar.
 - Painel em remoto (plano 58): handler encaminha a linha ao `cockpit-server`.
+
+## Adendo 2026-09-27 — libs embarcadas em `/__cockpit__/`
+
+Decisão em conversa: nada de microframework próprio nem CDN. O app embarca
+libs em `assets/panel/lib/` e o `_serveLocal` responde o prefixo reservado
+`/__cockpit__/<nome>` a partir do `rootBundle` (mesma URL em macOS/Windows/
+Linux, mesma versão em todo workspace, zero rede, nada copiado pro repo do
+usuário). O prefixo com underscores duplos torna colisão com pasta real do
+usuário praticamente impossível; se houver, a regra do app ganha.
+
+| Arquivo | Lib | Por quê |
+|---|---|---|
+| `cockpit.css` | nosso, classless + utilities sobre `--ckp-*` | dashboard nasce com cara do app e segue o tema |
+| `petite-vue.js` | petite-vue 0.4.1 (IIFE) | sintaxe Vue, 17 KB, sem build; é o que LLM escreve com mais acerto em arquivo único |
+| `chart.js` | Chart.js 4.4.7 (UMD) | gráficos de dashboard |
+| `marked.js` | marked 15.0.7 | markdown de notas/resultados |
+| `tailwind.js` | @tailwindcss/browser 4.1.7 | opcional, JIT em runtime (~250 KB); pra layout custom |
+
+Descartados: React (JSX exige build; sem JSX vira `h()` ilegível), Vue
+completo (60 KB pra ganhar SFC que não existe em arquivo único), Alpine
+(equivalente ao petite-vue, mas a sintaxe Vue é mais conhecida).
+
+Bridge ganhou `cockpit.route` (hash routing: `path`, `params`, `go`, `match`,
+evento `route`) e o tema exporta mais variáveis (`--ckp-bg-raised`,
+`--ckp-text-secondary`, `--ckp-border-strong`, `--ckp-accent-soft`,
+`--ckp-accent-text`, `--ckp-ok`, `--ckp-warn`, `--ckp-error`). Navegar entre
+dois `.panel` continua fora: o front-matter só é lido no `initialData`.
+
+- [x] `_serveBundled` no `panel_view.dart` + `assets/panel/lib/` no pubspec
+- [x] `cockpit.css` + `cockpit.route` no `bridge.js`
+- [x] Skill (`cli/text/skill.md`) documenta a tabela e um dashboard mínimo
+- [ ] E2E: abrir `.panel` com petite-vue + chart offline e trocar tema
