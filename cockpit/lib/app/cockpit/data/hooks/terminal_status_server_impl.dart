@@ -211,7 +211,14 @@ class TerminalStatusServerImpl implements TerminalStatusServer {
       return (null, null);
     } on Object catch (e) {
       // linha malformada: sem resposta (a CLI reporta timeout/erro de leitura).
-      DiagnosticsLog.instance.warn('cli-socket', 'malformed line', error: e);
+      // Leva um trecho da linha: sem ele o aviso era indiagnosticavel
+      // (caso ev_6vw da Telemetria do app).
+      final sample = line.length > 200 ? '${line.substring(0, 200)}…' : line;
+      DiagnosticsLog.instance.warn(
+        'cli-socket',
+        'malformed line: $sample',
+        error: e,
+      );
       return (null, null);
     }
   }

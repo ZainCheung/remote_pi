@@ -38,21 +38,24 @@ final UnmodifiableListView<UserScript> kNoRubberBandScripts =
       ),
     ]);
 
-/// User script que repassa o movimento do mouse dentro da página ao Flutter
-/// (ver [WebViewPointerRelay]). Throttle de 50 ms: é só pra manter o
-/// MouseTracker do Flutter honesto, não precisa de cada pixel.
+/// User script que avisa o Flutter que o mouse está dentro da página (ver
+/// [WebViewPointerRelay]). Throttle de 50 ms: é só pra manter o MouseTracker
+/// do Flutter honesto, não precisa de cada pixel. **Não manda coordenadas**:
+/// o `clientX/Y` do documento e a caixa do Flutter não compartilham origem
+/// (inset da view nativa, zoom da página), e usar a posição real deslocava o
+/// hover sintético alguns px pra cima, realçando aba/linha errada.
 final UnmodifiableListView<UserScript> kPointerRelayScripts =
     UnmodifiableListView<UserScript>([
       UserScript(
         source: r'''
 (function () {
   var last = 0;
-  function send(e) {
+  function send() {
     var now = Date.now();
     if (now - last < 50) return;
     last = now;
     var f = window.flutter_inappwebview;
-    if (f && f.callHandler) f.callHandler('__cockpitPointer', e.clientX, e.clientY);
+    if (f && f.callHandler) f.callHandler('__cockpitPointer');
   }
   window.addEventListener('mousemove', send, { passive: true, capture: true });
   window.addEventListener('mouseenter', send, { passive: true, capture: true });
@@ -80,8 +83,12 @@ final UnmodifiableListView<UserScript> kWebViewUserScripts =
 ///
 /// A correção: a página manda `mousemove` (via [kPointerRelayScripts]) e este
 /// helper injeta um `PointerHoverEvent` sintético no mesmo device do mouse
-/// real, na posição global equivalente. O MouseTracker então sai do widget
-/// antigo e o cursor volta ao normal.
+/// real, **no centro da caixa da webview**. O MouseTracker então sai do widget
+/// antigo e o cursor volta ao normal. O centro basta: o objetivo é só provar
+/// que o ponteiro está sobre a webview (que não tem MouseRegion própria); a
+/// posição exata não interessa e tentar reconstruí-la a partir do `clientX/Y`
+/// do documento errava por alguns px (origens diferentes), fazendo o hover
+/// cair na aba ou na linha acima do cursor.
 class WebViewPointerRelay {
   WebViewPointerRelay._();
 
@@ -102,8 +109,9 @@ class WebViewPointerRelay {
   }
 
   /// Registra o handler na [web]. [context] é o do widget que envolve a
-  /// webview (mesma caixa da view nativa); [contentZoom] é o `pageZoom`
-  /// passado ao webview, pra converter px CSS em px lógicos da caixa.
+  /// webview (mesma caixa da view nativa). [contentZoom] é aceito por
+  /// compatibilidade com os call-sites e não entra na conta: a posição do
+  /// hover sintético é o centro da caixa, independente de zoom.
   static void register(
     InAppWebViewController web,
     BuildContext context,
@@ -114,16 +122,10 @@ class WebViewPointerRelay {
     web.addJavaScriptHandler(
       handlerName: '__cockpitPointer',
       callback: (args) {
-        if (args.length < 2 || !context.mounted) return null;
-        final x = (args[0] as num?)?.toDouble();
-        final y = (args[1] as num?)?.toDouble();
+        if (!context.mounted) return null;
         final box = context.findRenderObject();
-        if (x == null || y == null || box is! RenderBox || !box.hasSize) {
-          return null;
-        }
-        final global = box.localToGlobal(
-          Offset(x * contentZoom, y * contentZoom),
-        );
+        if (box is! RenderBox || !box.hasSize) return null;
+        final global = box.localToGlobal(box.size.center(Offset.zero));
         GestureBinding.instance.handlePointerEvent(
           PointerHoverEvent(
             timeStamp: DateTime.now().difference(_epoch),

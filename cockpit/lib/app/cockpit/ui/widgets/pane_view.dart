@@ -960,8 +960,14 @@ class _TabState extends State<_Tab> {
           padding: const EdgeInsets.only(left: 11, right: 7),
           child: Row(
             children: [
+              // Ícone pelo NOME DO ARQUIVO, não pelo título: `.panel`/`.ckp`
+              // trocam o título da aba pelo `title:` do front-matter, e sem a
+              // extensão o ícone caía no genérico.
               if (s is FileViewerSession)
-                FileTypeIcon.file(s.title, size: 15)
+                FileTypeIcon.file(
+                  s.scratch ? s.title : s.path.split('/').last,
+                  size: 15,
+                )
               // Browsers de banco usam o logo de marca do engine (plano 52/53).
               else if (s is RedisBrowserSession)
                 const DbEngineIcon(DbEngine.redis, size: 14)
