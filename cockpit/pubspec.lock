@@ -29,10 +29,10 @@ packages:
     dependency: "direct main"
     description:
       name: anaki_mysql
-      sha256: "8e4886b47bb3e3af14a9ff4782413a640cab0fc9b033e8fd62624730abe8b680"
+      sha256: "9be22d2201180f9d5ef09b889fe7499664e5b5a6dbd5b6dd9f5112f268c29159"
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.9"
+    version: "0.1.10"
   anaki_orm:
     dependency: "direct main"
     description:
@@ -45,10 +45,10 @@ packages:
     dependency: "direct main"
     description:
       name: anaki_postgres
-      sha256: "4354e33a4fced0ab8a202f1f6641ecd5b675ae421d7c507a32e979f7d7d5002c"
+      sha256: b9cbf7308d794be0347aa0e980686e6c0525815c5edba57977a444737906fce6
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.8"
+    version: "0.1.9"
   anaki_redis:
     dependency: "direct main"
     description:

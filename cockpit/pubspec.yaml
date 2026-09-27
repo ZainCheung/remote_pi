@@ -209,12 +209,11 @@ dependencies:
   # `format!` (agora Pg/MySqlConnectOptions programático). A URL crua quebrava
   # com senha contendo `? / #` — o sqlx reportava "invalid port number" — e
   # corrompia senha com `%` (percent-decode silencioso).
-  # 0.1.8 (postgres) / 0.1.9 (mysql): a dylib macOS arm64 saiu linkada com o
-  # ld do Xcode 27 e o dyld recusa ("mis-aligned LINKEDIT string pool") —
-  # Postgres/MySQL mortos na 2.1.5. Fix é na anaki (rebuild com SDK 26);
-  # aguardando republicação, sem rollback aqui (decisão 2026-09-27).
-  anaki_postgres: ^0.1.8
-  anaki_mysql: ^0.1.9
+  # Postgres 0.1.9 / MySQL 0.1.10: relink dos dylibs darwin com SDK 26. As
+  # 0.1.8/0.1.9 saíram linkadas com o ld do Xcode 27 e o dyld recusava
+  # ("mis-aligned LINKEDIT string pool") — Postgres/MySQL mortos na 2.1.5.
+  anaki_postgres: ^0.1.9
+  anaki_mysql: ^0.1.10
   anaki_mssql: ^0.1.7
   # NoSQL/cache — acesso APENAS via CLI por enquanto (sem UI); ver plano 51.
   anaki_redis: ^0.1.5
