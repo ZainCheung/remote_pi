@@ -14,7 +14,6 @@ import 'dart:math' show max;
 import 'package:cockpit/app/core/data/diagnostics/diagnostics_log.dart';
 import 'package:cockpit/app/core/data/diagnostics/performance_diagnostics.dart';
 import 'package:cockpit/app/core/data/setup/remote_pi_resolver.dart';
-import 'package:cockpit/app/core/utils/shell_command.dart';
 import 'package:flutter/scheduler.dart' show SchedulerBinding;
 import 'package:flutter/services.dart' show PlatformException;
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
@@ -59,6 +58,7 @@ import 'package:cockpit/app/cockpit/domain/entities/gallery_template.dart';
 import 'package:cockpit/app/core/utils/workspace_env.dart';
 import 'package:cockpit/app/cockpit/domain/services/workspace_cycle.dart';
 import 'package:cockpit/app/cockpit/ui/session/document_host.dart';
+import 'package:cockpit/app/cockpit/data/panel/panel_command.dart';
 import 'package:cockpit/app/cockpit/data/remote/remote_host_terminal_gateway.dart';
 import 'package:cockpit/i18n/strings.g.dart' as slang;
 import 'package:cockpit/app/cockpit/domain/entities/notebook_document.dart';
@@ -5926,57 +5926,19 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
     ..._cliPathEnv(),
   };
 
-  /// Ponte dos `.panel` (plano 67): roda `cockpit <line>` num shell, com o
-  /// mesmo env das abas, e devolve o resultado como a página espera
-  /// (`{ok, code, stdout, stderr, json}`). Spawnar o próprio binário, em vez de
-  /// reimplementar o parser da CLI aqui, garante paridade: o que funciona no
-  /// terminal funciona no botão. `json` é o stdout parseado quando é JSON
-  /// (`--json`, `db query`...), senão `null`.
+  /// Ponte dos `.panel` (plano 67): roda `cockpit <line>` com o mesmo env das
+  /// abas (PATH da CLI interna + socket do app) e devolve o mapa que a página
+  /// espera. A execução em si é [runPanelCommandLine], compartilhada com a
+  /// janela de documento.
   Future<Map<String, Object?>> runPanelCommand(
     String line, {
     required String sessionId,
     required String cwd,
-  }) async {
-    final trimmed = line.trim();
-    if (trimmed.isEmpty) {
-      return const <String, Object?>{
-        'ok': false,
-        'code': 2,
-        'stdout': '',
-        'stderr': 'cockpit: empty command',
-        'error': 'cockpit: empty command',
-        'json': null,
-      };
-    }
-    final result = await runShellCommand(
-      'cockpit $trimmed',
-      cwd: cwd,
-      environment: cliEnvironment(tabId: sessionId),
-    );
-    Object? parsed;
-    final out = result.stdout.trim();
-    if (out.startsWith('{') || out.startsWith('[')) {
-      try {
-        parsed = jsonDecode(out);
-      } on FormatException {
-        parsed = null;
-      }
-    }
-    final ok = result.code == 0;
-    return <String, Object?>{
-      'ok': ok,
-      'code': result.code,
-      'stdout': result.stdout,
-      'stderr': result.stderr,
-      'timedOut': result.timedOut,
-      'json': parsed,
-      'error': ok
-          ? null
-          : (result.stderr.trim().isNotEmpty
-                ? result.stderr.trim()
-                : 'exit code ${result.code}'),
-    };
-  }
+  }) => runPanelCommandLine(
+    line,
+    cwd: cwd,
+    environment: cliEnvironment(tabId: sessionId),
+  );
 
   Map<String, String> _cliPathEnv() {
     final binDir = cockpitCliDir();

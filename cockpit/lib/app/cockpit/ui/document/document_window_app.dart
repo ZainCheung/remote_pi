@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cockpit/app/cockpit/data/filesystem/disk_file_change_watcher.dart';
 import 'package:cockpit/app/cockpit/data/filesystem/file_reader_impl.dart';
+import 'package:cockpit/app/cockpit/data/panel/panel_command.dart';
 import 'package:cockpit/app/cockpit/domain/entities/file_view.dart';
 import 'package:cockpit/app/cockpit/ui/document/document_windows.dart';
 import 'package:cockpit/app/cockpit/ui/document/running_instance.dart';
@@ -14,6 +15,7 @@ import 'package:cockpit/app/cockpit/ui/widgets/file_viewer.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/kanban_board_view.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/layout_preview_view.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/notebook_view.dart';
+import 'package:cockpit/app/cockpit/ui/widgets/panel_view.dart';
 import 'package:cockpit/app/core/data/repositories/json_settings_store.dart';
 import 'package:cockpit/app/core/data/setup/json_state_store.dart';
 import 'package:cockpit/app/core/data/setup/storage_location.dart';
@@ -208,7 +210,7 @@ class DocumentWindowRoot extends StatelessWidget {
 }
 
 /// Lê [path] e escolhe o viewer: pasta `.notebook` → caderno; `.kanban` →
-/// quadro; o resto → [FileViewer] (markdown com preview, código, imagem,
+/// quadro; `.ckp` → preview do layout; `.panel` → página viva; o resto → [FileViewer] (markdown com preview, código, imagem,
 /// mídia). `.dbq`/`.http` abrem como texto aqui: query e request precisam
 /// das conexões do workspace, que a janela solta não tem. Relê o arquivo
 /// quando ele muda no disco (edição em outra janela ou por agente).
@@ -384,6 +386,19 @@ class _DocumentScreenState extends State<DocumentScreen>
             label: context.t.cockpit.layoutPreview.applyInCockpit,
             onApply: () =>
                 unawaited(RunningInstance.forwardApplyLayout(widget.path)),
+          ),
+        );
+      } else if (widget.path.toLowerCase().endsWith('.panel')) {
+        // Painel vivo também na janela solta. A ponte spawna a CLI `cockpit`
+        // como na aba; a CLI fala com o app principal pelo socket, então
+        // `exec`, `db`, `send`... funcionam daqui. Sem workspace próprio, os
+        // verbos que dependem de aba usam o que o humano tem selecionado.
+        body = PanelView(
+          session: session,
+          onCall: (line, cwd) => runPanelCommandLine(
+            line,
+            cwd: cwd,
+            environment: RunningInstance.cliEnvironment,
           ),
         );
       } else {
