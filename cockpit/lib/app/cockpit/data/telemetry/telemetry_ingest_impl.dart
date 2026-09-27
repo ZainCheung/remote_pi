@@ -3,6 +3,7 @@
 // lotes. Task e wrapper usam a mesma sessão; só muda quem chama `add`.
 
 import 'dart:async';
+import 'dart:io' show pid;
 
 import 'package:path/path.dart' as p;
 
@@ -183,6 +184,36 @@ class TelemetryIngestImpl implements TelemetryIngest, OtlpSink {
       paneId: paneId,
       pid: pid,
     );
+  }
+
+  @override
+  Future<TelemetryIngestSession?> openAppRun({required String version}) async {
+    final store = await _registry.forWorkspace(kTelemetryAppWorkspaceId);
+    final run = await store.openRun(
+      key: 'app:cockpit',
+      project: 'Cockpit',
+      source: TelemetryRunSource.app,
+      cwd: '',
+      command: 'Cockpit $version',
+      name: 'Cockpit',
+      pid: pid,
+    );
+    const config = TelemetryParserConfig();
+    final s = _Session(
+      store: store,
+      run: run,
+      parser: _parsers.create(runId: run.id, config: config),
+      vmParser: () => _parsers.create(runId: run.id, config: config),
+      config: config,
+      ignore: const [],
+      otlpEndpoint: otlpEndpoint,
+      project: 'Cockpit',
+      onClosed: () => _live.remove(run.id),
+      // Sem push: o run do app não tem pane de agente.
+      onErrors: (_) {},
+    );
+    _live[run.id] = s;
+    return s;
   }
 
   Future<TelemetryIngestSession?> _open({
@@ -380,7 +411,8 @@ class _Session implements TelemetryIngestSession {
     onClosed();
   }
 
-  /// Eventos que não passam pelo parser de linhas (VM Service, e depois OTLP).
+  /// Eventos que não passam pelo parser de linhas (VM Service, OTLP, app).
+  @override
   void addEvents(List<TelemetryEvent> events) {
     if (_closed || events.isEmpty) return;
     _pending.addAll(events);

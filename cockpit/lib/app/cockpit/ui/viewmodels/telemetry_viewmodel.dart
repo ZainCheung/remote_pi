@@ -99,7 +99,10 @@ class TelemetryViewModel extends ChangeNotifier {
     _store = null;
     cases = const [];
     runsById.clear();
-    notifyListeners();
+    // Chamado do `initState`/`didUpdateWidget` do painel, ou seja, durante o
+    // build: notificar agora é markNeedsBuild no meio do frame (caso e_38b0
+    // da Telemetria). O `refresh` notifica de novo quando os dados chegam.
+    scheduleMicrotask(notifyListeners);
     unawaited(refresh());
   }
 

@@ -56,7 +56,7 @@ class AppSettings {
     this.railVisible = false,
     this.treeVisible = false,
     this.showCockpit = true,
-    this.telemetryPush = true,
+    this.developerMode = false,
     this.launchAtStartup = false,
     this.defaultTerminalProfileId,
     this.terminalEngine = TerminalEngine.ghostty,
@@ -178,9 +178,13 @@ class AppSettings {
   /// `HiveSettingsStore.load`).
   final bool showCockpit;
 
+  /// Modo desenvolvedor (plano 68): o próprio Cockpit vira um run na
+  /// Telemetria (erros globais, warnings) e as métricas de performance ligam.
+  /// Desligado por padrão: só serve a quem dá manutenção no app.
+  final bool developerMode;
+
   /// Telemetria (plano 66): avisar o agente da aba quando surgem casos novos
   /// no run dele, entregue só quando o turno termina.
-  final bool telemetryPush;
 
   /// Inicia o Cockpit junto com o login do sistema (item de login do SO).
   /// Persistido; a aplicação real no SO é feita pelo [LaunchAtStartupService]
@@ -268,7 +272,7 @@ class AppSettings {
     bool? railVisible,
     bool? treeVisible,
     bool? showCockpit,
-    bool? telemetryPush,
+    bool? developerMode,
     bool? launchAtStartup,
     String? defaultTerminalProfileId,
     bool clearDefaultTerminalProfileId = false,
@@ -317,7 +321,7 @@ class AppSettings {
       railVisible: railVisible ?? this.railVisible,
       treeVisible: treeVisible ?? this.treeVisible,
       showCockpit: showCockpit ?? this.showCockpit,
-      telemetryPush: telemetryPush ?? this.telemetryPush,
+      developerMode: developerMode ?? this.developerMode,
       launchAtStartup: launchAtStartup ?? this.launchAtStartup,
       defaultTerminalProfileId: clearDefaultTerminalProfileId
           ? null
@@ -379,7 +383,7 @@ class AppSettings {
     // Sempre gravado: a migração distingue "install novo" (chave presente) de
     // "upgrade sem a flag" (chave ausente → liga automático).
     'showCockpit': showCockpit,
-    'telemetryPush': telemetryPush,
+    'developerMode': developerMode,
     'launchAtStartup': launchAtStartup,
     // Só quando escolhido: a AUSÊNCIA da chave é o "sem padrão" → fallback de
     // plataforma. Nada a migrar (plano 50).
@@ -458,7 +462,7 @@ class AppSettings {
       railVisible: json['railVisible'] as bool? ?? false,
       treeVisible: json['treeVisible'] as bool? ?? false,
       showCockpit: json['showCockpit'] as bool? ?? true,
-      telemetryPush: json['telemetryPush'] as bool? ?? true,
+      developerMode: json['developerMode'] as bool? ?? false,
       launchAtStartup: json['launchAtStartup'] as bool? ?? false,
       defaultTerminalProfileId: str(json['terminal.default_profile_id']),
       terminalEngine: _enumByName(

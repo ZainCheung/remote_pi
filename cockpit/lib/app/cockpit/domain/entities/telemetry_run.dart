@@ -4,7 +4,9 @@
 // runs do mesmo comando ao longo dos dias ("isso é novo?", regressão).
 
 /// Quem abriu o run.
-enum TelemetryRunSource { task, wrapper }
+/// `app` = o próprio Cockpit (plano 68): um run por boot, no store
+/// `kTelemetryAppWorkspaceId`, alimentado pelo `DiagnosticsLog`.
+enum TelemetryRunSource { task, wrapper, app }
 
 class TelemetryRun {
   const TelemetryRun({

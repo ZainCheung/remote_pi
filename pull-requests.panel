@@ -1,0 +1,100 @@
+---
+title: Pull requests
+reload: true
+cwd: .
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Pull requests</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 0; padding: 20px 24px;
+      background: var(--ckp-bg, #111); color: var(--ckp-text, #eee);
+    }
+    header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    h1 { font-size: 18px; margin: 0; flex: 1; }
+    button {
+      background: transparent; color: var(--ckp-text, #eee);
+      border: 1px solid var(--ckp-border, #444); border-radius: 6px;
+      padding: 5px 12px; cursor: pointer; font: inherit; font-size: 13px;
+    }
+    button:hover { border-color: var(--ckp-accent, #6cf); }
+    .muted { color: var(--ckp-text-muted, #999); font-size: 13px; }
+    ul { list-style: none; margin: 0; padding: 0; }
+    li {
+      display: grid; grid-template-columns: 56px 1fr auto; gap: 12px; align-items: center;
+      padding: 10px 12px; border: 1px solid var(--ckp-border, #333); border-radius: 8px;
+      margin-bottom: 8px; cursor: pointer;
+    }
+    li:hover { background: var(--ckp-code-bg, #1c1c1c); border-color: var(--ckp-accent, #6cf); }
+    .num { color: var(--ckp-text-muted, #999); font-variant-numeric: tabular-nums; }
+    .title { font-weight: 600; }
+    .meta { color: var(--ckp-text-muted, #999); font-size: 12px; margin-top: 2px; }
+    .badge {
+      font-size: 11px; padding: 2px 8px; border-radius: 999px;
+      border: 1px solid var(--ckp-border, #444); color: var(--ckp-text-muted, #999);
+    }
+    pre { color: #f66; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Open pull requests</h1>
+    <span id="status" class="muted"></span>
+    <button onclick="load()">Refresh</button>
+  </header>
+  <ul id="list"></ul>
+  <pre id="error"></pre>
+
+  <script>
+    const list = document.getElementById('list');
+    const status = document.getElementById('status');
+    const errorBox = document.getElementById('error');
+
+    function ago(iso) {
+      const s = (Date.now() - new Date(iso)) / 1000;
+      if (s < 3600) return Math.floor(s / 60) + 'm ago';
+      if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+      return Math.floor(s / 86400) + 'd ago';
+    }
+
+    async function load() {
+      status.textContent = 'loading...';
+      errorBox.textContent = '';
+      // `exec` roda na pasta do .panel (cwd do frontmatter): o gh acha o repo.
+      const r = await cockpit(
+        'exec gh pr list --state open --limit 50 ' +
+        '--json number,title,author,url,updatedAt,isDraft,headRefName'
+      );
+      if (!r.ok) {
+        status.textContent = '';
+        errorBox.textContent = r.error;
+        return;
+      }
+      let prs;
+      try { prs = JSON.parse(r.stdout); } catch (e) { errorBox.textContent = r.stdout; return; }
+      list.innerHTML = '';
+      status.textContent = prs.length + ' open';
+      for (const pr of prs) {
+        const li = document.createElement('li');
+        li.innerHTML =
+          '<span class="num">#' + pr.number + '</span>' +
+          '<div><div class="title"></div><div class="meta"></div></div>' +
+          '<span class="badge">' + (pr.isDraft ? 'draft' : 'open') + '</span>';
+        li.querySelector('.title').textContent = pr.title;
+        li.querySelector('.meta').textContent =
+          pr.author.login + ' · ' + pr.headRefName + ' · updated ' + ago(pr.updatedAt);
+        // Abrir no navegador do SO: o app cancela navegação http e delega.
+        li.onclick = () => { window.location.href = pr.url; };
+        list.appendChild(li);
+      }
+    }
+
+    load();
+  </script>
+</body>
+</html>

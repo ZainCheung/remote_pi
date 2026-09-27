@@ -22,6 +22,7 @@ import 'package:cockpit/app/cockpit/data/remote/remote_db_executor.dart';
 import 'package:cockpit/app/cockpit/data/remote/remote_task_gateway.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/task_discovery.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/task_runner_gateway.dart';
+import 'package:cockpit/app/cockpit/data/telemetry/app_telemetry_bridge.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/telemetry_ingest.dart';
 import 'package:cockpit/app/cockpit/ui/viewmodels/tasks_viewmodel.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/telemetry_panel.dart';
@@ -34,6 +35,8 @@ import 'package:cockpit/app/cockpit/ui/widgets/layout_preview_tab.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/remote_disconnected_banner.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/terminal_key_bar.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/widgets.dart';
+import 'package:cockpit/app/core/data/diagnostics/performance_diagnostics.dart';
+import 'package:cockpit/app/core/ui/automation_controller.dart';
 import 'package:cockpit/app/core/ui/themes/themes.dart';
 import 'package:cockpit/app/core/ui/settings_controller.dart';
 import 'package:cockpit/app/core/ui/widgets/hover_tap.dart';
@@ -163,8 +166,15 @@ class _CockpitPageState extends State<CockpitPage> {
   @override
   void initState() {
     super.initState();
-    // Discovery de harnesses é lazy (Settings ou primeira geração) — evita
-    // spawnar 6 CLIs a cada montagem de workspace.
+    // Descoberta dos harnesses instalados (uma vez por processo): alimenta o
+    // "Open in (agent)" do menu de pasta da árvore, além das automações.
+    // Pós-frame: o `refresh` notifica de imediato (`discovering = true`) e,
+    // chamado de dentro do `initState`, isso é markNeedsBuild durante o build
+    // (caso e_f993 da Telemetria).
+    final automation = context.read<AutomationController>();
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => unawaited(automation.ensureInitialized()),
+    );
     // Pontes do menu nativo (PlatformMenuBar vive acima da rota, sem acesso aos
     // ViewModels page-scoped): abrir projeto e verificar atualizações.
     requestOpenProject = () => unawaited(addProject(context));
@@ -328,10 +338,34 @@ class _CockpitPageState extends State<CockpitPage> {
         _remoteTaskContextForHost(_vm.remoteHostForWorkspace(wsId));
     // Telemetria (plano 66): o ingest roteia cada run pro store do workspace
     // pelo cwd, então precisa conhecer id/nome/roots do workspace ativo.
-    _vm.telemetryPushEnabled = () =>
-        context.read<SettingsController>().settings.telemetryPush;
     if (_telemetrySync == null) {
       final telemetry = inject<TelemetryIngest>();
+      // Plano 68: com "Developer mode" ligado, o próprio app vira um run
+      // (erros globais, warnings, métricas). Reage ao toggle das Settings;
+      // fecha na saída (bootstrapper). A env COCKPIT_PERF=1 é atalho só das
+      // métricas, para quem sobe pelo terminal.
+      final settings = context.read<SettingsController>();
+      void syncDeveloperMode() {
+        final on = settings.settings.developerMode;
+        if (on) {
+          unawaited(
+            AppTelemetryBridge.instance.start(telemetry).then((_) {
+              PerformanceDiagnostics.instance.sink =
+                  AppTelemetryBridge.instance.metric;
+              PerformanceDiagnostics.instance.enable(true);
+            }),
+          );
+        } else {
+          PerformanceDiagnostics.instance.enable(
+            PerformanceDiagnostics.envEnabled,
+          );
+          unawaited(AppTelemetryBridge.instance.close());
+        }
+      }
+
+      _developerModeSync = syncDeveloperMode;
+      settings.addListener(syncDeveloperMode);
+      syncDeveloperMode();
       final vm = _vm;
       void sync() {
         final p = vm.selectedProject;
@@ -353,6 +387,7 @@ class _CockpitPageState extends State<CockpitPage> {
   }
 
   VoidCallback? _telemetrySync;
+  VoidCallback? _developerModeSync;
 
   /// Contexto de Task remoto do workspace ativo (host resolvido do projeto
   /// selecionado), cacheado por host — o runner precisa sobreviver às trocas de
@@ -564,6 +599,9 @@ class _CockpitPageState extends State<CockpitPage> {
   void dispose() {
     if (_telemetrySync != null) {
       context.read<CockpitViewModel>().removeListener(_telemetrySync!);
+    }
+    if (_developerModeSync != null) {
+      context.read<SettingsController>().removeListener(_developerModeSync!);
     }
     // Runners de Task remotos (cacheados por host): mata as tasks e fecha os
     // streams. Não fecha a conexão SSH (compartilhada com os outros serviços).
@@ -1288,13 +1326,27 @@ class _TreePanel extends StatelessWidget {
               );
             }
           },
-          onCreateInFolder: (sub) => vm.newTabIn(sub),
+          // Caminho ABSOLUTO da pasta (a árvore pode estar em outra root do
+          // multi-root, então relativo à raiz do projeto não bastava).
+          onCreateInFolder: (path, {command}) =>
+              vm.newTerminalTab(cwd: path, startupCommand: command),
+          agentLaunchers: [
+            for (final h in context.watch<AutomationController>().harnesses)
+              if (HarnessCatalog.getSpec(h.id) case final spec?)
+                TreeAgentLauncher(
+                  label: spec.label,
+                  command: spec.primaryEntryPoint,
+                  assetPath: spec.assetPath,
+                  monochrome: spec.isMonochrome,
+                ),
+          ],
           onCreate: (parentDir, name, isFolder) => isFolder
               ? vm.createDirIn(parentDir, name)
               : vm.createFileIn(parentDir, name),
           onRename: vm.renamePath,
           onDelete: vm.deletePath,
           onMove: vm.movePath,
+          onImport: vm.importPaths,
           onCopy: vm.copyToClipboard,
           onCut: vm.cutToClipboard,
           onPaste: vm.pasteInto,

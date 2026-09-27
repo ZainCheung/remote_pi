@@ -9,6 +9,10 @@ import '../entities/telemetry_event.dart';
 /// Sessão de ingest de UM run. Aceita chunks arbitrários (não precisam
 /// terminar em `\n`); o resto de linha fica em buffer até o próximo chunk
 /// ou o [close].
+/// Id do "workspace" que guarda os runs do próprio app (plano 68). Não é um
+/// projeto: é um store fixo, consultado com `cockpit telemetry --app`.
+const String kTelemetryAppWorkspaceId = '__cockpit__';
+
 abstract class TelemetryIngestSession {
   String get runId;
 
@@ -16,6 +20,9 @@ abstract class TelemetryIngestSession {
   Map<String, String> get childEnvironment;
 
   void add(String chunk, {TelemetryStream stream = TelemetryStream.out});
+
+  /// Eventos já estruturados (VM Service, OTLP, o próprio app).
+  void addEvents(List<TelemetryEvent> events);
 
   Future<void> close({int? exitCode});
 }
@@ -75,6 +82,10 @@ abstract class TelemetryIngest {
 
   /// Sessão aberta e ainda viva por `runId` (pra `telemetry-ingest/close`).
   TelemetryIngestSession? session(String runId);
+
+  /// Run do PRÓPRIO Cockpit (plano 68): erros dos handlers globais, warnings e
+  /// métricas do app. Um por boot, no store [kTelemetryAppWorkspaceId].
+  Future<TelemetryIngestSession?> openAppRun({required String version});
 
   /// Reenvia pelo proxy HTTP do workspace os requests gravados na janela.
   /// `null` = workspace sem proxy configurado; senão quantos foram enviados.

@@ -569,7 +569,7 @@ class _Translations$cockpit$fileTreePanel$pt_BR extends Translations$cockpit$fil
 	@override String get openLayout => 'Abrir layout';
 	@override String get openAsMarkdown => 'Abrir como markdown';
 	@override String get showGitDiff => 'Mostrar diff do git';
-	@override String get createTerminal => 'Criar terminal';
+	@override String get createTerminal => 'Abrir no terminal';
 	@override String get rename => 'Renomear';
 	@override String get copy => 'Copiar';
 	@override String get cut => 'Recortar';
@@ -616,6 +616,11 @@ class _Translations$cockpit$fileTreePanel$pt_BR extends Translations$cockpit$fil
 	@override String get galleryTooltip => 'Galeria';
 	@override String get sectionGallery => 'GALERIA';
 	@override String get openAsHtml => 'Abrir como HTML';
+	@override String get importQuestionTitle => 'Copiar aqui?';
+	@override String importMessage({required Object count, required Object dest}) => 'Copiar ${count} itens para “${dest}”?';
+	@override String get importAction => 'Copiar';
+	@override String get couldNotImportTitle => 'Não foi possível copiar';
+	@override String openInAgent({required Object harness}) => 'Abrir no ${harness}';
 }
 
 // Path: cockpit.fileViewer
@@ -1272,6 +1277,8 @@ class _Translations$cockpit$telemetry$pt_BR extends Translations$cockpit$telemet
 	@override String get byHuman => 'por você';
 	@override String get byAgent => 'pelo agente';
 	@override String caseTabTitle({required Object type, required Object file}) => '${type} · ${file}';
+	@override String get srcApp => 'App';
+	@override String get chipApp => 'Cockpit';
 }
 
 // Path: cockpit.panelView
@@ -1402,6 +1409,7 @@ class _Translations$fileOperation$error$pt_BR extends Translations$fileOperation
 	@override String osFailure({required Object detail}) => '${detail}';
 	@override String get nameHasSlash => 'O nome não pode conter “/”.';
 	@override String get invalidName => 'Nome inválido.';
+	@override String get remoteDropUnsupported => 'Soltar arquivos num workspace remoto ainda não é suportado.';
 }
 
 // Path: theme.error
@@ -1642,8 +1650,8 @@ class _Translations$settings$page$general$pt_BR extends Translations$settings$pa
 	@override String get checkUpdatesTitle => 'Verificar atualizações';
 	@override String get checkUpdatesDesc => 'Com que frequência o Cockpit deve procurar novas versões.';
 	@override late final _Translations$settings$page$general$updateFrequency$pt_BR updateFrequency = _Translations$settings$page$general$updateFrequency$pt_BR._(_root);
-	@override String get telemetryPushTitle => 'Avisar agentes sobre erros novos';
-	@override String get telemetryPushDesc => 'Quando uma task ou comando observado gera um erro que o agente daquela aba ainda não viu, envia uma linha de resumo assim que o turno dele termina.';
+	@override String get developerModeTitle => 'Modo desenvolvedor';
+	@override String get developerModeDesc => 'Registra os erros e avisos do próprio Cockpit numa base separada da Telemetria (chip “Cockpit”) e liga as métricas de performance. Só serve a quem mantém o app.';
 }
 
 // Path: settings.page.diagnostics
@@ -2150,7 +2158,7 @@ extension on TranslationsPtBr {
 			'cockpit.fileTreePanel.openLayout' => 'Abrir layout',
 			'cockpit.fileTreePanel.openAsMarkdown' => 'Abrir como markdown',
 			'cockpit.fileTreePanel.showGitDiff' => 'Mostrar diff do git',
-			'cockpit.fileTreePanel.createTerminal' => 'Criar terminal',
+			'cockpit.fileTreePanel.createTerminal' => 'Abrir no terminal',
 			'cockpit.fileTreePanel.rename' => 'Renomear',
 			'cockpit.fileTreePanel.copy' => 'Copiar',
 			'cockpit.fileTreePanel.cut' => 'Recortar',
@@ -2197,6 +2205,11 @@ extension on TranslationsPtBr {
 			'cockpit.fileTreePanel.galleryTooltip' => 'Galeria',
 			'cockpit.fileTreePanel.sectionGallery' => 'GALERIA',
 			'cockpit.fileTreePanel.openAsHtml' => 'Abrir como HTML',
+			'cockpit.fileTreePanel.importQuestionTitle' => 'Copiar aqui?',
+			'cockpit.fileTreePanel.importMessage' => ({required Object count, required Object dest}) => 'Copiar ${count} itens para “${dest}”?',
+			'cockpit.fileTreePanel.importAction' => 'Copiar',
+			'cockpit.fileTreePanel.couldNotImportTitle' => 'Não foi possível copiar',
+			'cockpit.fileTreePanel.openInAgent' => ({required Object harness}) => 'Abrir no ${harness}',
 			'cockpit.fileViewer.cantOpen' => 'Não é possível abrir este arquivo.',
 			'cockpit.fileViewer.couldNotLoadImage' => 'Não foi possível carregar a imagem.',
 			'cockpit.fileViewer.preview' => 'Pré-visualização',
@@ -2392,13 +2405,13 @@ extension on TranslationsPtBr {
 			'cockpit.sshPrompts.trust' => 'Confiar',
 			'cockpit.sshPrompts.sshKeyPassphraseTitle' => 'Senha da chave SSH',
 			'cockpit.sshPrompts.unlockMessage' => ({required Object keyPath, required Object connectionName}) => 'Desbloqueie ${keyPath} para conectar "${connectionName}".',
+			_ => null,
+		} ?? switch (path) {
 			'cockpit.sshPrompts.keptInMemoryHint' => 'Mantida em memória até o Cockpit fechar. Para permitir que agentes usem esta conexão, ative "Salvar senha da chave" na conexão.',
 			'cockpit.sshPrompts.unlock' => 'Desbloquear',
 			'cockpit.projectsRail.workspaces' => 'Workspaces',
 			'cockpit.projectsRail.keepAwakeOn' => 'Mantendo este computador acordado para acesso remoto. Clique para deixá-lo dormir de novo.',
 			'cockpit.projectsRail.keepAwakeOff' => 'Manter este computador acordado para acesso remoto. Desliga sozinho quando o Cockpit reinicia.',
-			_ => null,
-		} ?? switch (path) {
 			'cockpit.projectsRail.keepAwakeBattery' => 'Acordado na bateria. Isso consome a bateria.',
 			'cockpit.projectsRail.keepAwakeLid' => 'Fechar a tampa do notebook continua colocando-o para dormir.',
 			'cockpit.projectsRail.newWorkspace' => 'Novo workspace',
@@ -2645,6 +2658,8 @@ extension on TranslationsPtBr {
 			'cockpit.telemetry.byHuman' => 'por você',
 			'cockpit.telemetry.byAgent' => 'pelo agente',
 			'cockpit.telemetry.caseTabTitle' => ({required Object type, required Object file}) => '${type} · ${file}',
+			'cockpit.telemetry.srcApp' => 'App',
+			'cockpit.telemetry.chipApp' => 'Cockpit',
 			'cockpit.panelView.unavailable' => 'Painéis precisam da web view embutida, que ainda não existe no Linux.',
 			'cockpit.panelView.openInBrowser' => 'Abrir no navegador',
 			'cockpit.panelView.openAsHtml' => 'Abrir como HTML',
@@ -2681,8 +2696,8 @@ extension on TranslationsPtBr {
 			'settings.page.general.updateFrequency.weekly' => 'Semanalmente',
 			'settings.page.general.updateFrequency.monthly' => 'Mensalmente',
 			'settings.page.general.updateFrequency.never' => 'Nunca',
-			'settings.page.general.telemetryPushTitle' => 'Avisar agentes sobre erros novos',
-			'settings.page.general.telemetryPushDesc' => 'Quando uma task ou comando observado gera um erro que o agente daquela aba ainda não viu, envia uma linha de resumo assim que o turno dele termina.',
+			'settings.page.general.developerModeTitle' => 'Modo desenvolvedor',
+			'settings.page.general.developerModeDesc' => 'Registra os erros e avisos do próprio Cockpit numa base separada da Telemetria (chip “Cockpit”) e liga as métricas de performance. Só serve a quem mantém o app.',
 			'settings.page.diagnostics.sectionTitle' => 'Diagnóstico',
 			'settings.page.diagnostics.logFileTitle' => 'Arquivo de log',
 			'settings.page.diagnostics.logFileDesc' => ({required Object days, required Object path}) => 'Erros e eventos de inicialização são registrados aqui, mantidos por ${days} dias.\n${path}',
@@ -2886,6 +2901,7 @@ extension on TranslationsPtBr {
 			'fileOperation.error.osFailure' => ({required Object detail}) => '${detail}',
 			'fileOperation.error.nameHasSlash' => 'O nome não pode conter “/”.',
 			'fileOperation.error.invalidName' => 'Nome inválido.',
+			'fileOperation.error.remoteDropUnsupported' => 'Soltar arquivos num workspace remoto ainda não é suportado.',
 			'theme.error.io' => 'Não foi possível ler ou gravar o arquivo do tema.',
 			'theme.error.ioDetail' => ({required Object detail}) => 'Não foi possível ler ou gravar o arquivo do tema: ${detail}',
 			'theme.error.malformedJson' => ({required Object detail}) => 'Este arquivo não é um JSON válido: ${detail}',

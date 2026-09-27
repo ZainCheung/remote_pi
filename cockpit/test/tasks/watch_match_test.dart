@@ -75,6 +75,10 @@ class _NoTelemetry implements TelemetryIngest {
   TelemetryIngestSession? session(String runId) => null;
 
   @override
+  Future<TelemetryIngestSession?> openAppRun({required String version}) async =>
+      null;
+
+  @override
   Future<int?> replay({
     required String workspaceId,
     required DateTime since,

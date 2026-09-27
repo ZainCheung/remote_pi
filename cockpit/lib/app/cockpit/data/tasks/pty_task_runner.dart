@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:cockpit/app/cockpit/data/tasks/task_process_registry.dart';
 import 'package:cockpit/app/cockpit/data/tasks/compose_tasks.dart';
+import 'package:cockpit/app/core/data/diagnostics/diagnostics_log.dart';
 import 'package:cockpit/app/core/data/setup/remote_pi_resolver.dart';
 import 'package:cockpit/app/core/terminal/pty_output_scheduler.dart';
 import 'package:cockpit/app/core/terminal/terminal_line_ending_normalizer.dart';
@@ -383,7 +384,13 @@ class PtyTaskRunner implements TaskRunnerGateway, ReconciledTaskRunnerGateway {
         // Mesmo backpressure dos terminais interativos (plan/57).
         ackRead: true,
       );
-    } catch (_) {
+    } on Object catch (e, stack) {
+      DiagnosticsLog.instance.warn(
+        'task',
+        'spawn failed: ${def.label}',
+        error: e,
+        stack: stack,
+      );
       _starting.remove(def.id);
       unawaited(telemetry?.close(exitCode: -1));
       _emit(
@@ -483,14 +490,18 @@ class PtyTaskRunner implements TaskRunnerGateway, ReconciledTaskRunnerGateway {
     _transition(task, TaskRunStatus.stopping);
     try {
       task.pty.kill(ProcessSignal.sigterm);
-    } catch (_) {}
+    } on Object catch (_) {
+      // já morto: o _onExit cuida do resto.
+    }
     // Garante SIGKILL se não morrer em 3s.
     unawaited(
       Future<void>.delayed(const Duration(seconds: 3), () {
         if (_running.containsKey(taskId)) {
           try {
             task.pty.kill(ProcessSignal.sigkill);
-          } catch (_) {}
+          } on Object catch (_) {
+            // já morto.
+          }
         }
       }),
     );
@@ -586,7 +597,9 @@ class PtyTaskRunner implements TaskRunnerGateway, ReconciledTaskRunnerGateway {
     if (task == null) return;
     try {
       task.pty.resize(rows, columns);
-    } catch (_) {}
+    } on Object catch (_) {
+      // PTY já fechado: resize tardio não tem efeito.
+    }
   }
 
   /// `true` se [path] (mudou) está sob algum [TaskWatch.paths] e fora de
@@ -636,7 +649,9 @@ class PtyTaskRunner implements TaskRunnerGateway, ReconciledTaskRunnerGateway {
       task.stopping = true;
       try {
         task.pty.kill(ProcessSignal.sigkill);
-      } catch (_) {}
+      } on Object catch (_) {
+        // já morto.
+      }
       await TaskProcessRegistry.unregister(task.pty.pid);
       await task.outSub?.cancel();
       task.coalescer.dispose();
@@ -794,7 +809,9 @@ class PtyTaskRunner implements TaskRunnerGateway, ReconciledTaskRunnerGateway {
         final out = (r.stdout as String).trim();
         if (out.isNotEmpty) return _cachedUid = out;
       }
-    } catch (_) {}
+    } on Object catch (e) {
+      DiagnosticsLog.instance.warn('task', 'uid lookup failed', error: e);
+    }
     return null;
   }
 

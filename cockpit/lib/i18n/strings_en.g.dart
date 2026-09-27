@@ -1102,8 +1102,8 @@ class Translations$cockpit$fileTreePanel$en {
 	/// en: 'Show git diff'
 	String get showGitDiff => 'Show git diff';
 
-	/// en: 'Create terminal'
-	String get createTerminal => 'Create terminal';
+	/// en: 'Open terminal'
+	String get createTerminal => 'Open terminal';
 
 	/// en: 'Rename'
 	String get rename => 'Rename';
@@ -1242,6 +1242,21 @@ class Translations$cockpit$fileTreePanel$en {
 
 	/// en: 'Open as HTML'
 	String get openAsHtml => 'Open as HTML';
+
+	/// en: 'Copy here?'
+	String get importQuestionTitle => 'Copy here?';
+
+	/// en: 'Copy ${count} items into “${dest}”?'
+	String importMessage({required Object count, required Object dest}) => 'Copy ${count} items into “${dest}”?';
+
+	/// en: 'Copy'
+	String get importAction => 'Copy';
+
+	/// en: 'Could not copy'
+	String get couldNotImportTitle => 'Could not copy';
+
+	/// en: 'Open in ${harness}'
+	String openInAgent({required Object harness}) => 'Open in ${harness}';
 }
 
 // Path: cockpit.fileViewer
@@ -2690,6 +2705,12 @@ class Translations$cockpit$telemetry$en {
 
 	/// en: '${type} · ${file}'
 	String caseTabTitle({required Object type, required Object file}) => '${type} · ${file}';
+
+	/// en: 'App'
+	String get srcApp => 'App';
+
+	/// en: 'Cockpit'
+	String get chipApp => 'Cockpit';
 }
 
 // Path: cockpit.panelView
@@ -2950,6 +2971,9 @@ class Translations$fileOperation$error$en {
 
 	/// en: 'Invalid name.'
 	String get invalidName => 'Invalid name.';
+
+	/// en: 'Dropping files into a remote workspace is not supported yet.'
+	String get remoteDropUnsupported => 'Dropping files into a remote workspace is not supported yet.';
 }
 
 // Path: theme.error
@@ -3364,11 +3388,11 @@ class Translations$settings$page$general$en {
 
 	late final Translations$settings$page$general$updateFrequency$en updateFrequency = Translations$settings$page$general$updateFrequency$en.internal(_root);
 
-	/// en: 'Notify agents about new errors'
-	String get telemetryPushTitle => 'Notify agents about new errors';
+	/// en: 'Developer mode'
+	String get developerModeTitle => 'Developer mode';
 
-	/// en: 'When a task or wrapped command hits an error the agent in that tab has not seen, send it one summary line as soon as its turn ends.'
-	String get telemetryPushDesc => 'When a task or wrapped command hits an error the agent in that tab has not seen, send it one summary line as soon as its turn ends.';
+	/// en: 'Records Cockpit’s own errors and warnings in a separate Telemetry store (the “Cockpit” chip) and turns on performance metrics. Only useful to whoever maintains the app.'
+	String get developerModeDesc => 'Records Cockpit’s own errors and warnings in a separate Telemetry store (the “Cockpit” chip) and turns on performance metrics. Only useful to whoever maintains the app.';
 }
 
 // Path: settings.page.diagnostics
@@ -4175,7 +4199,7 @@ extension on Translations {
 			'cockpit.fileTreePanel.openLayout' => 'Open layout',
 			'cockpit.fileTreePanel.openAsMarkdown' => 'Open as markdown',
 			'cockpit.fileTreePanel.showGitDiff' => 'Show git diff',
-			'cockpit.fileTreePanel.createTerminal' => 'Create terminal',
+			'cockpit.fileTreePanel.createTerminal' => 'Open terminal',
 			'cockpit.fileTreePanel.rename' => 'Rename',
 			'cockpit.fileTreePanel.copy' => 'Copy',
 			'cockpit.fileTreePanel.cut' => 'Cut',
@@ -4222,6 +4246,11 @@ extension on Translations {
 			'cockpit.fileTreePanel.galleryTooltip' => 'Gallery',
 			'cockpit.fileTreePanel.sectionGallery' => 'GALLERY',
 			'cockpit.fileTreePanel.openAsHtml' => 'Open as HTML',
+			'cockpit.fileTreePanel.importQuestionTitle' => 'Copy here?',
+			'cockpit.fileTreePanel.importMessage' => ({required Object count, required Object dest}) => 'Copy ${count} items into “${dest}”?',
+			'cockpit.fileTreePanel.importAction' => 'Copy',
+			'cockpit.fileTreePanel.couldNotImportTitle' => 'Could not copy',
+			'cockpit.fileTreePanel.openInAgent' => ({required Object harness}) => 'Open in ${harness}',
 			'cockpit.fileViewer.cantOpen' => 'Can\'t open this file.',
 			'cockpit.fileViewer.couldNotLoadImage' => 'Could not load the image.',
 			'cockpit.fileViewer.preview' => 'Preview',
@@ -4417,13 +4446,13 @@ extension on Translations {
 			'cockpit.sshPrompts.trust' => 'Trust',
 			'cockpit.sshPrompts.sshKeyPassphraseTitle' => 'SSH key passphrase',
 			'cockpit.sshPrompts.unlockMessage' => ({required Object keyPath, required Object connectionName}) => 'Unlock ${keyPath} to connect "${connectionName}".',
+			_ => null,
+		} ?? switch (path) {
 			'cockpit.sshPrompts.keptInMemoryHint' => 'Kept in memory until Cockpit quits. To let agents use this connection, enable "Save passphrase" in the connection.',
 			'cockpit.sshPrompts.unlock' => 'Unlock',
 			'cockpit.projectsRail.workspaces' => 'Workspaces',
 			'cockpit.projectsRail.keepAwakeOn' => 'Keeping this computer awake for remote access. Click to let it sleep again.',
 			'cockpit.projectsRail.keepAwakeOff' => 'Keep this computer awake for remote access. Off again when Cockpit restarts.',
-			_ => null,
-		} ?? switch (path) {
 			'cockpit.projectsRail.keepAwakeBattery' => 'Keeping awake on battery power. This drains the battery.',
 			'cockpit.projectsRail.keepAwakeLid' => 'Closing a laptop lid still puts it to sleep.',
 			'cockpit.projectsRail.newWorkspace' => 'New workspace',
@@ -4670,6 +4699,8 @@ extension on Translations {
 			'cockpit.telemetry.byHuman' => 'by you',
 			'cockpit.telemetry.byAgent' => 'by agent',
 			'cockpit.telemetry.caseTabTitle' => ({required Object type, required Object file}) => '${type} · ${file}',
+			'cockpit.telemetry.srcApp' => 'App',
+			'cockpit.telemetry.chipApp' => 'Cockpit',
 			'cockpit.panelView.unavailable' => 'Panels need the embedded web view, which is not available on Linux yet.',
 			'cockpit.panelView.openInBrowser' => 'Open in browser',
 			'cockpit.panelView.openAsHtml' => 'Open as HTML',
@@ -4706,8 +4737,8 @@ extension on Translations {
 			'settings.page.general.updateFrequency.weekly' => 'Weekly',
 			'settings.page.general.updateFrequency.monthly' => 'Monthly',
 			'settings.page.general.updateFrequency.never' => 'Never',
-			'settings.page.general.telemetryPushTitle' => 'Notify agents about new errors',
-			'settings.page.general.telemetryPushDesc' => 'When a task or wrapped command hits an error the agent in that tab has not seen, send it one summary line as soon as its turn ends.',
+			'settings.page.general.developerModeTitle' => 'Developer mode',
+			'settings.page.general.developerModeDesc' => 'Records Cockpit’s own errors and warnings in a separate Telemetry store (the “Cockpit” chip) and turns on performance metrics. Only useful to whoever maintains the app.',
 			'settings.page.diagnostics.sectionTitle' => 'Diagnostics',
 			'settings.page.diagnostics.logFileTitle' => 'Log file',
 			'settings.page.diagnostics.logFileDesc' => ({required Object days, required Object path}) => 'Errors and startup events are recorded here, kept for ${days} days.\n${path}',
@@ -4911,6 +4942,7 @@ extension on Translations {
 			'fileOperation.error.osFailure' => ({required Object detail}) => '${detail}',
 			'fileOperation.error.nameHasSlash' => 'Name cannot contain “/”.',
 			'fileOperation.error.invalidName' => 'Invalid name.',
+			'fileOperation.error.remoteDropUnsupported' => 'Dropping files into a remote workspace is not supported yet.',
 			'theme.error.io' => 'Could not read or write the theme file.',
 			'theme.error.ioDetail' => ({required Object detail}) => 'Could not read or write the theme file: ${detail}',
 			'theme.error.malformedJson' => ({required Object detail}) => 'This file is not valid JSON: ${detail}',

@@ -21,11 +21,12 @@ const WAIT_TIMEOUT: Duration = Duration::from_secs(11 * 60);
 const BATCH_LINES: usize = 200;
 const BATCH_DELAY: Duration = Duration::from_millis(100);
 
-const QUERY_VERBS: [&str; 12] = [
+const QUERY_VERBS: [&str; 13] = [
     "errors", "logs", "events", "runs", "show", "wait", "mark", "resolve", "ignore", "reopen",
-    "clear", "probes",
+    "clear", "probes", "perf",
 ];
-const BOOL_FLAGS: [&str; 8] = [
+const BOOL_FLAGS: [&str; 9] = [
+    "--app",
     "--since-edit",
     "--since-run",
     "--new",
@@ -91,7 +92,7 @@ fn query(verb: &str, rest: &[String]) -> ! {
     }
 
     let wire = match verb {
-        "errors" | "logs" | "events" | "runs" | "probes" => format!("telemetry-{verb}"),
+        "errors" | "logs" | "events" | "runs" | "probes" | "perf" => format!("telemetry-{verb}"),
         "show" => {
             let id = positionals
                 .first()

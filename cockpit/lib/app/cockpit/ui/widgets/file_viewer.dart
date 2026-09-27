@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:cockpit/app/cockpit/domain/entities/browser_capability.dart';
+import 'package:cockpit/app/core/data/diagnostics/diagnostics_log.dart';
 import 'package:cockpit/app/cockpit/domain/entities/file_view.dart';
 import 'package:cockpit/app/cockpit/domain/entities/scm_line_decorations.dart';
 import 'package:cockpit/app/cockpit/ui/session/file_viewer_session.dart';
@@ -671,7 +672,9 @@ class _FileViewerState extends State<FileViewer> {
       _baseline = fresh;
       _updateDirty(false);
       if (_lspOn) unawaited(_vm?.lspChangeDocument(widget.session.path, fresh));
-    } catch (_) {}
+    } on Object catch (e) {
+      DiagnosticsLog.instance.warn('file-viewer', 'reload failed', error: e);
+    }
   }
 
   /// Aplica [text] no buffer preservando o cursor (best-effort).

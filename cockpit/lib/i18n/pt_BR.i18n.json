@@ -303,7 +303,7 @@
       "openLayout": "Abrir layout",
       "openAsMarkdown": "Abrir como markdown",
       "showGitDiff": "Mostrar diff do git",
-      "createTerminal": "Criar terminal",
+      "createTerminal": "Abrir no terminal",
       "rename": "Renomear",
       "copy": "Copiar",
       "cut": "Recortar",
@@ -349,7 +349,12 @@
       "diffError": "Não foi possível ler o diff: ${detail}",
       "galleryTooltip": "Galeria",
       "sectionGallery": "GALERIA",
-      "openAsHtml": "Abrir como HTML"
+      "openAsHtml": "Abrir como HTML",
+      "importQuestionTitle": "Copiar aqui?",
+      "importMessage": "Copiar ${count} itens para “${dest}”?",
+      "importAction": "Copiar",
+      "couldNotImportTitle": "Não foi possível copiar",
+      "openInAgent": "Abrir no ${harness}"
     },
     "fileViewer": {
       "cantOpen": "Não é possível abrir este arquivo.",
@@ -895,7 +900,9 @@
       "clearedToast": "Ocorrências apagadas. As regras de triagem ficam.",
       "byHuman": "por você",
       "byAgent": "pelo agente",
-      "caseTabTitle": "${type} · ${file}"
+      "caseTabTitle": "${type} · ${file}",
+      "srcApp": "App",
+      "chipApp": "Cockpit"
     },
     "panelView": {
       "unavailable": "Painéis precisam da web view embutida, que ainda não existe no Linux.",
@@ -947,8 +954,8 @@
           "monthly": "Mensalmente",
           "never": "Nunca"
         },
-        "telemetryPushTitle": "Avisar agentes sobre erros novos",
-        "telemetryPushDesc": "Quando uma task ou comando observado gera um erro que o agente daquela aba ainda não viu, envia uma linha de resumo assim que o turno dele termina."
+        "developerModeTitle": "Modo desenvolvedor",
+        "developerModeDesc": "Registra os erros e avisos do próprio Cockpit numa base separada da Telemetria (chip “Cockpit”) e liga as métricas de performance. Só serve a quem mantém o app."
       },
       "diagnostics": {
         "sectionTitle": "Diagnóstico",
@@ -1178,7 +1185,8 @@
       "formatterFailed": "Não foi possível executar o formatador.",
       "osFailure": "${detail}",
       "nameHasSlash": "O nome não pode conter “/”.",
-      "invalidName": "Nome inválido."
+      "invalidName": "Nome inválido.",
+      "remoteDropUnsupported": "Soltar arquivos num workspace remoto ainda não é suportado."
     }
   },
   "theme": {

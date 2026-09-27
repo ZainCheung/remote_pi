@@ -39,12 +39,24 @@ class TelemetryCliHandler {
 
   static bool handles(String cmd) => cmd.startsWith('telemetry-');
 
+  /// [project] é `null` só no modo `--app` (store do próprio Cockpit, plano
+  /// 68): verbos que precisam de workspace (open/close/probes) falham.
   Future<CockpitCommandResult> handle(
     CockpitCommand c,
-    Project project,
+    Project? project,
     String root,
   ) async {
     final a = c.args;
+    if (project == null &&
+        const {
+          'telemetry-open',
+          'telemetry-close',
+          'telemetry-probes',
+        }.contains(c.cmd)) {
+      return const CockpitCommandResult.fail(
+        'this verb needs a workspace (drop --app)',
+      );
+    }
     // ---- wrapper (passo 4): não precisa de store, o ingest resolve ----
     switch (c.cmd) {
       case 'telemetry-open':
@@ -99,7 +111,7 @@ class TelemetryCliHandler {
           );
         }
         await s.close(exitCode: _i(a['exit_code']));
-        final store = await _stores.forWorkspace(project.id);
+        final store = await _stores.forWorkspace(project!.id);
         final cases = await store.cases(
           TelemetryQuery(runId: s.runId, limit: 500),
         );
@@ -114,8 +126,15 @@ class TelemetryCliHandler {
         });
     }
 
-    final store = await _stores.forWorkspace(project.id);
+    final store = await _stores.forWorkspace(
+      project?.id ?? kTelemetryAppWorkspaceId,
+    );
     switch (c.cmd) {
+      // `cockpit telemetry perf` (plano 68): P50/P95/máx por métrica do run
+      // do app (o mais recente, ou `--run`). Só faz sentido com `--app`, mas
+      // funciona em qualquer store que tenha eventos `metric`.
+      case 'telemetry-perf':
+        return _perf(store, a);
       case 'telemetry-errors':
         final q = await _query(
           a,
@@ -214,7 +233,7 @@ class TelemetryCliHandler {
         );
         return const CockpitCommandResult.ok({'cleared': true});
       case 'telemetry-probes':
-        return _probes(project, _s(a['project']));
+        return _probes(project!, _s(a['project']));
       case 'telemetry-replay':
         DateTime? since;
         DateTime? until;
@@ -235,7 +254,7 @@ class TelemetryCliHandler {
           );
         }
         final n = await _ingest.replay(
-          workspaceId: project.id,
+          workspaceId: project?.id ?? kTelemetryAppWorkspaceId,
           since: since,
           until: until,
         );
@@ -253,7 +272,7 @@ class TelemetryCliHandler {
 
   Future<TelemetryQuery> _query(
     Map<String, dynamic> a,
-    Project project,
+    Project? project,
     TelemetryStore store, {
     TelemetrySeverity? minSeverity,
     required int limit,
@@ -264,7 +283,9 @@ class TelemetryCliHandler {
     final sinceRaw = _s(a['since']);
     if (sinceRaw != null) since = _parseSince(sinceRaw);
     if (a['since_edit'] == true) {
-      since = lastEditAt(project.id) ?? DateTime.now();
+      since = project == null
+          ? DateTime.now()
+          : (lastEditAt(project.id) ?? DateTime.now());
     }
     if (a['since_run'] == true) {
       final runs = await store.runs(
@@ -409,6 +430,64 @@ class TelemetryCliHandler {
   /// `--fingerprint <id> --absent <s>`: ok se não reapareceu em `absent`
   /// segundos E houve atividade observável (senão `inconclusive`).
   /// `--any-new`: hit assim que surgir caso novo/regressão.
+  /// Agrega os eventos `metric` de um run: por métrica e campo numérico,
+  /// `count`, `p50`, `p95`, `max` e `last`. Quem grava é o
+  /// `PerformanceDiagnostics` via `AppTelemetryBridge.metric`.
+  Future<CockpitCommandResult> _perf(
+    TelemetryStore store,
+    Map<String, dynamic> a,
+  ) async {
+    var runId = _s(a['run']);
+    if (runId == null) {
+      final runs = await store.runs(limit: 1);
+      if (runs.isEmpty) {
+        return const CockpitCommandResult.fail(
+          'no runs in this store (start the app with COCKPIT_PERF=1)',
+        );
+      }
+      runId = runs.first.id;
+    }
+    final wanted = _s(a['metric']);
+    final events = await store.events(
+      TelemetryQuery(runId: runId, limit: 5000, includeIgnored: true),
+    );
+    // metric → field → amostras
+    final samples = <String, Map<String, List<num>>>{};
+    for (final e in events) {
+      final metric = e.attrs['metric']?.toString();
+      if (metric == null || (wanted != null && metric != wanted)) continue;
+      final fields = samples.putIfAbsent(metric, () => {});
+      for (final entry in e.attrs.entries) {
+        final v = entry.value;
+        if (entry.key == 'metric' || v is! num) continue;
+        fields.putIfAbsent(entry.key, () => []).add(v);
+      }
+    }
+    num pct(List<num> sorted, double q) =>
+        sorted[((sorted.length - 1) * q).round()];
+    final out = <String, Object?>{};
+    for (final m in samples.entries) {
+      final fields = <String, Object?>{};
+      for (final f in m.value.entries) {
+        final sorted = List<num>.of(f.value)..sort();
+        fields[f.key] = {
+          'count': sorted.length,
+          'p50': pct(sorted, 0.5),
+          'p95': pct(sorted, 0.95),
+          'max': sorted.last,
+          'last': f.value.last,
+        };
+      }
+      out[m.key] = fields;
+    }
+    return CockpitCommandResult.ok({
+      'run': runId,
+      'metrics': out,
+      if (out.isEmpty)
+        'hint': 'no metric events; run the app with COCKPIT_PERF=1',
+    });
+  }
+
   Future<CockpitCommandResult> _wait(
     TelemetryStore store,
     Map<String, dynamic> a,

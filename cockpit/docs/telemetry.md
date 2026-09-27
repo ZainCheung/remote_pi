@@ -88,7 +88,54 @@ A sessão guarda `fingerprint → última vez visto`; um erro com o mesmo
 fingerprint dentro de 1,5 s conta uma vez (o `Flutter.Error` do VM Service é o
 mesmo bloco que sai no console).
 
-## Push turn-aware
+## Erros do próprio app (plano 68)
+
+O Cockpit é também uma fonte: um run por boot (`source: app`, nome
+"Cockpit"), num store fixo (`__cockpit__`, fora dos workspaces). O
+`DiagnosticsLog` espelha nele o que os handlers globais capturam
+(`FlutterError.onError`, `PlatformDispatcher.onError`, zona, isolates) e os
+`warn` que os fallbacks do código passaram a emitir no lugar do antigo
+`catch (_) {}` mudo. Frames `package:cockpit/` viram `lib/...` e são "do
+projeto": fingerprint e location apontam pro nosso código.
+
+Ligado só com **Settings → General → Developer mode** (desligado por
+padrão: serve a quem mantém o app). Consulta: chip **Cockpit** no painel
+Telemetry, ou `cockpit telemetry errors --app` (`--app` vale pra qualquer
+verbo). Sem envio para fora.
+
+## Métricas de performance (dev, opt-in)
+
+`PerformanceDiagnostics` (`core/data/diagnostics/`) liga junto com o
+**Developer mode** (ou por `COCKPIT_PERF=1`, alias legado
+`COCKPIT_PERF_DIAGNOSTICS=1`, para quem sobe pelo terminal) em qualquer SO e
+grava, no run do app, eventos `info` com `metric` + campos numéricos (só
+enums fechados: nenhum path, comando ou output). Desligada por padrão por
+decisão: sem Datadog, o número só serve a quem lê, e quem lê é o dono na
+própria máquina.
+
+| Métrica | Campos | Como |
+|---|---|---|
+| `frame` | frames, jankFrames (> 16,7 ms), p95Us, maxUs | resumo por janela de 30 s |
+| `slowFrame` | durationUs, buildUs, rasterUs | cada frame ≥ 50 ms |
+| `eventLoop` | delayUs | watchdog de 1 s |
+| `memory` | rssBytes | a cada 1 s (throttle) |
+| `pty` | durationUs, pending, sources | drain do scheduler |
+| `processScan` | durationUs, sessions | monitor de harness |
+| `gitRefresh` | durationUs, active, queued, failed | painel SC |
+| `boot` | durationUs | `start()` → workspace pronto |
+| `restore` | durationUs, tabs | por workspace restaurado |
+| `workspaceSwitch` / `tabSwitch` | durationUs | até o próximo frame pintado |
+| `spawn` | durationUs, failed | `Process.start` do shell (exec, painéis) |
+
+`cockpit telemetry perf [--run r_xx] [--metric m]` agrega P50/P95/máx por
+campo. Baseline oficial: medido no `.dmg` instalado (nunca em `debug`, o JIT
+distorce), registrado no plano 68.
+
+## Push turn-aware (REMOVIDO em 2026-09-27)
+
+O push da linha "telemetry: N new cases" no terminal do agente ao fim do
+turno foi removido: o agente consulta a base quando quer.
+
 
 `TelemetryIngest.notices` emite os fingerprints de erro de cada lote gravado.
 O `CockpitViewModel` filtra os novos/regressões, enfileira por pane (wrapper:

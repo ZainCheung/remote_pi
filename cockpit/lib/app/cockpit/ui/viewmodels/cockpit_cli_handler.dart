@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io' show Directory, File, FileSystemException, Platform;
 
 import 'package:cockpit/app/cockpit/domain/entities/layout_spec.dart';
+import 'package:cockpit/app/core/data/diagnostics/diagnostics_log.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/http_request_runner.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/task_discovery.dart';
 import 'package:cockpit/app/cockpit/domain/contracts/task_runner_gateway.dart';
@@ -139,6 +140,8 @@ class CockpitCliHandler {
     // Telemetria (plano 66): verbos `telemetry-*` têm handler próprio; o
     // workspace é o da aba emissora (ou `--workspace`), como no `db`.
     if (TelemetryCliHandler.handles(c.cmd)) {
+      // `--app` (plano 68): store do próprio Cockpit, sem workspace.
+      if (c.args['app'] == true) return _telemetry.handle(c, null, '');
       return _projectCommand(
         c,
         (project, root) => _telemetry.handle(c, project, root),
@@ -1459,8 +1462,9 @@ class CockpitCliHandler {
               : remoteHome;
           p = p == '~' ? normalizedHome : '$normalizedHome/${p.substring(2)}';
         }
-      } catch (_) {
+      } on Object catch (e) {
         // Fallback: tenta via fileService se capture falhar
+        DiagnosticsLog.instance.warn('remote-home', 'capture failed', error: e);
         try {
           final service = await _vm.remoteHosts.fileServiceFor(host);
           final remoteHome = await service.home();
@@ -1470,7 +1474,13 @@ class CockpitCliHandler {
                 : remoteHome;
             p = p == '~' ? normalizedHome : '$normalizedHome/${p.substring(2)}';
           }
-        } catch (_) {}
+        } on Object catch (e) {
+          DiagnosticsLog.instance.warn(
+            'remote-home',
+            'fileService fallback failed; keeping ~ unexpanded',
+            error: e,
+          );
+        }
       }
     }
     while (p.length > 1 && (p.endsWith('/') || p.endsWith(r'\'))) {

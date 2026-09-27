@@ -268,9 +268,9 @@ class SettingsController extends ChangeNotifier {
   void setShowCockpit(bool value) =>
       _apply(_settings.copyWith(showCockpit: value));
 
-  /// Push de casos novos da Telemetry pro agente da aba (plano 66).
-  void setTelemetryPush(bool value) =>
-      _apply(_settings.copyWith(telemetryPush: value));
+  /// Modo desenvolvedor (plano 68): telemetria do próprio app + métricas.
+  void setDeveloperMode(bool value) =>
+      _apply(_settings.copyWith(developerMode: value));
 
   /// Inverte o lado dos painéis laterais (workspaces à direita).
   void setSwapSidePanels(bool value) =>

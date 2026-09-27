@@ -434,11 +434,11 @@ class _GeneralPanel extends StatelessWidget {
                         ),
                       ),
                       _Row(
-                        title: tr.telemetryPushTitle,
-                        description: tr.telemetryPushDesc,
+                        title: tr.developerModeTitle,
+                        description: tr.developerModeDesc,
                         trailing: Switch(
-                          value: s.telemetryPush,
-                          onChanged: controller.setTelemetryPush,
+                          value: s.developerMode,
+                          onChanged: controller.setDeveloperMode,
                         ),
                       ),
                       _Row(

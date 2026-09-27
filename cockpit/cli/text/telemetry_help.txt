@@ -24,6 +24,15 @@ QUERY:
   cockpit telemetry resolve|ignore|reopen <e_xxxx> [--reason "..."]
   cockpit telemetry clear --case e_xxxx | --run r_xx | --project P
   cockpit telemetry probes                         added lines in the working tree that carry "probe"
+  cockpit telemetry perf [--run r_xx] [--metric m] performance metrics of the app run (P50/P95/max)
+
+THE APP ITSELF (--app):
+  cockpit telemetry errors --app                   Cockpit's own errors (framework, async, isolates)
+  cockpit telemetry logs --app --level warn        its warnings (fallbacks the app took silently)
+  cockpit telemetry runs --app                     one run per app boot
+  Add --app to any query verb to read the app's store instead of the
+  workspace's. It only fills while Settings → General → Developer mode is on
+  (off by default); metrics are recorded then too (or with COCKPIT_PERF=1).
 
 FILTERS (errors/logs/events):
   --project <name>    --task <task-id>   --run <r_xx>   --key <run key>   --tab <tab-id>

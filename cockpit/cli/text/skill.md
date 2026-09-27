@@ -548,6 +548,25 @@ carry one; remove them before committing.
 `.cockpit/telemetry.json` (optional, versioned) can add `unwrap` regexes for
 odd log prefixes and `ignore` patterns.
 
+### The app's own errors (`--app`)
+
+The app is a source too: one run per boot ("Cockpit", `source: app`) holds
+the errors its global handlers caught and the warnings its fallbacks emit.
+When something in Cockpit itself misbehaves (a tab that would not restore, a
+remote listing that came back empty, a slow spawn), look there before
+guessing:
+
+```sh
+cockpit telemetry errors --app                # framework/async errors, grouped
+cockpit telemetry logs --app --level warn     # fallbacks the app took
+cockpit telemetry show e_xxxx --app
+```
+
+`--app` works with every query verb. The store only fills while
+**Settings → General → Developer mode** is on (it is off by default); with
+it on, performance metrics land in the same run and
+`cockpit telemetry perf --app` prints P50/P95/max per metric.
+
 ## Target (--tab-id)
 
 Without `--tab-id`, the command acts on **your own tab** (via `$COCKPIT_TAB_ID`,

@@ -303,7 +303,7 @@
       "openLayout": "Abrir layout",
       "openAsMarkdown": "Abrir como markdown",
       "showGitDiff": "Mostrar diff de git",
-      "createTerminal": "Crear terminal",
+      "createTerminal": "Abrir en terminal",
       "rename": "Renombrar",
       "copy": "Copiar",
       "cut": "Cortar",
@@ -349,7 +349,12 @@
       "diffError": "No se pudo leer el diff: ${detail}",
       "galleryTooltip": "Galería",
       "sectionGallery": "GALERÍA",
-      "openAsHtml": "Abrir como HTML"
+      "openAsHtml": "Abrir como HTML",
+      "importQuestionTitle": "¿Copiar aquí?",
+      "importMessage": "¿Copiar ${count} elementos en “${dest}”?",
+      "importAction": "Copiar",
+      "couldNotImportTitle": "No se pudo copiar",
+      "openInAgent": "Abrir en ${harness}"
     },
     "fileViewer": {
       "cantOpen": "No se puede abrir este archivo.",
@@ -895,7 +900,9 @@
       "clearedToast": "Ocurrencias borradas. Las reglas de triaje se mantienen.",
       "byHuman": "por ti",
       "byAgent": "por el agente",
-      "caseTabTitle": "${type} · ${file}"
+      "caseTabTitle": "${type} · ${file}",
+      "srcApp": "App",
+      "chipApp": "Cockpit"
     },
     "panelView": {
       "unavailable": "Los paneles necesitan la web view integrada, que todavía no existe en Linux.",
@@ -947,8 +954,8 @@
           "monthly": "Mensualmente",
           "never": "Nunca"
         },
-        "telemetryPushTitle": "Avisar a los agentes de errores nuevos",
-        "telemetryPushDesc": "Cuando una task o un comando observado produce un error que el agente de esa pestaña aún no vio, le envía una línea de resumen en cuanto termina su turno."
+        "developerModeTitle": "Modo desarrollador",
+        "developerModeDesc": "Registra los errores y avisos del propio Cockpit en una base aparte de la Telemetría (chip “Cockpit”) y activa las métricas de rendimiento. Solo sirve a quien mantiene la app."
       },
       "diagnostics": {
         "sectionTitle": "Diagnóstico",
@@ -1178,7 +1185,8 @@
       "formatterFailed": "No se pudo ejecutar el formateador.",
       "osFailure": "${detail}",
       "nameHasSlash": "El nombre no puede contener “/”.",
-      "invalidName": "Nombre inválido."
+      "invalidName": "Nombre inválido.",
+      "remoteDropUnsupported": "Soltar archivos en un workspace remoto todavía no está soportado."
     }
   },
   "theme": {

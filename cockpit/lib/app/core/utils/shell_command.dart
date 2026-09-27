@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import '../data/diagnostics/diagnostics_log.dart';
+import '../data/diagnostics/performance_diagnostics.dart';
 import 'login_shell.dart';
 
 /// Saída de um comando rodado por [runShellCommand].
@@ -52,6 +54,7 @@ Future<ShellCommandResult> runShellCommand(
     args = ['-lc', command];
   }
   final Process proc;
+  final spawnClock = Stopwatch()..start();
   try {
     proc = await Process.start(
       exe,
@@ -61,7 +64,22 @@ Future<ShellCommandResult> runShellCommand(
       includeParentEnvironment: true,
     );
   } on ProcessException catch (e) {
+    DiagnosticsLog.instance.warn('spawn', 'shell spawn failed: $exe', error: e);
+    PerformanceDiagnostics.instance.record(PerfMetric.spawn, {
+      PerfField.durationUs: spawnClock.elapsedMicroseconds,
+      PerfField.failed: 1,
+    }, force: true);
     return ShellCommandResult(code: 127, stdout: '', stderr: e.message);
+  }
+  PerformanceDiagnostics.instance.record(PerfMetric.spawn, {
+    PerfField.durationUs: spawnClock.elapsedMicroseconds,
+    PerfField.failed: 0,
+  });
+  if (spawnClock.elapsed > const Duration(seconds: 2)) {
+    DiagnosticsLog.instance.warn(
+      'spawn',
+      'slow shell spawn: ${spawnClock.elapsedMilliseconds} ms ($exe)',
+    );
   }
   final out = StringBuffer();
   final err = StringBuffer();

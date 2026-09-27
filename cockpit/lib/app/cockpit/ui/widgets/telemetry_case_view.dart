@@ -392,7 +392,9 @@ class _Crumbs extends StatelessWidget {
           Text(tr.run(id: run!.id), style: s),
           dot,
           Text(
-            run!.source == TelemetryRunSource.task
+            run!.source == TelemetryRunSource.app
+                ? '${tr.srcApp} ${run!.command}'
+                : run!.source == TelemetryRunSource.task
                 ? tr.srcTask
                 : '${tr.srcWrapper} ${run!.command}',
             style: s,
@@ -631,7 +633,9 @@ class _Stats extends StatelessWidget {
     );
     final origin = run == null
         ? '—'
-        : (run!.source == TelemetryRunSource.task
+        : (run!.source == TelemetryRunSource.app
+              ? tr.srcApp
+              : run!.source == TelemetryRunSource.task
               ? '${tr.srcTask} ${run!.name ?? ''}'
               : tr.srcWrapper);
     return Container(

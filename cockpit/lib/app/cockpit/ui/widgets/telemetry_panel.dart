@@ -4,11 +4,13 @@
 
 import 'package:cockpit/app/cockpit/domain/entities/telemetry_case.dart';
 import 'package:cockpit/app/cockpit/domain/entities/telemetry_event.dart';
+import 'package:cockpit/app/cockpit/domain/contracts/telemetry_ingest.dart';
 import 'package:cockpit/app/cockpit/domain/entities/telemetry_run.dart';
 import 'package:cockpit/app/cockpit/ui/viewmodels/cockpit_viewmodel.dart';
 import 'package:cockpit/app/cockpit/ui/viewmodels/telemetry_viewmodel.dart';
 import 'package:cockpit/app/cockpit/ui/widgets/telemetry_case_view.dart'
     show telemetryCaseTabTitle, TelemetryTag, TagKind, telemetryRelative;
+import 'package:cockpit/app/core/ui/settings_controller.dart';
 import 'package:cockpit/app/core/ui/themes/themes.dart';
 import 'package:cockpit/app/core/ui/widgets/app_tooltip.dart';
 import 'package:cockpit/app/core/ui/widgets/hover_tap.dart';
@@ -34,28 +36,51 @@ class _TelemetryPanelState extends State<TelemetryPanel> {
   final _search = TextEditingController();
   final _collapsed = <String>{};
 
+  /// Resolvido no `initState`: o `dispose` não pode mais consultar o
+  /// `context` (elemento já desativado → "Looking up a deactivated widget's
+  /// ancestor is unsafe", caso e_804c da Telemetria).
+  late final TelemetryViewModel _vm;
+
+  /// Chip "App": em vez do workspace, mostra o run do próprio Cockpit
+  /// (erros globais, warnings, métricas; plano 68).
+  bool _showApp = false;
+
   @override
   void initState() {
     super.initState();
-    final vm = context.read<TelemetryViewModel>();
-    vm.setWorkspace(widget.workspaceId, widget.roots);
-    vm.attach();
+    _vm = context.read<TelemetryViewModel>();
+    _applyWorkspace();
+    _vm.attach();
   }
 
   @override
   void didUpdateWidget(TelemetryPanel old) {
     super.didUpdateWidget(old);
     if (old.workspaceId != widget.workspaceId || old.roots != widget.roots) {
-      context.read<TelemetryViewModel>().setWorkspace(
-        widget.workspaceId,
-        widget.roots,
-      );
+      _applyWorkspace();
     }
+  }
+
+  void _applyWorkspace() {
+    if (_showApp &&
+        !context.read<SettingsController>().settings.developerMode) {
+      _showApp = false;
+    }
+    if (_showApp) {
+      _vm.setWorkspace(kTelemetryAppWorkspaceId, const []);
+    } else {
+      _vm.setWorkspace(widget.workspaceId, widget.roots);
+    }
+  }
+
+  void _toggleApp() {
+    setState(() => _showApp = !_showApp);
+    _applyWorkspace();
   }
 
   @override
   void dispose() {
-    context.read<TelemetryViewModel>().detach();
+    _vm.detach();
     _search.dispose();
     super.dispose();
   }
@@ -68,7 +93,12 @@ class _TelemetryPanelState extends State<TelemetryPanel> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _Header(vm: vm, search: _search),
+        _Header(
+          vm: vm,
+          search: _search,
+          showApp: _showApp,
+          onToggleApp: _toggleApp,
+        ),
         Expanded(
           child: vm.cases.isEmpty
               ? Center(
@@ -157,9 +187,16 @@ class _TelemetryPanelState extends State<TelemetryPanel> {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.vm, required this.search});
+  const _Header({
+    required this.vm,
+    required this.search,
+    required this.showApp,
+    required this.onToggleApp,
+  });
   final TelemetryViewModel vm;
   final TextEditingController search;
+  final bool showApp;
+  final VoidCallback onToggleApp;
 
   @override
   Widget build(BuildContext context) {
@@ -256,6 +293,15 @@ class _Header extends StatelessWidget {
                 on: vm.showWarnings,
                 onTap: vm.toggleWarnings,
               ),
+              if (context.select<SettingsController, bool>(
+                (c) => c.settings.developerMode,
+              ))
+                _Chip(
+                  label: tr.chipApp,
+                  count: 0,
+                  on: showApp,
+                  onTap: onToggleApp,
+                ),
             ],
           ),
         ],
@@ -420,7 +466,11 @@ class _RunHeader extends StatelessWidget {
           ),
           const SizedBox(width: 7),
           _SourcePill(
-            text: isTask ? tr.srcTask : tr.srcWrapper,
+            text: run?.source == TelemetryRunSource.app
+                ? tr.srcApp
+                : isTask
+                ? tr.srcTask
+                : tr.srcWrapper,
             accent: isTask,
           ),
           if (run?.isLive == true) ...[

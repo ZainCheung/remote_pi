@@ -11,6 +11,8 @@ import 'dart:io'
         Platform;
 import 'dart:math' show max;
 
+import 'package:cockpit/app/core/data/diagnostics/diagnostics_log.dart';
+import 'package:cockpit/app/core/data/diagnostics/performance_diagnostics.dart';
 import 'package:cockpit/app/core/data/setup/remote_pi_resolver.dart';
 import 'package:cockpit/app/core/utils/shell_command.dart';
 import 'package:flutter/scheduler.dart' show SchedulerBinding;
@@ -866,9 +868,11 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
       dirs.sort(byName);
       files.sort(byName);
       return [...dirs, ...files];
-    } catch (_) {
+    } on Object catch (e) {
       // Falha de conexão/permissão → árvore vazia (sem crash); o badge de
-      // conexão do host já sinaliza o estado.
+      // conexão do host já sinaliza o estado. Fica registrado: "árvore vazia"
+      // sem motivo era o sintoma que ninguém conseguia explicar.
+      DiagnosticsLog.instance.warn('remote-tree', 'listing failed', error: e);
       return const <FileNode>[];
     }
   }
@@ -919,8 +923,13 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
       }
       if (ext == 'svg') return FileViewSvg(path, text);
       return FileViewText(text, language: ext.isEmpty ? null : ext);
-    } catch (_) {
+    } on Object catch (e) {
       // fs.read falhou (too_large, permissão, conexão) → não abre.
+      DiagnosticsLog.instance.warn(
+        'remote-read',
+        'read failed: $path',
+        error: e,
+      );
       return const FileViewUnsupported();
     }
   }
@@ -2816,6 +2825,32 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
   Future<Result<void, FileOperationError>> deletePath(String path) =>
       files.deletePath(path);
 
+  /// Drop nativo do SO na árvore (Finder/Explorer/gerenciador GTK). Remoto
+  /// não tem upload por SSH ainda, então recusa com erro tipado.
+  Future<Result<void, FileOperationError>> importPaths(
+    List<String> sources,
+    String targetDir,
+  ) {
+    final project = selectedProject;
+    if (project != null && project.isRemoteTerminal) {
+      return Future.value(
+        const Failure(
+          FileOperationError(FileOperationErrorKind.remoteDropUnsupported),
+        ),
+      );
+    }
+    return files.importInto(sources, targetDir, workspaceRoot: treeRootPath);
+  }
+
+  /// Harnesses de CLI instalados na máquina (Claude Code, Codex, Pi...),
+  /// descobertos pelo `AutomationController` (mesma lista das automações).
+  /// Vazio até [discoverHarnesses] completar.
+  List<AutomationHarness> get installedHarnesses => _automation.harnesses;
+
+  /// Dispara a descoberta uma vez (idempotente); a página chama no boot para o
+  /// menu "Open in (agent)" da árvore já nascer preenchido.
+  Future<void> discoverHarnesses() => _automation.ensureInitialized();
+
   bool get canPaste => files.canPaste;
 
   void copyToClipboard(String path) => files.copyToClipboard(path);
@@ -2934,7 +2969,6 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
     // Await: no Windows o `hookEnv` depende da porta ligada antes de spawnar abas.
     // O mesmo socket atende a CLI interna `cockpit` (`_onCockpitCommand`).
     await _statusServer.start(_onClaudeStatus, onCommand: _cli.handle);
-    _telemetryNoticeSub = _telemetryIngest.notices.listen(_onTelemetryNotice);
     // Turn-status REMOTO (plano 60, Wave G): o hook roda no host, o cockpit-
     // server o reenvia pelo protocolo, e aqui cai no MESMO caminho do local
     // (roteado por paneId → spinner/chime). Sem isso, terminal remoto não tem
@@ -3021,6 +3055,7 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
     // PTY. Corrigido com `rid` de correlação (ver PtyOpen.rid). O adiamento
     // ficou por mérito próprio: tela na frente do spawn.
     _ready = true;
+    PerformanceDiagnostics.instance.markBootReady();
     notifyListeners();
     if (selected != null) {
       SchedulerBinding.instance.addPostFrameCallback((_) async {
@@ -4560,6 +4595,7 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
 
   void selectProject(String id) {
     if (_selectedProjectId == id) return;
+    PerformanceDiagnostics.instance.timeToNextFrame(PerfMetric.workspaceSwitch);
     // Seleção vinda de fora do recorte atual (clique em notificação, CLI
     // `cockpit open`, restauração): troca o realm ativo junto — selecionar um
     // workspace de outro realm sem trazê-lo deixaria o rail "sem seleção".
@@ -4654,6 +4690,7 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
   }
 
   void selectTab(String paneId, String agentId) {
+    PerformanceDiagnostics.instance.timeToNextFrame(PerfMetric.tabSwitch);
     final tree = _activeTree;
     if (tree == null) return;
     _recordHistoryBeforeSwitch(paneId);
@@ -4803,6 +4840,9 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
     String? title,
     String? inPane,
     SplitDir? splitDir,
+    // Comando digitado no shell assim que ele sobe (ex.: `claude` no "Open in
+    // Claude Code" do menu da pasta). `null` = só o shell.
+    String? startupCommand,
   }) {
     final projectId = _selectedProjectId;
     final tree = _activeTree;
@@ -4817,6 +4857,7 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
       projectId,
       cwd,
       title: title ?? _sanitizeName(_basename(cwd)),
+      startupCommand: startupCommand,
     );
     if (title != null && title.trim().isNotEmpty) {
       s.setManualLabel(title);
@@ -5857,94 +5898,6 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
     if (s.claudeSessionId != hadSid && s.claudeSessionId != null) {
       _scheduleSave(s.projectId);
     }
-    // Turno acabou: hora de entregar o que a Telemetry enfileirou pra este
-    // agente (plano 66, passo 7). Nunca no meio do turno.
-    if (!s.isWorking) _deliverTelemetryPush(u.paneId);
-  }
-
-  // ---- Telemetry: push turn-aware (plano 66, passo 7) -----------------------
-
-  StreamSubscription<TelemetryErrorNotice>? _telemetryNoticeSub;
-
-  /// Casos pendentes por pane: fingerprint → linha de resumo.
-  final _telemetryPending = <String, Map<String, String>>{};
-  final _telemetryLastPush = <String, DateTime>{};
-  final _telemetryPushTimers = <String, Timer>{};
-  static const _telemetryPushThrottle = Duration(seconds: 30);
-
-  /// Ligado pela página a partir das Settings (`telemetryPush`).
-  bool Function() telemetryPushEnabled = () => true;
-
-  Future<void> _onTelemetryNotice(TelemetryErrorNotice n) async {
-    if (!telemetryPushEnabled()) return;
-    // Só o que é novo/regressão: a triagem e o histórico decidem.
-    final store = await _telemetryStores.forWorkspace(n.workspaceId);
-    final fresh = await store.cases(
-      TelemetryQuery(runId: n.runId, onlyNew: true, limit: 200),
-    );
-    final hits = fresh.where((c) => n.fingerprints.contains(c.fingerprint));
-    if (hits.isEmpty) return;
-
-    // Wrapper: só o pane dele. Task (sem pane): os agentes do workspace.
-    final targets = <String>{};
-    if (n.paneId != null && _sessions[n.paneId] is TerminalSession) {
-      targets.add(n.paneId!);
-    } else {
-      final ws = _workspaceIdOfTelemetry(n.workspaceId);
-      for (final s in _sessions.values) {
-        if (s is TerminalSession &&
-            s.projectId == ws &&
-            s.claudeSessionId != null) {
-          targets.add(s.id);
-        }
-      }
-    }
-    if (targets.isEmpty) return;
-    for (final pane in targets) {
-      final bucket = _telemetryPending.putIfAbsent(pane, () => {});
-      for (final c in hits) {
-        bucket[c.fingerprint] =
-            '${c.shortId} ${c.type} ×${c.count}'
-            '${c.location == null ? '' : ' ${c.location}'}'
-            '${c.isRegression ? ' (regression)' : ''}'
-            ' [${n.project} ${n.runId}]';
-      }
-      _deliverTelemetryPush(pane);
-    }
-  }
-
-  /// O id de workspace da telemetria é o id do projeto (UUID). Mantido como
-  /// função pra o dia em que fork/worktree tiver base própria.
-  String _workspaceIdOfTelemetry(String workspaceId) => workspaceId;
-
-  void _deliverTelemetryPush(String paneId) {
-    final pending = _telemetryPending[paneId];
-    if (pending == null || pending.isEmpty) return;
-    final s = _sessions[paneId];
-    if (s is! TerminalSession) {
-      _telemetryPending.remove(paneId);
-      return;
-    }
-    if (s.isWorking) return; // o fim do turno chama de novo
-    final last = _telemetryLastPush[paneId];
-    final since = last == null ? null : DateTime.now().difference(last);
-    if (since != null && since < _telemetryPushThrottle) {
-      _telemetryPushTimers[paneId]?.cancel();
-      _telemetryPushTimers[paneId] = Timer(
-        _telemetryPushThrottle - since,
-        () => _deliverTelemetryPush(paneId),
-      );
-      return;
-    }
-    final lines = pending.values.toList();
-    _telemetryPending.remove(paneId);
-    _telemetryLastPush[paneId] = DateTime.now();
-    final head = lines.length == 1
-        ? 'telemetry: 1 new case'
-        : 'telemetry: ${lines.length} new cases';
-    final shown = lines.take(5).join('; ');
-    final more = lines.length > 5 ? '; +${lines.length - 5} more' : '';
-    s.insertText('$head: $shown$more · cockpit telemetry errors --new\r');
   }
 
   /// Env de PATH escopado: prepend o diretório da CLI (onde o binário `cockpit`
@@ -6181,15 +6134,55 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
   }
 
   Future<void> _restoreProject(String id, Map<String, dynamic> doc) async {
+    final restoreClock = Stopwatch()..start();
+    try {
+      await _restoreProjectInner(id, doc);
+    } finally {
+      final tabs = ((doc['sessions'] as Map?) ?? const {}).length;
+      PerformanceDiagnostics.instance.record(PerfMetric.restore, {
+        PerfField.durationUs: restoreClock.elapsedMicroseconds,
+        PerfField.tabs: tabs,
+      }, force: true);
+    }
+  }
+
+  Future<void> _restoreProjectInner(String id, Map<String, dynamic> doc) async {
     final project = _projectById(id);
     final treeJson = doc['tree'];
     if (project == null || treeJson is! Map) {
       _initTree(id);
       return;
     }
-    final sessionsJson =
+    var sessionsJson =
         (doc['sessions'] as Map?)?.cast<String, dynamic>() ??
         const <String, dynamic>{};
+    var tree = paneNodeFromJson(treeJson.cast<String, dynamic>());
+    // ANTES de gerar id novo: `_nid` não pode colidir com os que vêm do disco.
+    _bumpSeqPast(sessionsJson.keys, tree);
+
+    // Colisão entre workspaces: `_sessions` é um mapa GLOBAL, mas cada layout
+    // guarda os ids da sua época (t3, t4...). Um workspace restaurado depois
+    // (lazy, ao ser selecionado) chegava com um id que outro workspace já
+    // usa VIVO e o sobrescrevia: o pane do primeiro passava a mostrar o
+    // terminal do segundo. Raro (precisa do mesmo sufixo em dois layouts),
+    // visto no macOS e no Windows. Remapeia os que colidem pra ids novos.
+    final remap = <String, String>{};
+    for (final oldId in sessionsJson.keys) {
+      if (!_sessions.containsKey(oldId)) continue;
+      final prefix = RegExp(r'^[A-Za-z]+').firstMatch(oldId)?.group(0) ?? 't';
+      remap[oldId] = _nid(prefix);
+    }
+    if (remap.isNotEmpty) {
+      DiagnosticsLog.instance.warn(
+        'restore',
+        'tab id collision across workspaces; remapped ${remap.length} '
+            'session(s) while restoring "${project.name}"',
+      );
+      sessionsJson = <String, dynamic>{
+        for (final e in sessionsJson.entries) remap[e.key] ?? e.key: e.value,
+      };
+      tree = _remapTabs(tree, remap);
+    }
 
     // Recria cada sessão (agente boota e reanexa; viewer re-lê o arquivo).
     final created = <String>{};
@@ -6209,8 +6202,6 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
       }
     }
 
-    var tree = paneNodeFromJson(treeJson.cast<String, dynamic>());
-    _bumpSeqPast(sessionsJson.keys, tree); // antes do sanitize criar ids novos
     tree = _sanitizeTree(
       tree,
       created,
@@ -6479,6 +6470,23 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
         return node.copyWith(
           a: _sanitizeTree(node.a, present, projectId, used),
           b: _sanitizeTree(node.b, present, projectId, used),
+        );
+    }
+  }
+
+  /// Troca ids de aba na árvore conforme [remap] (ver colisão em
+  /// [_restoreProject]). Ids de leaf não mudam: são por árvore.
+  PaneNode _remapTabs(PaneNode node, Map<String, String> remap) {
+    switch (node) {
+      case LeafPane():
+        return node.copyWith(
+          tabs: [for (final t in node.tabs) remap[t] ?? t],
+          active: remap[node.active] ?? node.active,
+        );
+      case SplitPane():
+        return node.copyWith(
+          a: _remapTabs(node.a, remap),
+          b: _remapTabs(node.b, remap),
         );
     }
   }
@@ -6927,10 +6935,6 @@ class CockpitViewModel extends ChangeNotifier implements DocumentHost {
     unawaited(_remoteTurnSub?.cancel());
     unawaited(_remoteCliSub?.cancel());
     unawaited(_sidecarTurnSub?.cancel());
-    unawaited(_telemetryNoticeSub?.cancel());
-    for (final t in _telemetryPushTimers.values) {
-      t.cancel();
-    }
     // O GitController é dono dos próprios timers/watchers; o módulo o
     // descarta junto com a rota. Aqui só desligamos o repasse de notify.
     git.removeListener(_onGitNotify);

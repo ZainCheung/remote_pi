@@ -7,6 +7,8 @@ import 'package:cockpit/app/cockpit/domain/entities/browser_capability.dart';
 import 'package:cockpit/app/cockpit/domain/entities/file_view.dart';
 import 'package:cockpit/app/cockpit/domain/entities/panel_document.dart';
 import 'package:cockpit/app/cockpit/ui/session/file_viewer_session.dart';
+import 'package:cockpit/app/cockpit/ui/widgets/webview_chrome.dart';
+
 import 'package:cockpit/app/core/ui/themes/themes.dart';
 import 'package:cockpit/app/core/ui/widgets/unzoomed_native_view.dart';
 import 'package:cockpit/i18n/strings.g.dart';
@@ -90,8 +92,10 @@ class _PanelViewState extends State<PanelView> {
 
   @override
   void dispose() {
+    // Só o listener: a sessão pode já ter sido descartada pela VM (fechar a
+    // aba descarta a sessão antes do widget), e o título do documento vale
+    // também para a mesma aba em "Open as HTML" (caso e_7b16 da Telemetria).
     widget.session.removeListener(_onSession);
-    widget.session.setDocumentTitle(null);
     super.dispose();
   }
 
@@ -105,7 +109,14 @@ class _PanelViewState extends State<PanelView> {
   void _parse() {
     final doc = PanelDocument.parse(_rawText);
     _doc = doc;
-    widget.session.setDocumentTitle(doc.title);
+    // A sessão notifica a barra de abas; do `initState`/`didUpdateWidget` isso
+    // cai durante o build (casos e_0f0a e e_f743 da Telemetria): adia.
+    final session = widget.session;
+    final title = doc.title;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      session.setDocumentTitle(title);
+    });
   }
 
   /// Conteúdo relido do disco (watcher) → recarrega a página, se o documento
@@ -225,58 +236,63 @@ class _PanelViewState extends State<PanelView> {
     if (bridge == null || doc == null) {
       return ColoredBox(color: context.colors.panel);
     }
-    return UnzoomedNativeView(
-      builder: (context, contentZoom) => InAppWebView(
-        key: ValueKey('panel:${widget.session.id}'),
-        initialData: InAppWebViewInitialData(
-          data: doc.body,
-          baseUrl: WebUri(_baseUrl),
-          mimeType: 'text/html',
-          encoding: 'utf-8',
-        ),
-        initialUserScripts: UnmodifiableListView<UserScript>([
-          UserScript(
-            source: bridge,
-            injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+    return WebViewCover(
+      loaded: _loaded,
+      child: UnzoomedNativeView(
+        builder: (context, contentZoom) => InAppWebView(
+          key: ValueKey('panel:${widget.session.id}'),
+          initialData: InAppWebViewInitialData(
+            data: doc.body,
+            baseUrl: WebUri(_baseUrl),
+            mimeType: 'text/html',
+            encoding: 'utf-8',
           ),
-        ]),
-        initialSettings: InAppWebViewSettings(
-          javaScriptEnabled: true,
-          resourceCustomSchemes: ['ckp-panel'],
-          // Playground de desenvolvedor: o inspetor do Safari/Edge ajuda a
-          // depurar o painel.
-          isInspectable: true,
-          transparentBackground: true,
-          pageZoom: contentZoom,
+          initialUserScripts: UnmodifiableListView<UserScript>([
+            ...kWebViewUserScripts,
+            UserScript(
+              source: bridge,
+              injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+            ),
+          ]),
+          initialSettings: InAppWebViewSettings(
+            javaScriptEnabled: true,
+            resourceCustomSchemes: ['ckp-panel'],
+            // Playground de desenvolvedor: o inspetor do Safari/Edge ajuda a
+            // depurar o painel.
+            isInspectable: true,
+            underPageBackgroundColor: webViewBackground(context),
+            pageZoom: contentZoom,
+          ),
+          onWebViewCreated: (web) {
+            _web = web;
+            web.addJavaScriptHandler(
+              handlerName: 'cockpit',
+              callback: _handleCall,
+            );
+            WebViewPointerRelay.register(web, context, contentZoom);
+          },
+          onLoadStop: (web, _) {
+            if (mounted) setState(() => _loaded = true);
+            final vars = _themeVars(context);
+            _pushedTheme = vars;
+            unawaited(_pushTheme(vars));
+          },
+          onLoadResourceWithCustomScheme: _serveLocal,
+          // Links externos abrem no browser do SO — a aba não navega pra fora.
+          shouldOverrideUrlLoading: (web, action) async {
+            final url = action.request.url;
+            if (url == null ||
+                url.scheme == 'about' ||
+                url.scheme == 'data' ||
+                url.scheme == 'ckp-panel') {
+              return NavigationActionPolicy.ALLOW;
+            }
+            if (url.scheme == 'http' || url.scheme == 'https') {
+              await launcher.launchUrl(url);
+            }
+            return NavigationActionPolicy.CANCEL;
+          },
         ),
-        onWebViewCreated: (web) {
-          _web = web;
-          web.addJavaScriptHandler(
-            handlerName: 'cockpit',
-            callback: _handleCall,
-          );
-        },
-        onLoadStop: (web, _) {
-          _loaded = true;
-          final vars = _themeVars(context);
-          _pushedTheme = vars;
-          unawaited(_pushTheme(vars));
-        },
-        onLoadResourceWithCustomScheme: _serveLocal,
-        // Links externos abrem no browser do SO — a aba não navega pra fora.
-        shouldOverrideUrlLoading: (web, action) async {
-          final url = action.request.url;
-          if (url == null ||
-              url.scheme == 'about' ||
-              url.scheme == 'data' ||
-              url.scheme == 'ckp-panel') {
-            return NavigationActionPolicy.ALLOW;
-          }
-          if (url.scheme == 'http' || url.scheme == 'https') {
-            await launcher.launchUrl(url);
-          }
-          return NavigationActionPolicy.CANCEL;
-        },
       ),
     );
   }

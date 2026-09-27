@@ -303,7 +303,7 @@
       "openLayout": "Open layout",
       "openAsMarkdown": "Open as markdown",
       "showGitDiff": "Show git diff",
-      "createTerminal": "Create terminal",
+      "createTerminal": "Open terminal",
       "rename": "Rename",
       "copy": "Copy",
       "cut": "Cut",
@@ -349,7 +349,12 @@
       "diffError": "Could not read the diff: ${detail}",
       "galleryTooltip": "Gallery",
       "sectionGallery": "GALLERY",
-      "openAsHtml": "Open as HTML"
+      "openAsHtml": "Open as HTML",
+      "importQuestionTitle": "Copy here?",
+      "importMessage": "Copy ${count} items into “${dest}”?",
+      "importAction": "Copy",
+      "couldNotImportTitle": "Could not copy",
+      "openInAgent": "Open in ${harness}"
     },
     "fileViewer": {
       "cantOpen": "Can't open this file.",
@@ -895,7 +900,9 @@
       "clearedToast": "Occurrences deleted. Triage rules are kept.",
       "byHuman": "by you",
       "byAgent": "by agent",
-      "caseTabTitle": "${type} · ${file}"
+      "caseTabTitle": "${type} · ${file}",
+      "srcApp": "App",
+      "chipApp": "Cockpit"
     },
     "panelView": {
       "unavailable": "Panels need the embedded web view, which is not available on Linux yet.",
@@ -947,8 +954,8 @@
           "monthly": "Monthly",
           "never": "Never"
         },
-        "telemetryPushTitle": "Notify agents about new errors",
-        "telemetryPushDesc": "When a task or wrapped command hits an error the agent in that tab has not seen, send it one summary line as soon as its turn ends."
+        "developerModeTitle": "Developer mode",
+        "developerModeDesc": "Records Cockpit’s own errors and warnings in a separate Telemetry store (the “Cockpit” chip) and turns on performance metrics. Only useful to whoever maintains the app."
       },
       "diagnostics": {
         "sectionTitle": "Diagnostics",
@@ -1178,7 +1185,8 @@
       "formatterFailed": "The formatter could not run.",
       "osFailure": "${detail}",
       "nameHasSlash": "Name cannot contain “/”.",
-      "invalidName": "Invalid name."
+      "invalidName": "Invalid name.",
+      "remoteDropUnsupported": "Dropping files into a remote workspace is not supported yet."
     }
   },
   "theme": {
