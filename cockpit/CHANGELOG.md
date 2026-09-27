@@ -26,15 +26,11 @@ As versões seguem o `version:` do `pubspec.yaml` (SSOT). O campo `notes` do
 
 ## [2.1.5] - 2026-09-27
 
-Every 2.x release is a beta of 2.0.0 until the consolidated notes ship.
-
 Same content as 2.1.4, whose Windows build failed on a flaky release gate
 (the smoke test read the server's endpoint file after the server had already
 exited). No app changes.
 
 ## [2.1.4] - 2026-09-27
-
-Every 2.x release is a beta of 2.0.0 until the consolidated notes ship.
 
 **`.panel` files now ship with bundled libraries: a themed stylesheet,
 petite-vue, Chart.js, marked and Tailwind, served offline at
@@ -60,8 +56,6 @@ without touching the network.
   dashboard to copy.
 
 ## [2.1.3] - 2026-09-27
-
-Every 2.x release is a beta of 2.0.0 until the consolidated notes ship.
 
 **Drag files from the Finder or Explorer into the file tree, open a folder
 straight in Claude Code or Codex, and generate tasks from a Docker Compose
@@ -111,8 +105,6 @@ next to new ones.
 
 ## [2.1.2] - 2026-09-26
 
-Every 2.x release is a beta of 2.0.0 until the consolidated notes ship.
-
 **Panels: a live HTML page whose buttons run things on your machine.** A new
 `.panel` file type opens as a web view with `window.cockpit` injected: any
 script in the page can call `await cockpit("exec git status")`,
@@ -136,8 +128,6 @@ triggers a task, and open it from the Gallery.
   format and the bridge.
 
 ## [2.1.1] - 2026-09-25
-
-Every 2.x release is a beta of 2.0.0 until the consolidated notes ship.
 
 **Windows builds are now code signed.** The installer and the executables
 inside it (app, CLI, hook helper and the bundled cockpit-server) are signed
