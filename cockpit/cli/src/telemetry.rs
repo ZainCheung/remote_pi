@@ -467,7 +467,14 @@ fn run_pty(argv: &[String], env: &[(String, String)], tx: &mpsc::Sender<Msg>) ->
         .collect();
 
     let mut master: libc::c_int = -1;
-    let pid = unsafe { libc::forkpty(&mut master, std::ptr::null_mut(), &mut orig, &mut ws) };
+    let pid = unsafe {
+        libc::forkpty(
+            &mut master,
+            std::ptr::null_mut(),
+            &mut orig as *mut libc::termios as _,
+            &mut ws as *mut libc::winsize as _,
+        )
+    };
     if pid < 0 {
         return run_pipes(argv, env, tx);
     }

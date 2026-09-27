@@ -1491,80 +1491,6 @@ fn take<'a>(
     None
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn formata_list_tabs() {
-        let data = vec![json!({
-            "id": "t1",
-            "kind": "terminal",
-            "title": "zsh",
-            "workspacePath": "/Users/x/Projects/remote_pi",
-            "working": true,
-        })];
-        let lines = format_list("list-panes", &data);
-        assert_eq!(lines.len(), 1);
-        assert!(lines[0].starts_with("● t1    "), "{}", lines[0]);
-        assert!(lines[0].contains("remote_pi"), "{}", lines[0]);
-        assert!(lines[0].ends_with("zsh"), "{}", lines[0]);
-    }
-
-    #[test]
-    fn label_manual_vence_titulo() {
-        let data = vec![json!({"id": "t2", "label": "Cockpit", "title": "zsh"})];
-        let lines = format_list("list-panes", &data);
-        assert!(lines[0].ends_with("⚲ Cockpit"), "{}", lines[0]);
-    }
-
-    #[test]
-    fn workspace_sem_path_cai_no_id() {
-        let data = vec![json!({"id": "t3", "workspaceId": "uuid-123"})];
-        let lines = format_list("list-panes", &data);
-        assert!(lines[0].contains("uuid-123"), "{}", lines[0]);
-    }
-
-    #[test]
-    fn formata_tasks_com_marcador_de_output() {
-        let data = vec![json!({
-            "id": "npm:dev", "source": "package", "label": "dev server",
-            "running": true, "hasOutput": true,
-        })];
-        let lines = format_list("list-tasks", &data);
-        assert!(lines[0].starts_with("● npm:dev"), "{}", lines[0]);
-        assert!(lines[0].ends_with("dev server  [output]"), "{}", lines[0]);
-    }
-
-    #[test]
-    fn formata_workspaces_com_fallback_de_panes() {
-        let novo = vec![json!({"name": "remote_pi", "tabs": 3, "path": "/p"})];
-        assert!(format_list("list-workspaces", &novo)[0].contains("3 tabs"));
-        let antigo = vec![json!({"name": "old", "panes": 2, "path": "/q"})];
-        assert!(format_list("list-workspaces", &antigo)[0].contains("2 tabs"));
-        let vazio = vec![json!({"name": "none", "path": "/r"})];
-        assert!(format_list("list-workspaces", &vazio)[0].contains("0 tabs"));
-    }
-
-    #[test]
-    fn take_aceita_as_duas_formas() {
-        let args: Vec<String> = ["--db", "cache", "--limit=10"]
-            .iter()
-            .map(|s| s.to_string())
-            .collect();
-        let mut i = 0;
-        assert_eq!(
-            take(&args, &mut i, &["--db", "--limit"]),
-            Some(("--db", Some("cache".into())))
-        );
-        i += 1;
-        assert_eq!(
-            take(&args, &mut i, &["--db", "--limit"]),
-            Some(("--limit", Some("10".into())))
-        );
-    }
-}
-
 // ---- note ---------------------------------------------------------------------
 
 const NOTE_HELP: &str = "cockpit note <add|list> <folder.notebook> [flags]
@@ -1829,4 +1755,78 @@ pub fn exec(args: &[String]) -> ! {
         eprintln!("cockpit exec: timed out");
     }
     std::process::exit(code)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn formata_list_tabs() {
+        let data = vec![json!({
+            "id": "t1",
+            "kind": "terminal",
+            "title": "zsh",
+            "workspacePath": "/Users/x/Projects/remote_pi",
+            "working": true,
+        })];
+        let lines = format_list("list-panes", &data);
+        assert_eq!(lines.len(), 1);
+        assert!(lines[0].starts_with("● t1    "), "{}", lines[0]);
+        assert!(lines[0].contains("remote_pi"), "{}", lines[0]);
+        assert!(lines[0].ends_with("zsh"), "{}", lines[0]);
+    }
+
+    #[test]
+    fn label_manual_vence_titulo() {
+        let data = vec![json!({"id": "t2", "label": "Cockpit", "title": "zsh"})];
+        let lines = format_list("list-panes", &data);
+        assert!(lines[0].ends_with("⚲ Cockpit"), "{}", lines[0]);
+    }
+
+    #[test]
+    fn workspace_sem_path_cai_no_id() {
+        let data = vec![json!({"id": "t3", "workspaceId": "uuid-123"})];
+        let lines = format_list("list-panes", &data);
+        assert!(lines[0].contains("uuid-123"), "{}", lines[0]);
+    }
+
+    #[test]
+    fn formata_tasks_com_marcador_de_output() {
+        let data = vec![json!({
+            "id": "npm:dev", "source": "package", "label": "dev server",
+            "running": true, "hasOutput": true,
+        })];
+        let lines = format_list("list-tasks", &data);
+        assert!(lines[0].starts_with("● npm:dev"), "{}", lines[0]);
+        assert!(lines[0].ends_with("dev server  [output]"), "{}", lines[0]);
+    }
+
+    #[test]
+    fn formata_workspaces_com_fallback_de_panes() {
+        let novo = vec![json!({"name": "remote_pi", "tabs": 3, "path": "/p"})];
+        assert!(format_list("list-workspaces", &novo)[0].contains("3 tabs"));
+        let antigo = vec![json!({"name": "old", "panes": 2, "path": "/q"})];
+        assert!(format_list("list-workspaces", &antigo)[0].contains("2 tabs"));
+        let vazio = vec![json!({"name": "none", "path": "/r"})];
+        assert!(format_list("list-workspaces", &vazio)[0].contains("0 tabs"));
+    }
+
+    #[test]
+    fn take_aceita_as_duas_formas() {
+        let args: Vec<String> = ["--db", "cache", "--limit=10"]
+            .iter()
+            .map(|s| s.to_string())
+            .collect();
+        let mut i = 0;
+        assert_eq!(
+            take(&args, &mut i, &["--db", "--limit"]),
+            Some(("--db", Some("cache".into())))
+        );
+        i += 1;
+        assert_eq!(
+            take(&args, &mut i, &["--db", "--limit"]),
+            Some(("--limit", Some("10".into())))
+        );
+    }
 }
