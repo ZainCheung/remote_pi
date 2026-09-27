@@ -24,6 +24,14 @@ As versões seguem o `version:` do `pubspec.yaml` (SSOT). O campo `notes` do
     linhas não-vazias — o começo da seção deve fazer sentido sozinho.
 -->
 
+## [2.1.5] - 2026-09-27
+
+Every 2.x release is a beta of 2.0.0 until the consolidated notes ship.
+
+Same content as 2.1.4, whose Windows build failed on a flaky release gate
+(the smoke test read the server's endpoint file after the server had already
+exited). No app changes.
+
 ## [2.1.4] - 2026-09-27
 
 Every 2.x release is a beta of 2.0.0 until the consolidated notes ship.
