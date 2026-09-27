@@ -24,6 +24,40 @@ As versões seguem o `version:` do `pubspec.yaml` (SSOT). O campo `notes` do
     linhas não-vazias — o começo da seção deve fazer sentido sozinho.
 -->
 
+## [2.1.6] - 2026-09-27
+
+**Fixes Postgres and MySQL connections, which stopped working in 2.1.5 on
+macOS.** Also fixes the mouse hover offset over `.panel` pages and previews,
+the tab icon of `.panel` and `.ckp` files, and a reconnection storm against a
+remote host that is offline.
+
+### Fixed
+
+- **Postgres and MySQL**: every SQL query in 2.1.5 failed with "no response
+  from app" on macOS. The database drivers shipped with a binary the system
+  refused to load. Updated to `anaki_postgres` 0.1.9 and `anaki_mysql` 0.1.10,
+  which ship rebuilt libraries. SQLite, MSSQL, Redis and Mongo were not
+  affected.
+- **Webview hover**: moving the mouse over a `.panel`, a markdown preview or
+  the browser highlighted the tab or file-tree row a few pixels above the
+  cursor. The hover relay no longer depends on page coordinates.
+- **Tab icon**: `.panel` and `.ckp` tabs with a `title:` in their front matter
+  showed the generic file icon. The icon now comes from the file name.
+- **Remote host offline**: an unreachable host was reported as "unknown
+  operating system" and the worktree refresh kept opening new SSH attempts
+  every couple of seconds, ignoring the reconnection backoff. The error now
+  says the host is unreachable, and refreshes wait for the host to come back.
+- **Remote server install on zsh hosts**: the install script aborted with
+  "no matches found" when there was no leftover staging folder to clean.
+- **CLI socket**: the "malformed line" warning now includes the offending
+  line, so it can be diagnosed.
+- **`cockpit` CLI**: clippy and Windows test fixes; no behaviour change.
+
+### Added
+
+- `github-actions.panel` example at the repo root: last 5 workflow runs, jobs
+  and steps of each, live refresh every 10 s while something is running.
+
 ## [2.1.5] - 2026-09-27
 
 Same content as 2.1.4, whose Windows build failed on a flaky release gate
