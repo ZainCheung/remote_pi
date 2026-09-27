@@ -24,6 +24,33 @@ As versões seguem o `version:` do `pubspec.yaml` (SSOT). O campo `notes` do
     linhas não-vazias — o começo da seção deve fazer sentido sozinho.
 -->
 
+## [2.1.4] - 2026-09-27
+
+Every 2.x release is a beta of 2.0.0 until the consolidated notes ship.
+
+**`.panel` files now ship with bundled libraries: a themed stylesheet,
+petite-vue, Chart.js, marked and Tailwind, served offline at
+`/__cockpit__/<name>`.** Panels also get hash routing for multi-page layouts
+and more theme variables, so an agent can build a real dashboard in one file
+without touching the network.
+
+### Added
+
+- **Bundled panel libraries**: `<link href="/__cockpit__/cockpit.css">` gives
+  tables, buttons, cards, badges and grid utilities that follow the app theme;
+  `/__cockpit__/petite-vue.js` (reactive state, Vue syntax),
+  `/__cockpit__/chart.js`, `/__cockpit__/marked.js` and
+  `/__cockpit__/tailwind.js` are available the same way. Same URL on macOS,
+  Windows and Linux, same version in every workspace, nothing copied into the
+  repo.
+- **Panel routing**: `cockpit.route` (`path`, `params`, `go`, `match`) and the
+  `route` event let one `.panel` file show several pages via `#/...` links.
+- **More theme variables** for panels: `--ckp-bg-raised`,
+  `--ckp-text-secondary`, `--ckp-border-strong`, `--ckp-accent-soft`,
+  `--ckp-accent-text`, `--ckp-ok`, `--ckp-warn`, `--ckp-error`.
+- The `cockpit-cli` skill documents the bundled libraries with a minimal
+  dashboard to copy.
+
 ## [2.1.3] - 2026-09-27
 
 Every 2.x release is a beta of 2.0.0 until the consolidated notes ship.
