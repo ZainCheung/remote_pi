@@ -24,6 +24,56 @@ As versões seguem o `version:` do `pubspec.yaml` (SSOT). O campo `notes` do
     linhas não-vazias — o começo da seção deve fazer sentido sozinho.
 -->
 
+## [2.1.3] - 2026-09-27
+
+Every 2.x release is a beta of 2.0.0 until the consolidated notes ship.
+
+**Drag files from the Finder or Explorer into the file tree, open a folder
+straight in Claude Code or Codex, and generate tasks from a Docker Compose
+file.** This build also fixes a rare bug where a terminal showed up in the
+wrong workspace, and stops folders from turning red when a file was deleted
+next to new ones.
+
+### Added
+
+- **Native drop in the file tree**: drop files or folders from the OS onto a
+  folder (highlighted) or onto empty space (workspace root). Items from
+  outside are copied, items already in the workspace are moved; several items
+  ask for confirmation. Remote workspaces are not supported yet.
+- **Open in agent**: the folder menu lists every installed CLI agent (Claude
+  Code, Codex, Pi, OpenCode, Cursor, Copilot...) and opens a terminal in that
+  folder already running it. "Create terminal" became "Open terminal".
+- **Docker Compose and Podman Compose tasks**: open a compose YAML and use
+  "Generate tasks from Compose" to get one task per service, with `up`,
+  `build`, `recreate` and `recreate-deps` profiles.
+- **Developer mode** (Settings, General, off by default): records Cockpit's
+  own errors and warnings in a separate Telemetry store (the "Cockpit" chip,
+  `cockpit telemetry ... --app`) and turns on performance metrics
+  (`cockpit telemetry perf`).
+- `.panel` files highlight as HTML when opened as source, and "Open as HTML"
+  in the menus.
+
+### Fixed
+
+- A terminal could show up inside another workspace: layouts restored later
+  reused a tab id that a live workspace already owned. Ids are now remapped
+  on restore.
+- Folders no longer turn red because a file was deleted inside them; a
+  deletion counts as a plain change for the folder color.
+- "Open terminal" from a folder opened in the wrong path (doubled prefix).
+- Six Telemetry cases of setState during build and use after dispose in the
+  Telemetry pane and the panel tab.
+- Web views (panel, HTML and markdown preview, browser): no more rubber-band
+  at the scroll edges, no black flash before the first paint, and hover
+  states no longer get stuck on Flutter widgets when the mouse enters the
+  web view.
+
+### Changed
+
+- The "notify agents about new errors" push into the agent's terminal was
+  removed; agents query `cockpit telemetry` when they need it.
+- Keep awake button now sits before Settings in the rail footer.
+
 ## [2.1.2] - 2026-09-26
 
 Every 2.x release is a beta of 2.0.0 until the consolidated notes ship.
