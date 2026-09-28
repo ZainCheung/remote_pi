@@ -24,6 +24,19 @@ As versões seguem o `version:` do `pubspec.yaml` (SSOT). O campo `notes` do
     linhas não-vazias — o começo da seção deve fazer sentido sozinho.
 -->
 
+## [2.1.7] - 2026-09-28
+
+**`.panel` files now open as a live page in their own document window.**
+Before, opening a panel in a separate window (from the Finder, Explorer, or
+"Open in new window") showed the HTML source instead of the page.
+
+### Fixed
+
+- **Panel in a document window**: the standalone window renders the `.panel`
+  with the same bridge as the tab. `exec`, `db`, `send` and the other
+  `cockpit` verbs work from there; verbs that depend on a tab use the
+  workspace selected in the main window.
+
 ## [2.1.6] - 2026-09-27
 
 **Fixes Postgres and MySQL connections, which stopped working in 2.1.5 on
